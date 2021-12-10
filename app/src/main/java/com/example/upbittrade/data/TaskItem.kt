@@ -32,9 +32,14 @@ open class CandleItem: TaskItem {
 }
 
 open class ExtendCandleItem: CandleItem {
+    var unit: String? = null
     var convertingPriceUnit: String? = null
 
     constructor(type: PostType, marketId: String?, count: Int) : super(type, marketId, count)
+
+    constructor(type: PostType, unit: String, marketId: String?, count: Int) : super(type, marketId, count) {
+        this.unit = unit
+    }
 
     constructor(
         type: PostType,

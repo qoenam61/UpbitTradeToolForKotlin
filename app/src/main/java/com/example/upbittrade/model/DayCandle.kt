@@ -17,13 +17,13 @@ class DayCandle: Candle() {
     var convertedTradePrice: Number? = null
 
 
-    fun getCenterPrice(): Double {
-        val high = highPrice?.toDouble()
-        val close = tradePrice?.toDouble()
-        val open = openingPrice?.toDouble()
-        val low = lowPrice?.toDouble()
-        return (high!! + close!! + open!! + low!!) / 4
-    }
+//    override fun getCenterPrice(): Double {
+//        val high = highPrice?.toDouble()
+//        val close = tradePrice?.toDouble()
+//        val open = openingPrice?.toDouble()
+//        val low = lowPrice?.toDouble()
+//        return (high!! + close!! + open!! + low!!) / 4
+//    }
 
     private fun getChangedVolumeRate(): Double {
         val prevRate: Double =

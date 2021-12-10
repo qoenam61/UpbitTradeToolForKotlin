@@ -11,8 +11,9 @@ interface UpbitApi {
     @GET("/v1/market/all")
     fun getMarketInfo(@Query("isDetails") isDetails: Boolean): Call<List<MarketInfo?>?>?
 
-    @GET("/v1/candles/minutes/1")
-    fun get1MinCandleInfo(
+    @GET("/v1/candles/minutes/{unit}")
+    fun getMinCandleInfo(
+        @Path("unit") unit: String?,
         @Query("market") marketId: String?,
         @Query("to") to: String?,
         @Query("count") count: Int

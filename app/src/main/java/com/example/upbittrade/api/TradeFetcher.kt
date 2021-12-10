@@ -77,6 +77,60 @@ class TradeFetcher {
         return result
     }
 
+    fun getMinCandleInfo(item: ExtendCandleItem): LiveData<List<Candle>> {
+        val unit = item.unit
+        val marketId = item.marketId
+        val to = item.to
+        val count = item.count
+        val convertingPriceUnit = item.convertingPriceUnit
+
+        val result = MutableLiveData<List<Candle>>()
+        val call: Call<List<Candle?>?>? = tradeInfoRetrofit?.getUpBitApi()?.getMinCandleInfo(unit, marketId, to, count)
+
+        call!!.enqueue(object : Callback<List<Candle?>?> {
+            override fun onResponse(
+                call: Call<List<Candle?>?>,
+                response: Response<List<Candle?>?>
+            ) {
+                if (response.body() != null) {
+                    result.value = response.body() as List<Candle>
+                    Log.d(TAG, "[DEBUG] getMinCandleInfo onResponse: ${response.body()}")
+                }
+                if (!response.isSuccessful) {
+                    try {
+                        Log.d(TAG, "[DEBUG] getMinCandleInfo errorBody: ${response.errorBody()}")
+//                        val jObjError = JSONObject(response.errorBody()!!.string())
+                        Log.w(
+                            TAG,
+                            "[DEBUG] getMinCandleInfo onResponse - toString: " + call.toString()
+                                    + " code: " + response.code()
+                                    + " headers: " + response.headers()
+                                    + " raw: " + response.raw()
+//                                    + " jObjError: " + (jObjError.names() ?: "NULL")
+                        )
+//                        if (mActivity != null) {
+//                            mActivity.runOnUiThread(Runnable {
+//                                Toast.makeText(
+//                                    mActivity,
+//                                    jObjError.toString(),
+//                                    Toast.LENGTH_LONG
+//                                ).show()
+//                            })
+//                        }
+                    } catch (e: JSONException) {
+                        e.printStackTrace()
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<List<Candle?>?>, t: Throwable) {
+                Log.d(TAG, "onFailure: $t")
+            }
+        })
+        return result
+    }
 
     fun getDayCandleInfo(item: ExtendCandleItem): LiveData<List<DayCandle>> {
         val marketId = item.marketId

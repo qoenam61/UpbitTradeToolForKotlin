@@ -69,7 +69,12 @@ class BackgroundProcessor : Thread {
                 }
                 POST_ORDER_INFO -> {}
                 DELETE_ORDER_INFO -> {}
-                MIN_CANDLE_INFO -> {}
+                MIN_CANDLE_INFO -> {
+                    if (viewModel is TradeViewModel) {
+                        Log.d(TAG, "[DEBUG] handleMessage: MIN_CANDLE_INFO")
+                        (viewModel as TradeViewModel).searchMinCandleInfo.value = (item as ExtendCandleItem)
+                    }
+                }
                 DAY_CANDLE_INFO -> {
                     if (viewModel is TradeViewModel) {
                         Log.d(TAG, "[DEBUG] handleMessage: DAY_CANDLE_INFO")
@@ -94,11 +99,10 @@ class BackgroundProcessor : Thread {
                 val taskItem = iterator.next()
                 Log.d(TAG, "[DEBUG] MyHandler - $taskItem")
                 when(taskItem.type) {
-                    MARKETS_INFO -> {
+                    MARKETS_INFO, MIN_CANDLE_INFO  -> {
                         sendMessage(taskItem)
                         poll()
-                    }
-                    else -> {
+                    } else -> {
                         sendMessage(taskItem)
                     }
                 }

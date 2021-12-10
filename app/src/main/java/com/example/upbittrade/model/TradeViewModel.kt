@@ -23,7 +23,7 @@ class TradeViewModel: AndroidViewModel {
 
     val searchMarketsInfo = MutableLiveData<Boolean>()
     private val searchTickerInfo = MutableLiveData<Boolean>()
-    val searchMinCandleInfo = MutableLiveData<CandleItem>()
+    val searchMinCandleInfo = MutableLiveData<ExtendCandleItem>()
     val searchDayCandleInfo = MutableLiveData<ExtendCandleItem>()
     val searchWeekCandleInfo = MutableLiveData<CandleItem>()
     val searchMonthCandleInfo = MutableLiveData<CandleItem>()
@@ -34,6 +34,10 @@ class TradeViewModel: AndroidViewModel {
 
     var resultDayCandleInfo: LiveData<List<DayCandle>>? =  Transformations.switchMap(searchDayCandleInfo) {
         input -> upbitFetcher?.getDayCandleInfo(input)
+    }
+
+    var resultMinCandleInfo: LiveData<List<Candle>>? = Transformations.switchMap(searchMinCandleInfo) {
+        input -> upbitFetcher?.getMinCandleInfo(input)
     }
 
     private class CandleInput {

@@ -12,14 +12,14 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.example.upbittrade.R
-import com.example.upbittrade.activity.TradePagerActivity.PostType.DAY_CANDLE_INFO
-import com.example.upbittrade.activity.TradePagerActivity.PostType.MARKETS_INFO
+import com.example.upbittrade.activity.TradePagerActivity.PostType.*
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.TaskItem
 import com.example.upbittrade.fragment.TradeFragment.UserParam.baseTime
 import com.example.upbittrade.fragment.TradeFragment.UserParam.limitAmount
 import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdRate
 import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdTick
+import com.example.upbittrade.model.Candle
 import com.example.upbittrade.model.DayCandle
 import com.example.upbittrade.model.MarketInfo
 import com.example.upbittrade.model.TradeViewModel
@@ -151,12 +151,22 @@ class TradeFragment(private val viewModel: TradeViewModel): Fragment() {
                     && marketInfo.marketWarning?.contains("CAUTION") == false) {
                     marketMapInfo[name] = marketInfo
                     Log.d(TAG, "[DEBUG] resultMarketsInfo: $name")
-                    processor?.registerProcess(ExtendCandleItem(DAY_CANDLE_INFO, name, 1))
+                    processor?.registerProcess(ExtendCandleItem(MIN_CANDLE_INFO, "60", name, 24 * 7))
                 }
             }
-
-
         }
+
+        viewModel.resultMinCandleInfo?.observe(viewCycleOwner) {
+            minCandlesInfo ->
+            val iterator = minCandlesInfo.iterator()
+            while (iterator.hasNext()) {
+                val minCandle: Candle = iterator.next()
+                val name = minCandle.market.toString()
+
+                Log.d(TAG, "[DEBUG] resultMinCandleInfo: $name rate: ${minCandle.getTradePrice().div(1000000).toInt()}")
+            }
+        }
+
 
         viewModel.resultDayCandleInfo?.observe(viewCycleOwner) {
             dayCandleInfo ->
