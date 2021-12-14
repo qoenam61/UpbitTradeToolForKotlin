@@ -4,11 +4,13 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.TaskItem
 import com.example.upbittrade.model.Candle
 import com.example.upbittrade.model.DayCandle
 import com.example.upbittrade.model.MarketInfo
+import com.example.upbittrade.model.TradeInfo
 import com.google.gson.JsonParser
 import org.json.JSONException
 import org.json.JSONObject
@@ -179,6 +181,57 @@ class TradeFetcher {
                 }            }
 
             override fun onFailure(call: Call<List<DayCandle?>?>, t: Throwable) {
+                Log.d(TAG, "onFailure: $t")
+            }
+        })
+        return result
+    }
+
+    fun getTradeInfo(item: CandleItem): LiveData<List<TradeInfo>> {
+        val marketId = item.marketId
+        val count = item.count
+
+        val result = MutableLiveData<List<TradeInfo>>()
+        val call: Call<List<TradeInfo?>?>? = tradeInfoRetrofit?.getUpBitApi()?.getTradeInfo(marketId, count)
+
+        call!!.enqueue(object : Callback<List<TradeInfo?>?> {
+            override fun onResponse(
+                call: Call<List<TradeInfo?>?>,
+                response: Response<List<TradeInfo?>?>
+            ) {
+                if (response.body() != null) {
+                    result.value = response.body() as List<TradeInfo>
+                    Log.d(TAG, "[DEBUG] getTradeInfo onResponse: ${response.body()}")
+                }
+                if (!response.isSuccessful) {
+                    try {
+                        Log.d(TAG, "[DEBUG] getTradeInfo errorBody: ${response.errorBody()}")
+//                        val jObjError = JSONObject(response.errorBody()!!.string())
+                        Log.w(
+                            TAG,
+                            "[DEBUG] getTradeInfo onResponse - toString: " + call.toString()
+                                    + " code: " + response.code()
+                                    + " headers: " + response.headers()
+                                    + " raw: " + response.raw()
+//                                    + " jObjError: " + (jObjError.names() ?: "NULL")
+                        )
+//                        if (mActivity != null) {
+//                            mActivity.runOnUiThread(Runnable {
+//                                Toast.makeText(
+//                                    mActivity,
+//                                    jObjError.toString(),
+//                                    Toast.LENGTH_LONG
+//                                ).show()
+//                            })
+//                        }
+                    } catch (e: JSONException) {
+                        e.printStackTrace()
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    }
+                }            }
+
+            override fun onFailure(call: Call<List<TradeInfo?>?>, t: Throwable) {
                 Log.d(TAG, "onFailure: $t")
             }
         })

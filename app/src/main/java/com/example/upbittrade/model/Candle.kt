@@ -8,7 +8,7 @@ import kotlin.math.min
 
 open class Candle: Serializable, Comparable<Candle> {
     @SerializedName("market")
-    var market: String? = null
+    var marketId: String? = null
 
     @SerializedName("candle_date_time_utc")
     var candleDateTimeUtc: String? = null
@@ -40,14 +40,9 @@ open class Candle: Serializable, Comparable<Candle> {
     @SerializedName("unit")
     var unit: Int? = null
 
-//    open fun getCenterPrice(): Double? {
-//        var result = tradePrice?.toDouble()
-//        highPrice?.toDouble()?.let { result?.plus(it) }
-//        lowPrice?.toDouble()?.let { result?.plus(it) }
-//        openingPrice?.toDouble()?.let { result?.plus(it) }
-//
-//        return result?.div(4)
-//    }
+    fun get1minAverageTradePrice(totalTime: Int): Double {
+        return candleAccTradePrice!!.toDouble() / totalTime
+    }
 
     fun getCenterPrice(): Double {
         val high = highPrice?.toDouble()
@@ -57,30 +52,7 @@ open class Candle: Serializable, Comparable<Candle> {
         return (high!! + close!! + open!! + low!!) / 4
     }
 
-/*    fun getTradePrice() {
-        var total: Double? = lowPrice?.toDouble()?.let { highPrice?.toDouble()?.minus(it) }
-
-        var maxValue: Double? = tradePrice?.toDouble()?.let { openingPrice?.toDouble()?.let { it1 ->
-            max(it,it1)
-        } }
-
-        var minValue: Double? = tradePrice?.toDouble()?.let { openingPrice?.toDouble()?.let { it1 ->
-            min(it,it1)
-        } }
-
-        var upper: Double? = maxValue?.let { highPrice?.toDouble()?.minus(it) }
-        var lower: Double? = lowPrice?.toDouble()?.let { minValue?.minus(it) }
-
-        Log.d("TAG",
-            "[DEBUG] getTradePrice - highPrice: $highPrice lowPrice: $lowPrice tradePrice: $tradePrice openingPrice: $openingPrice"
-        )
-        Log.d("TAG",
-            "[DEBUG] getTradePrice - total: $total maxValue: $maxValue minValue: $minValue upper: $upper lower: $lower"
-        )
-
-    }*/
-
-    fun getTradePrice(): Double {
+    fun getTradeVolumePrice(): Double {
         var total: Double = highPrice!!.toDouble() - lowPrice!!.toDouble()
         var upper: Double = highPrice!!.toDouble() - max(tradePrice!!.toDouble(), openingPrice!!.toDouble())
         var lower: Double = min(tradePrice!!.toDouble(), openingPrice!!.toDouble()) - lowPrice!!.toDouble()

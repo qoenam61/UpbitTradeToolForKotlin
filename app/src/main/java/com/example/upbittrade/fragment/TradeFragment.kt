@@ -13,18 +13,17 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity.PostType.*
+import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.TaskItem
 import com.example.upbittrade.fragment.TradeFragment.UserParam.baseTime
 import com.example.upbittrade.fragment.TradeFragment.UserParam.limitAmount
 import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdRate
 import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdTick
-import com.example.upbittrade.model.Candle
-import com.example.upbittrade.model.DayCandle
-import com.example.upbittrade.model.MarketInfo
-import com.example.upbittrade.model.TradeViewModel
+import com.example.upbittrade.model.*
 import com.example.upbittrade.utils.BackgroundProcessor
 import java.text.DecimalFormat
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -36,8 +35,14 @@ class TradeFragment(private val viewModel: TradeViewModel): Fragment() {
         private const val BASE_TIME = 3.0
         private const val THRESHOLD_RATE = 0.03
         private const val THRESHOLD_TICK = 1500
+        private const val UNIT_MIN_CANDLE = "60"
+        private const val UNIT_MONITOR_TIME = 60 * 1000
+
         private var processor: BackgroundProcessor? = null
         private val marketMapInfo = HashMap<String, MarketInfo>()
+        private val minCandleMapInfo = HashMap<String, Candle>()
+        private val tradeMapInfo = HashMap<String, List<TradeInfo>>()
+
         private val dayCandleListInfo = ArrayList<DayCandle>()
         private val dayCandleMapInfo = HashMap<String, DayCandle>()
     }
@@ -46,6 +51,7 @@ class TradeFragment(private val viewModel: TradeViewModel): Fragment() {
         var nonZeroFormat = DecimalFormat("###,###,###,###")
         var zeroFormat = DecimalFormat("###,###,###,###.#")
         var percentFormat = DecimalFormat("###.##" + "%")
+        var timeFormat = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
     }
 
     object UserParam {
@@ -130,7 +136,7 @@ class TradeFragment(private val viewModel: TradeViewModel): Fragment() {
             monitorTickEditText.clearFocus()
 
             val inputMethodManager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            inputMethodManager!!.hideSoftInputFromWindow(buyingPriceEditText.windowToken, 0)
+            inputMethodManager.hideSoftInputFromWindow(buyingPriceEditText.windowToken, 0)
         }
 
         return view
@@ -151,27 +157,32 @@ class TradeFragment(private val viewModel: TradeViewModel): Fragment() {
                     && marketInfo.marketWarning?.contains("CAUTION") == false) {
                     marketMapInfo[name] = marketInfo
                     Log.d(TAG, "[DEBUG] resultMarketsInfo: $name")
-                    processor?.registerProcess(ExtendCandleItem(MIN_CANDLE_INFO, "60", name, 24 * 7))
+                    processor?.registerProcess(ExtendCandleItem(MIN_CANDLE_INFO, UNIT_MIN_CANDLE, name, 1))
                 }
             }
         }
 
         viewModel.resultMinCandleInfo?.observe(viewCycleOwner) {
             minCandlesInfo ->
-            val iterator = minCandlesInfo.iterator()
+            val iterator = minCandlesInfo.reversed().iterator()
+            Format.timeFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
+
+            var marketId: String? = null
             while (iterator.hasNext()) {
                 val minCandle: Candle = iterator.next()
-                val name = minCandle.market.toString()
-
-                Log.d(TAG, "[DEBUG] resultMinCandleInfo: $name rate: ${minCandle.getTradePrice().div(1000000).toInt()}")
+                marketId = minCandle.marketId.toString()
+                minCandleMapInfo[marketId] = minCandle
+                Log.d(TAG, "[DEBUG] resultMinCandleInfo: $marketId " +
+                        "time: ${Format.timeFormat.format(minCandle.timestamp)} " +
+                        "get1minAverageTradePrice: ${minCandle.get1minAverageTradePrice(UNIT_MIN_CANDLE.toInt()).div(1000000).toInt()}")
             }
+            registerTradeInfo(minCandleMapInfo)
         }
 
-
         viewModel.resultDayCandleInfo?.observe(viewCycleOwner) {
-            dayCandleInfo ->
-            val dayCandle: DayCandle = dayCandleInfo[0]
-            val name = dayCandle.market.toString()
+            dayCandlesInfo ->
+            val dayCandle: DayCandle = dayCandlesInfo[0]
+            val name = dayCandle.marketId.toString()
             dayCandleMapInfo[name] = dayCandle
 
             val tempDayCandleList = ArrayList<DayCandle>(dayCandleMapInfo.values)
@@ -179,16 +190,22 @@ class TradeFragment(private val viewModel: TradeViewModel): Fragment() {
                 it.getCenterPrice()
             }
 
-            val iterator = dayCandleInfo.iterator()
+            val iterator = dayCandlesInfo.iterator()
             while (iterator.hasNext()) {
                 val dayCandle: DayCandle = iterator.next()
-                val name = dayCandle.market.toString()
+                val name = dayCandle.marketId.toString()
                 dayCandleMapInfo[name] = dayCandle
-                Log.d(TAG, "[DEBUG] resultDayCandleInfo: $name rate: ${dayCandle.candleAccTradePrice?.toDouble()?.div(1000000)?.toInt()}")
+                Log.d(TAG, "[DEBUG] resultDayCandleInfo: $name " +
+                        "time: ${Format.timeFormat.format(dayCandle.timestamp)} " +
+                        "rate: ${dayCandle.candleAccTradePrice?.toDouble()?.div(1000000)?.toInt()}")
             }
-            Log.d(TAG, "[DEBUG] resultDayCandleInfo end:")
-
         }
+
+        viewModel.resultTradeInfo?.observe(viewCycleOwner) {
+            tradesInfo ->
+            makeTradeMapInfo(tradesInfo)
+        }
+
     }
 
     override fun onResume() {
@@ -201,11 +218,50 @@ class TradeFragment(private val viewModel: TradeViewModel): Fragment() {
     override fun onPause() {
         super.onPause()
         Log.d(TAG, "[DEBUG] onPause: ")
-        processor?.interrupt()
+        processor?.release()
     }
 
     override fun onStop() {
         super.onStop()
         Log.d(TAG, "[DEBUG] onStop: ")
+    }
+
+    private fun registerTradeInfo(maps: HashMap<String, Candle>) {
+        val iterator = maps.values.iterator()
+        while(iterator.hasNext()) {
+            val tradeInfo = iterator.next()
+            processor?.registerProcess(CandleItem(TRADE_INFO, tradeInfo.marketId, 3000))
+        }
+    }
+
+    private fun makeTradeMapInfo(tradesInfoList: List<TradeInfo>) {
+        var marketId: String = tradesInfoList.first().marketId.toString()
+
+
+        var tempInfo: List<TradeInfo>? = null
+
+        if (tradeMapInfo[marketId] == null) {
+            Log.d(TAG, "[DEBUG] makeTradeMapInfo: null")
+            tempInfo = tradesInfoList.filter { tradeInfo ->
+                tradesInfoList.first().timestamp!!.toLong() - tradeInfo.timestamp!!.toLong() < UNIT_MONITOR_TIME
+            }.reversed()
+        } else {
+            Log.d(TAG, "[DEBUG] makeTradeMapInfo: else")
+            val addList = tradesInfoList.filter {tradeInfo ->
+                tradeMapInfo[marketId]!!.last().sequentialId < tradeInfo.sequentialId}.reversed()
+            val combineInfo = tradeMapInfo[marketId]!! + addList
+
+            val iterator: Iterator<TradeInfo> = combineInfo.listIterator()
+            while (iterator.hasNext()) {
+                val tradeInfo: TradeInfo = iterator.next()
+                marketId = tradeInfo.marketId.toString()
+                Log.d(TAG, "[DEBUG] makeTradeMapInfo marketId: $marketId " +
+                        "time: ${Format.timeFormat.format(tradeInfo.timestamp)}")
+            }
+
+            tempInfo = combineInfo.filter { tradeInfo ->
+                tradesInfoList.first().timestamp!!.toLong() - tradeInfo.timestamp!!.toLong() < UNIT_MONITOR_TIME }
+        }
+        tradeMapInfo[marketId] = tempInfo
     }
 }

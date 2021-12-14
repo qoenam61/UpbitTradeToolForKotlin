@@ -7,6 +7,7 @@ import android.os.SystemClock
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import com.example.upbittrade.activity.TradePagerActivity.PostType.*
+import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.TaskItem
 import com.example.upbittrade.model.TradeViewModel
@@ -86,7 +87,12 @@ class BackgroundProcessor : Thread {
                 ACCOUNTS_INFO -> {}
                 CHANCE_INFO -> {}
                 TICKER_INFO -> {}
-                TRADE_INFO -> {}
+                TRADE_INFO -> {
+                    if (viewModel is TradeViewModel) {
+                        Log.d(TAG, "[DEBUG] handleMessage: TRADE_INFO")
+                        (viewModel as TradeViewModel).searchTradeInfo.value = (item as CandleItem)
+                    }
+                }
                 SEARCH_ORDER_INFO -> {}
             }
         }
@@ -127,6 +133,21 @@ class BackgroundProcessor : Thread {
     }
 
     fun registerProcess(item: TaskItem) {
+        val iterator = TaskList.iterator()
+        while (iterator.hasNext()) {
+            val list = iterator.next()
+            if (list.type == item.type && list.marketId.equals(item.marketId)) {
+                Log.d(TAG, "[DEBUG] registerProcess type: ${item.type} duplicated id: " + item.marketId)
+                return
+            }
+        }
+
+        Log.d(TAG, "[DEBUG] registerProcess type: ${item.type} offer id: " + item.marketId)
         TaskList.offer(item)
+    }
+
+    fun release() {
+        interrupt()
+        TaskList.clear()
     }
 }

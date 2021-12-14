@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 class TradeInfo {
     @SerializedName("market")
-    var market: String? = null
+    var marketId: String? = null
 
     @SerializedName("trade_date_utc")
     var tradeDateUtc: String? = null

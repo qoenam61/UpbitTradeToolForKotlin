@@ -2,7 +2,9 @@ package com.example.upbittrade.api
 
 import com.example.upbittrade.model.*
 import retrofit2.Call
-import retrofit2.http.*
+import retrofit2.http.GET
+import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface UpbitApi {
     @GET("/v1/accounts")
@@ -40,4 +42,10 @@ interface UpbitApi {
         @Query("to") to: String?,
         @Query("count") count: Int
     ): Call<List<MonthCandle?>?>?
+
+    @GET("/v1/trades/ticks")
+    fun getTradeInfo(
+        @Query("market") marketId: String?,
+        @Query("count") count: Int
+    ): Call<List<TradeInfo?>?>?
 }
