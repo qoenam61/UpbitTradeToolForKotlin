@@ -39,8 +39,6 @@ class BackgroundProcessor : Thread {
             if (!TaskList.isNullOrEmpty()) {
                 taskList = TaskList
                 ThreadProcess.executor.execute(taskList)
-
-                Log.w(TAG, "[DEBUG] sendMessage end")
             }
 
             try {
@@ -60,11 +58,11 @@ class BackgroundProcessor : Thread {
         override fun handleMessage(msg: Message) {
             super.handleMessage(msg)
             val item: TaskItem = msg.data.getSerializable("TaskItem") as TaskItem
-            Log.d(TAG, "[DEBUG] MyHandler - $item")
+            Log.d(TAG, "MyHandler - $item")
             when(item.type) {
                 MARKETS_INFO -> {
                     if (viewModel is TradeViewModel) {
-                        Log.d(TAG, "[DEBUG] handleMessage: MARKETS_INFO")
+                        Log.d(TAG, "handleMessage: MARKETS_INFO")
                         (viewModel as TradeViewModel).searchMarketsInfo.value = true
                     }
                 }
@@ -72,13 +70,13 @@ class BackgroundProcessor : Thread {
                 DELETE_ORDER_INFO -> {}
                 MIN_CANDLE_INFO -> {
                     if (viewModel is TradeViewModel) {
-                        Log.d(TAG, "[DEBUG] handleMessage: MIN_CANDLE_INFO")
+                        Log.d(TAG, "handleMessage: MIN_CANDLE_INFO")
                         (viewModel as TradeViewModel).searchMinCandleInfo.value = (item as ExtendCandleItem)
                     }
                 }
                 DAY_CANDLE_INFO -> {
                     if (viewModel is TradeViewModel) {
-                        Log.d(TAG, "[DEBUG] handleMessage: DAY_CANDLE_INFO")
+                        Log.d(TAG, "handleMessage: DAY_CANDLE_INFO")
                         (viewModel as TradeViewModel).searchDayCandleInfo.value = (item as ExtendCandleItem)
                     }
                 }
@@ -89,7 +87,7 @@ class BackgroundProcessor : Thread {
                 TICKER_INFO -> {}
                 TRADE_INFO -> {
                     if (viewModel is TradeViewModel) {
-                        Log.d(TAG, "[DEBUG] handleMessage: TRADE_INFO")
+                        Log.d(TAG, "handleMessage: TRADE_INFO")
                         (viewModel as TradeViewModel).searchTradeInfo.value = (item as CandleItem)
                     }
                 }
@@ -103,7 +101,7 @@ class BackgroundProcessor : Thread {
             val iterator = iterator()
             while (iterator.hasNext()) {
                 val taskItem = iterator.next()
-                Log.d(TAG, "[DEBUG] MyHandler - $taskItem")
+                Log.d(TAG, "MyHandler - $taskItem")
                 when(taskItem.type) {
                     MARKETS_INFO, MIN_CANDLE_INFO  -> {
                         sendMessage(taskItem)
@@ -121,7 +119,7 @@ class BackgroundProcessor : Thread {
         }
 
         private fun sendMessage(item: TaskItem) {
-            Log.d(TAG, "[DEBUG] sendMessage - $item")
+            Log.d(TAG, "sendMessage - $item")
 
             val bundle = Bundle()
             bundle.putSerializable("TaskItem", item)
@@ -137,12 +135,12 @@ class BackgroundProcessor : Thread {
         while (iterator.hasNext()) {
             val list = iterator.next()
             if (list.type == item.type && list.marketId.equals(item.marketId)) {
-                Log.d(TAG, "[DEBUG] registerProcess type: ${item.type} duplicated id: " + item.marketId)
+                Log.d(TAG, "registerProcess type: ${item.type} duplicated id: " + item.marketId)
                 return
             }
         }
 
-        Log.d(TAG, "[DEBUG] registerProcess type: ${item.type} offer id: " + item.marketId)
+        Log.d(TAG, "registerProcess type: ${item.type} offer id: " + item.marketId)
         TaskList.offer(item)
     }
 

@@ -8,6 +8,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
+import com.example.upbittrade.activity.LoginActivity.Companion.ACCESS_KEY
+import com.example.upbittrade.activity.LoginActivity.Companion.SECRET_KEY
 import com.example.upbittrade.activity.TradePagerActivity
 import com.example.upbittrade.api.UpbitFetcher
 import com.example.upbittrade.fragment.LoginFragment
@@ -29,9 +31,9 @@ open class DefaultViewModel(application: Application): AndroidViewModel(applicat
         override fun onConnection(isConnect: Boolean) {
             Log.d(TAG.toString(), "[DEBUG] onConnection: $isConnect")
             if (isConnect) {
-                val preferenceUtil = application?.let { PreferenceUtil(it) }
-                preferenceUtil?.setString(preferenceUtil.ACCESS_KEY, LoginFragment.KeyObject.accessKey!!)
-                preferenceUtil?.setString(preferenceUtil.SECRET_KEY, LoginFragment.KeyObject.secretKey!!)
+                val preferenceUtil = PreferenceUtil(application)
+                preferenceUtil.setString(PreferenceUtil.ACCESS_KEY, ACCESS_KEY!!)
+                preferenceUtil.setString(PreferenceUtil.SECRET_KEY, SECRET_KEY!!)
 
                 val context = application.baseContext
                 val intent = Intent(context, TradePagerActivity::class.java)

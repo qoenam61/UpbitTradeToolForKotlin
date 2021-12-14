@@ -96,15 +96,15 @@ class TradeFetcher {
             ) {
                 if (response.body() != null) {
                     result.value = response.body() as List<Candle>
-                    Log.d(TAG, "[DEBUG] getMinCandleInfo onResponse: ${response.body()}")
+                    Log.d(TAG, "getMinCandleInfo onResponse: ${response.body()}")
                 }
                 if (!response.isSuccessful) {
                     try {
-                        Log.d(TAG, "[DEBUG] getMinCandleInfo errorBody: ${response.errorBody()}")
+                        Log.d(TAG, "getMinCandleInfo errorBody: ${response.errorBody()}")
 //                        val jObjError = JSONObject(response.errorBody()!!.string())
                         Log.w(
                             TAG,
-                            "[DEBUG] getMinCandleInfo onResponse - toString: " + call.toString()
+                            "getMinCandleInfo onResponse - toString: " + call.toString()
                                     + " code: " + response.code()
                                     + " headers: " + response.headers()
                                     + " raw: " + response.raw()
@@ -150,15 +150,15 @@ class TradeFetcher {
             ) {
                 if (response.body() != null) {
                     result.value = response.body() as List<DayCandle>
-                    Log.d(TAG, "[DEBUG] getDayCandleInfo onResponse: ${response.body()}")
+                    Log.d(TAG, "getDayCandleInfo onResponse: ${response.body()}")
                 }
                 if (!response.isSuccessful) {
                     try {
-                        Log.d(TAG, "[DEBUG] getDayCandleInfo errorBody: ${response.errorBody()}")
+                        Log.d(TAG, "getDayCandleInfo errorBody: ${response.errorBody()}")
 //                        val jObjError = JSONObject(response.errorBody()!!.string())
                         Log.w(
                             TAG,
-                            "[DEBUG] getDayCandleInfo onResponse - toString: " + call.toString()
+                            "getDayCandleInfo onResponse - toString: " + call.toString()
                                     + " code: " + response.code()
                                     + " headers: " + response.headers()
                                     + " raw: " + response.raw()
@@ -201,15 +201,15 @@ class TradeFetcher {
             ) {
                 if (response.body() != null) {
                     result.value = response.body() as List<TradeInfo>
-                    Log.d(TAG, "[DEBUG] getTradeInfo onResponse: ${response.body()}")
+                    Log.d(TAG, "getTradeInfo onResponse: ${response.body()}")
                 }
                 if (!response.isSuccessful) {
                     try {
-                        Log.d(TAG, "[DEBUG] getTradeInfo errorBody: ${response.errorBody()}")
+                        Log.d(TAG, "getTradeInfo errorBody: ${response.errorBody()}")
 //                        val jObjError = JSONObject(response.errorBody()!!.string())
                         Log.w(
                             TAG,
-                            "[DEBUG] getTradeInfo onResponse - toString: " + call.toString()
+                            "getTradeInfo onResponse - toString: " + call.toString()
                                     + " code: " + response.code()
                                     + " headers: " + response.headers()
                                     + " raw: " + response.raw()

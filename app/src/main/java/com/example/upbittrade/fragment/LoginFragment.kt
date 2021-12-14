@@ -1,5 +1,7 @@
 package com.example.upbittrade.fragment
 
+import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -12,25 +14,37 @@ import android.widget.EditText
 import androidx.fragment.app.Fragment
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.LoginActivity
+import com.example.upbittrade.activity.LoginActivity.Companion.ACCESS_KEY
+import com.example.upbittrade.activity.LoginActivity.Companion.SECRET_KEY
 import com.example.upbittrade.model.DefaultViewModel
 import com.example.upbittrade.utils.PreferenceUtil
 
-class LoginFragment(private val viewModel: DefaultViewModel): Fragment() {
-    object TAG {
-        const val name = "LoginFragment"
+class LoginFragment: Fragment() {
+
+//    fun newInstance(context: Context): Fragment {
+//        val fragment = LoginFragment()
+//        val bundle = Bundle(2)
+//        bundle.putString(PreferenceUtil.ACCESS_KEY, accessKey)
+//        bundle.putString(PreferenceUtil.SECRET_KEY, secretKey)
+//        return fragment
+//    }
+
+    companion object {
+        const val TAG = "LoginFragment"
+        lateinit var mainActivity: LoginActivity
+        var viewModel: DefaultViewModel? = null
     }
 
-    object KeyObject {
-        var accessKey : String? = null
-        var secretKey : String? = null
-    }
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        ACCESS_KEY = arguments?.getString(PreferenceUtil.ACCESS_KEY)
+//        SECRET_KEY = arguments?.getString(PreferenceUtil.SECRET_KEY)
+//    }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val preferenceUtil = activity?.let { PreferenceUtil(it) }
-        KeyObject.accessKey = preferenceUtil?.getString(preferenceUtil.ACCESS_KEY, "")
-        KeyObject.secretKey = preferenceUtil?.getString(preferenceUtil.SECRET_KEY, "")
+    override fun onAttach(activity: Activity) {
+        super.onAttach(activity)
+        mainActivity = activity as LoginActivity
+        viewModel = DefaultViewModel(application = activity.application)
     }
 
     override fun onCreateView(
@@ -38,16 +52,15 @@ class LoginFragment(private val viewModel: DefaultViewModel): Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
         val view = inflater.inflate(R.layout.fragment_login, container, false)
 
-        if (KeyObject.accessKey!!.isNotEmpty()) {
+        if (!ACCESS_KEY.isNullOrEmpty()) {
             val accessKey = view.findViewById<EditText>(R.id.edit_access_key)
-            accessKey.setText(KeyObject.accessKey)
+            accessKey.setText(ACCESS_KEY)
         }
-        if (KeyObject.secretKey!!.isNotEmpty()) {
+        if (!SECRET_KEY.isNullOrEmpty()) {
             val secretKey = view.findViewById<EditText>(R.id.edit_secret_key)
-            secretKey.setText(KeyObject.secretKey)
+            secretKey.setText(SECRET_KEY)
         }
 
         val loginButton = view.findViewById<Button>(R.id.btn_login)
@@ -61,7 +74,7 @@ class LoginFragment(private val viewModel: DefaultViewModel): Fragment() {
     override fun onStart() {
         super.onStart()
         viewModel?.resultAccountsInfo?.observe(viewLifecycleOwner) {
-            Log.d(TAG.toString(), "onStart: ")
+            Log.d(TAG, "onStart: ")
         }
     }
 
@@ -69,18 +82,20 @@ class LoginFragment(private val viewModel: DefaultViewModel): Fragment() {
         val accessKey = view.findViewById<EditText>(R.id.edit_access_key)
         val secretKey = view.findViewById<EditText>(R.id.edit_secret_key)
 
-        KeyObject.accessKey = accessKey.text.toString()
-        KeyObject.secretKey = secretKey.text.toString()
-        Log.d(LoginActivity.TAG.toString(), "onLoginButton - accessKey: " + KeyObject.accessKey + " secretKey: " + KeyObject.secretKey)
+        ACCESS_KEY = accessKey.text.toString()
+        SECRET_KEY = secretKey.text.toString()
+        Log.d(LoginActivity.TAG.toString(),
+            "onLoginButton - accessKey: $ACCESS_KEY secretKey: $SECRET_KEY"
+        )
 
-        if (KeyObject.accessKey.isNullOrEmpty() || KeyObject.secretKey.isNullOrEmpty()) {
+        if (ACCESS_KEY.isNullOrEmpty() || SECRET_KEY.isNullOrEmpty()) {
             Log.d(TAG.toString(), "onLoginButton: null")
         } else {
-            viewModel.setKey(KeyObject.accessKey!!, KeyObject.secretKey!!)
-            viewModel.setSearchAccountInfo(true)
+            viewModel?.setKey(ACCESS_KEY!!, SECRET_KEY!!)
+            viewModel?.setSearchAccountInfo(true)
         }
 
         val inputMethodManager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager!!.hideSoftInputFromWindow(accessKey.windowToken, 0)
+        inputMethodManager.hideSoftInputFromWindow(accessKey.windowToken, 0)
     }
 }

@@ -32,4 +32,10 @@ class TradeInfo {
 
     @SerializedName("sequential_id")
     var sequentialId: Long = 0
+
+    var accPriceVolume: Double = 0.0
+
+    fun getPriceVolume(): Double {
+        return tradePrice!!.toDouble() * tradeVolume!!.toDouble()
+    }
 }

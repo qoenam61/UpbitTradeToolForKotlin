@@ -1,12 +1,17 @@
 package com.example.upbittrade.utils
 
+import android.app.Activity
+import android.app.Application
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.SharedPreferences
 
 @Suppress("PropertyName")
 class PreferenceUtil(context: Context) {
-    val ACCESS_KEY: String = "access_key"
-    val SECRET_KEY: String = "secret_key"
+    companion object {
+        const val ACCESS_KEY: String = "access_key"
+        const val SECRET_KEY: String = "secret_key"
+    }
 
     private val prefs: SharedPreferences =
         context.getSharedPreferences("upbit_trade_key", Context.MODE_PRIVATE)
