@@ -1,7 +1,6 @@
 package com.example.upbittrade.fragment
 
 import android.app.Activity
-import android.app.Application
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -13,9 +12,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.AndroidViewModel
 import com.example.upbittrade.R
-import com.example.upbittrade.activity.LoginActivity
 import com.example.upbittrade.activity.TradePagerActivity
 import com.example.upbittrade.activity.TradePagerActivity.PostType.*
 import com.example.upbittrade.data.CandleItem
@@ -161,12 +158,13 @@ class TradeFragment: Fragment() {
             val iterator = marketsInfo.iterator()
             while (iterator.hasNext()) {
                 val marketInfo: MarketInfo = iterator.next()
-                val name = marketInfo.market
-                if (name?.contains("KRW-") == true
+                val marketId = marketInfo.market
+                if (marketId?.contains("KRW-") == true
                     && marketInfo.marketWarning?.contains("CAUTION") == false) {
-                    marketMapInfo[name] = marketInfo
-                    Log.d(TAG, "[DEBUG] resultMarketsInfo: $name")
-                    processor?.registerProcess(ExtendCandleItem(MIN_CANDLE_INFO, UNIT_MIN_CANDLE, name, 1))
+                    marketMapInfo[marketId] = marketInfo
+                    Log.d(TAG, "[DEBUG] resultMarketsInfo: $marketId")
+                    processor?.registerProcess(ExtendCandleItem(MIN_CANDLE_INFO, UNIT_MIN_CANDLE, marketId, 1))
+                    processor?.registerProcess(CandleItem(TRADE_INFO, marketId, 3000))
                 }
             }
         }
@@ -185,7 +183,7 @@ class TradeFragment: Fragment() {
                         "time: ${Format.timeFormat.format(minCandle.timestamp)} " +
                         "get1minAverageTradePrice: ${minCandle.get1minAverageTradePrice(UNIT_MIN_CANDLE.toInt()).div(1000000).toInt()}")
             }
-            registerTradeInfo(minCandleMapInfo)
+//            registerTradeInfo(minCandleMapInfo)
         }
 
         viewModel?.resultDayCandleInfo?.observe(viewCycleOwner) {
@@ -219,7 +217,9 @@ class TradeFragment: Fragment() {
 
     override fun onResume() {
         super.onResume()
-        processor = BackgroundProcessor(viewModel!!)
+        if (processor == null || processor?.isInterrupted) {
+            processor = BackgroundProcessor(viewModel!!)
+        }
         processor?.registerProcess(TaskItem(MARKETS_INFO))
         processor?.start()
 
@@ -236,13 +236,13 @@ class TradeFragment: Fragment() {
         Log.d(TAG, "[DEBUG] onStop: ")
     }
 
-    private fun registerTradeInfo(maps: HashMap<String, Candle>) {
-        val iterator = maps.values.iterator()
-        while(iterator.hasNext()) {
-            val tradeInfo = iterator.next()
-            processor?.registerProcess(CandleItem(TRADE_INFO, tradeInfo.marketId, 3000))
-        }
-    }
+//    private fun registerTradeInfo(maps: HashMap<String, Candle>) {
+//        val iterator = maps.values.iterator()
+//        while(iterator.hasNext()) {
+//            val tradeInfo = iterator.next()
+//            processor?.registerProcess(CandleItem(TRADE_INFO, tradeInfo.marketId, 3000))
+//        }
+//    }
 
     private fun makeTradeMapInfo(tradesInfoList: List<TradeInfo>) {
         var marketId: String = tradesInfoList.first().marketId.toString()
@@ -253,24 +253,24 @@ class TradeFragment: Fragment() {
         if (tradeMapInfo[marketId] == null) {
             Log.d(TAG, "[DEBUG] makeTradeMapInfo: null")
             tempInfo = tradesInfoList.filter { tradeInfo ->
-                tradesInfoList.first().timestamp!!.toLong() - tradeInfo.timestamp!!.toLong() < UNIT_MONITOR_TIME
+                tradesInfoList.first().timestamp - tradeInfo.timestamp < UNIT_MONITOR_TIME
             }.reversed()
         } else {
             Log.d(TAG, "[DEBUG] makeTradeMapInfo: else")
-            val addList = tradesInfoList.filter {tradeInfo ->
-                tradeMapInfo[marketId]!!.last().sequentialId < tradeInfo.sequentialId}.reversed()
+            val addList = tradesInfoList.asReversed().filter {tradeInfo ->
+                tradeMapInfo[marketId]!!.last().sequentialId < tradeInfo.sequentialId}
             val combineInfo = tradeMapInfo[marketId]!! + addList
 
-            val iteratorCombine: Iterator<TradeInfo> = combineInfo.listIterator()
-            while (iteratorCombine.hasNext()) {
-                val tradeInfo: TradeInfo = iteratorCombine.next()
-                marketId = tradeInfo.marketId.toString()
-                Log.d(TAG, "[DEBUG] makeTradeMapInfo iteratorCombine marketId: $marketId " +
-                        "time: ${Format.timeFormat.format(tradeInfo.timestamp)}")
-            }
+//            val iteratorCombine: Iterator<TradeInfo> = combineInfo.listIterator()
+//            while (iteratorCombine.hasNext()) {
+//                val tradeInfo: TradeInfo = iteratorCombine.next()
+//                marketId = tradeInfo.marketId.toString()
+//                Log.d(TAG, "[DEBUG] makeTradeMapInfo iteratorCombine marketId: $marketId " +
+//                        "time: ${Format.timeFormat.format(tradeInfo.timestamp)} seqId: ${Format.nonZeroFormat.format(tradeInfo.sequentialId)}")
+//            }
 
             tempInfo = combineInfo.filter { tradeInfo ->
-                tradesInfoList.first().timestamp!!.toLong() - tradeInfo.timestamp!!.toLong() < UNIT_MONITOR_TIME }
+                tradesInfoList.first().timestamp - tradeInfo.timestamp < UNIT_MONITOR_TIME }
 
             var accPriceVolume = 0.0
             val iterator: Iterator<TradeInfo> = tempInfo.listIterator()
@@ -280,7 +280,7 @@ class TradeFragment: Fragment() {
                 accPriceVolume += tradeInfo.getPriceVolume()
                 tradeInfo.accPriceVolume = accPriceVolume
                 Log.d(TAG, "[DEBUG] makeTradeMapInfo marketId: $marketId " +
-                        "time: ${Format.timeFormat.format(tradeInfo.timestamp)} priceVolume: $accPriceVolume")
+                        "time: ${Format.timeFormat.format(tradeInfo.timestamp)} priceVolume: ${Format.nonZeroFormat.format(accPriceVolume)} seqId: ${Format.nonZeroFormat.format(tradeInfo.sequentialId)}")
             }
 
         }
