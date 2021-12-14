@@ -13,10 +13,12 @@ import com.example.upbittrade.data.TaskItem
 import com.example.upbittrade.model.TradeViewModel
 import okhttp3.internal.notify
 import okhttp3.internal.wait
+import java.util.*
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
 
 class BackgroundProcessor : Thread {
     companion object {
@@ -29,12 +31,16 @@ class BackgroundProcessor : Thread {
         viewModel = model
     }
 
+    var isRunning = false
+
     object ThreadProcess {
         val executor = ThreadPoolExecutor(1, 4, pingDelay, TimeUnit.SECONDS, LinkedBlockingDeque())
     }
 
     override fun run() {
+        isRunning = false
         while (true) {
+            isRunning = true
             var taskList: TaskList? = null
             if (!TaskList.isNullOrEmpty()) {
                 taskList = TaskList
@@ -48,6 +54,7 @@ class BackgroundProcessor : Thread {
                 )
                 sleep(pingDelay * (taskList?.size?.toLong() ?: 10) + 1)
             } catch (e: InterruptedException) {
+                isRunning = false
                 Log.w(TAG, "exception Thread sleep")
                 break
             }
@@ -101,7 +108,7 @@ class BackgroundProcessor : Thread {
             val iterator = iterator()
             while (iterator.hasNext()) {
                 val taskItem = iterator.next()
-                Log.d(TAG, "MyHandler - $taskItem")
+                Log.d(TAG, "MyHandler - ${taskItem.type} size: $size")
                 when(taskItem.type) {
                     MARKETS_INFO, MIN_CANDLE_INFO  -> {
                         sendMessage(taskItem)
@@ -128,6 +135,10 @@ class BackgroundProcessor : Thread {
             message.data = bundle
             MyHandler.sendMessage(message)
         }
+    }
+
+    fun registerProcess(list: List<TaskItem>) {
+        TaskList.addAll(list)
     }
 
     fun registerProcess(item: TaskItem) {

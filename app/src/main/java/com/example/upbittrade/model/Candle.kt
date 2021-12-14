@@ -40,6 +40,8 @@ open class Candle: Serializable, Comparable<Candle> {
     @SerializedName("unit")
     var unit: Int? = null
 
+    var accPriceVolume = 0.0
+
     fun get1minAverageTradePrice(totalTime: Int): Double {
         return candleAccTradePrice!!.toDouble() / totalTime
     }

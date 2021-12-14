@@ -37,8 +37,10 @@ class TradeFragment: Fragment() {
         private const val BASE_TIME = 3.0
         private const val THRESHOLD_RATE = 0.03
         private const val THRESHOLD_TICK = 1500
-        private const val UNIT_MIN_CANDLE = "60"
+        private const val UNIT_MIN_CANDLE = 60
+        private const val UNIT_MIN_CANDLE_COUNT = 24
         private const val UNIT_MONITOR_TIME = 60 * 1000
+        private const val UNIT_TRADE_COUNT = 3000
 
         lateinit var mainActivity: TradePagerActivity
         private var viewModel: TradeViewModel? = null
@@ -155,6 +157,8 @@ class TradeFragment: Fragment() {
         viewModel?.resultMarketsInfo?.observe(viewCycleOwner) {
             marketsInfo ->
             marketMapInfo.clear()
+            val extTaskItemList = ArrayList<TaskItem>()
+            val taskItemList = ArrayList<TaskItem>()
             val iterator = marketsInfo.iterator()
             while (iterator.hasNext()) {
                 val marketInfo: MarketInfo = iterator.next()
@@ -163,10 +167,12 @@ class TradeFragment: Fragment() {
                     && marketInfo.marketWarning?.contains("CAUTION") == false) {
                     marketMapInfo[marketId] = marketInfo
                     Log.d(TAG, "[DEBUG] resultMarketsInfo: $marketId")
-                    processor?.registerProcess(ExtendCandleItem(MIN_CANDLE_INFO, UNIT_MIN_CANDLE, marketId, 1))
-                    processor?.registerProcess(CandleItem(TRADE_INFO, marketId, 3000))
+                    taskItemList.add(CandleItem(TRADE_INFO, marketId, UNIT_TRADE_COUNT))
+                    extTaskItemList.add(ExtendCandleItem(MIN_CANDLE_INFO, UNIT_MIN_CANDLE.toString(), marketId, UNIT_MIN_CANDLE_COUNT))
                 }
             }
+            processor?.registerProcess(extTaskItemList)
+            processor?.registerProcess(taskItemList)
         }
 
         viewModel?.resultMinCandleInfo?.observe(viewCycleOwner) {
@@ -174,16 +180,20 @@ class TradeFragment: Fragment() {
             val iterator = minCandlesInfo.reversed().iterator()
             Format.timeFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
 
+            var accPriceVolume = 0.0
             var marketId: String? = null
             while (iterator.hasNext()) {
                 val minCandle: Candle = iterator.next()
                 marketId = minCandle.marketId.toString()
+                accPriceVolume += minCandle.candleAccTradePrice!!.toDouble()
+                minCandle.accPriceVolume = accPriceVolume
                 minCandleMapInfo[marketId] = minCandle
-                Log.d(TAG, "resultMinCandleInfo: $marketId " +
-                        "time: ${Format.timeFormat.format(minCandle.timestamp)} " +
-                        "get1minAverageTradePrice: ${minCandle.get1minAverageTradePrice(UNIT_MIN_CANDLE.toInt()).div(1000000).toInt()}")
+//                Log.d(TAG, "resultMinCandleInfo: $marketId " +
+//                        "time: ${Format.timeFormat.format(minCandle.timestamp)} " +
+//                        "get1minAverageTradePrice: ${minCandle.get1minAverageTradePrice(UNIT_MIN_CANDLE).div(1000000).toInt()} " +
+//                        "accPriceVolume: $accPriceVolume"
+//                )
             }
-//            registerTradeInfo(minCandleMapInfo)
         }
 
         viewModel?.resultDayCandleInfo?.observe(viewCycleOwner) {
@@ -217,8 +227,12 @@ class TradeFragment: Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if (processor == null || processor?.isInterrupted) {
+
+        if (processor == null || processor?.isRunning == false) {
+            Log.d(TAG, "[DEBUG] onResume: processor == null isRunning: ${processor?.isRunning}")
             processor = BackgroundProcessor(viewModel!!)
+        } else {
+            Log.d(TAG, "[DEBUG] onResume: isRunning: ${processor?.isRunning}")
         }
         processor?.registerProcess(TaskItem(MARKETS_INFO))
         processor?.start()
@@ -236,38 +250,29 @@ class TradeFragment: Fragment() {
         Log.d(TAG, "[DEBUG] onStop: ")
     }
 
-//    private fun registerTradeInfo(maps: HashMap<String, Candle>) {
-//        val iterator = maps.values.iterator()
-//        while(iterator.hasNext()) {
-//            val tradeInfo = iterator.next()
-//            processor?.registerProcess(CandleItem(TRADE_INFO, tradeInfo.marketId, 3000))
-//        }
-//    }
-
     private fun makeTradeMapInfo(tradesInfoList: List<TradeInfo>) {
         var marketId: String = tradesInfoList.first().marketId.toString()
 
-
         var tempInfo: List<TradeInfo>? = null
-
         if (tradeMapInfo[marketId] == null) {
-            Log.d(TAG, "[DEBUG] makeTradeMapInfo: null")
             tempInfo = tradesInfoList.filter { tradeInfo ->
                 tradesInfoList.first().timestamp - tradeInfo.timestamp < UNIT_MONITOR_TIME
             }.reversed()
         } else {
-            Log.d(TAG, "[DEBUG] makeTradeMapInfo: else")
             val addList = tradesInfoList.asReversed().filter {tradeInfo ->
                 tradeMapInfo[marketId]!!.last().sequentialId < tradeInfo.sequentialId}
             val combineInfo = tradeMapInfo[marketId]!! + addList
 
-//            val iteratorCombine: Iterator<TradeInfo> = combineInfo.listIterator()
-//            while (iteratorCombine.hasNext()) {
-//                val tradeInfo: TradeInfo = iteratorCombine.next()
-//                marketId = tradeInfo.marketId.toString()
-//                Log.d(TAG, "[DEBUG] makeTradeMapInfo iteratorCombine marketId: $marketId " +
-//                        "time: ${Format.timeFormat.format(tradeInfo.timestamp)} seqId: ${Format.nonZeroFormat.format(tradeInfo.sequentialId)}")
-//            }
+/*
+            //Log
+            val iteratorCombine: Iterator<TradeInfo> = combineInfo.listIterator()
+            while (iteratorCombine.hasNext()) {
+                val tradeInfo: TradeInfo = iteratorCombine.next()
+                marketId = tradeInfo.marketId.toString()
+                Log.d(TAG, "[DEBUG] makeTradeMapInfo iteratorCombine marketId: $marketId " +
+                        "time: ${Format.timeFormat.format(tradeInfo.timestamp)} seqId: ${Format.nonZeroFormat.format(tradeInfo.sequentialId)}")
+            }
+*/
 
             tempInfo = combineInfo.filter { tradeInfo ->
                 tradesInfoList.first().timestamp - tradeInfo.timestamp < UNIT_MONITOR_TIME }
@@ -279,11 +284,24 @@ class TradeFragment: Fragment() {
                 marketId = tradeInfo.marketId.toString()
                 accPriceVolume += tradeInfo.getPriceVolume()
                 tradeInfo.accPriceVolume = accPriceVolume
-                Log.d(TAG, "[DEBUG] makeTradeMapInfo marketId: $marketId " +
-                        "time: ${Format.timeFormat.format(tradeInfo.timestamp)} priceVolume: ${Format.nonZeroFormat.format(accPriceVolume)} seqId: ${Format.nonZeroFormat.format(tradeInfo.sequentialId)}")
+//                Log.d(TAG, "[DEBUG] makeTradeMapInfo marketId: $marketId " +
+//                        "time: ${Format.timeFormat.format(tradeInfo.timestamp)} priceVolume: ${Format.nonZeroFormat.format(accPriceVolume)} seqId: ${Format.nonZeroFormat.format(tradeInfo.sequentialId)}")
             }
-
         }
         tradeMapInfo[marketId] = tempInfo
+        if (tradeMapInfo[marketId] != null && minCandleMapInfo[marketId] != null) {
+            val priceVolume = tradeMapInfo[marketId]!!.last().accPriceVolume
+            val avg1MinPriceVolume =
+                minCandleMapInfo[marketId]!!.accPriceVolume.div(UNIT_MIN_CANDLE * UNIT_MIN_CANDLE_COUNT)
+            val rate = priceVolume / avg1MinPriceVolume
+            Log.d(
+                TAG, "[DEBUG] makeTradeMapInfo marketId: $marketId " +
+                        "count: ${tradeMapInfo[marketId]!!.size} " +
+                        "priceVolume: ${Format.nonZeroFormat.format(priceVolume)} " +
+                        "avg1MinPriceVolume: ${Format.nonZeroFormat.format(avg1MinPriceVolume)} " +
+                        "rate: ${Format.percentFormat.format(rate)} " +
+                        "time: ${Format.timeFormat.format(tradeMapInfo[marketId]!!.last().timestamp)} "
+            )
+        }
     }
 }
