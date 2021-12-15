@@ -5,18 +5,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
+import com.example.upbittrade.model.ResultTradeInfo
+import com.example.upbittrade.model.TradeInfo
 
-class TradeFragmentView {
+class TradeFragmentView(view: View) {
     companion object {
         enum class Type {
-            MONITOR,
+            MONITOR_LIST,
             TRADE_LIST,
             RESULT_LIST
         }
-    }
-
-    fun newInstance(view: View): TradeFragmentView {
-        return TradeFragmentView()
     }
 
     class CoinHolder : RecyclerView.ViewHolder {
@@ -26,9 +24,13 @@ class TradeFragmentView {
     }
 
     class TradeAdapter(val type: Type): RecyclerView.Adapter<CoinHolder>() {
+        var monitorSet = HashMap<String, ResultTradeInfo>()
+        var tradeSet = HashMap<String, ResultTradeInfo>()
+        var resultSet = HashMap<String, ResultTradeInfo>()
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CoinHolder {
             var view = when (type) {
-                Type.MONITOR -> {
+                Type.MONITOR_LIST -> {
                     LayoutInflater.from(parent.context).inflate(R.layout.coin_monitor_item, parent, false)
                 }
                 Type.TRADE_LIST -> {
@@ -42,12 +44,20 @@ class TradeFragmentView {
         }
 
         override fun onBindViewHolder(holder: CoinHolder, position: Int) {
-            TODO("Not yet implemented")
         }
 
         override fun getItemCount(): Int {
-            TODO("Not yet implemented")
+            return when (type) {
+                Type.MONITOR_LIST -> {
+                    monitorSet.size
+                }
+                Type.TRADE_LIST -> {
+                    tradeSet.size
+                }
+                Type.RESULT_LIST -> {
+                    resultSet.size
+                }
+            }
         }
-
     }
 }

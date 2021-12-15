@@ -12,6 +12,8 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
 import com.example.upbittrade.activity.TradePagerActivity.PostType.*
@@ -24,6 +26,7 @@ import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdRate
 import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdTick
 import com.example.upbittrade.model.*
 import com.example.upbittrade.utils.BackgroundProcessor
+import com.example.upbittrade.utils.TradeFragmentView
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -44,6 +47,8 @@ class TradeFragment: Fragment() {
         private const val UNIT_MONITOR_TIME = 60 * 1000
         private const val UNIT_TRADE_COUNT = 3000
         private const val UNIT_PRICE = 1000000
+
+        val tradeInfo = HashMap<String, ResultTradeInfo>()
     }
 
     object Format {
@@ -66,7 +71,10 @@ class TradeFragment: Fragment() {
     private val marketMapInfo = HashMap<String, MarketInfo>()
     private val minCandleMapInfo = HashMap<String, ResultTradeInfo>()
     private val tradeMapInfo = HashMap<String, List<TradeInfo>>()
-    private val tradeInfo = HashMap<String, ResultTradeInfo>()
+    private var tradeView: TradeFragmentView? = null
+    private var monitorAdapter: TradeFragmentView.TradeAdapter? = null
+    private var tradeAdapter: TradeFragmentView.TradeAdapter? = null
+    private var resultAdapter: TradeFragmentView.TradeAdapter? = null
 
     var isRunning = false
 
@@ -82,6 +90,26 @@ class TradeFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_trade, container, false)
+        tradeView = TradeFragmentView(view)
+        monitorAdapter = TradeFragmentView.TradeAdapter(TradeFragmentView.Companion.Type.MONITOR_LIST)
+        tradeAdapter = TradeFragmentView.TradeAdapter(TradeFragmentView.Companion.Type.TRADE_LIST)
+        resultAdapter = TradeFragmentView.TradeAdapter(TradeFragmentView.Companion.Type.RESULT_LIST)
+
+        val monitorListView = view.findViewById<RecyclerView>(R.id.monitor_list_view)
+        val tradeListView = view.findViewById<RecyclerView>(R.id.trade_list_view)
+        val resultListView = view.findViewById<RecyclerView>(R.id.result_list_view)
+
+        val monitorLm = LinearLayoutManager(context)
+        monitorListView.layoutManager = monitorLm
+        val tradeLm = LinearLayoutManager(context)
+        tradeListView.layoutManager = tradeLm
+        val resultLm = LinearLayoutManager(context)
+        resultListView.layoutManager = resultLm
+
+
+        monitorListView.adapter = monitorAdapter
+        tradeListView.adapter = tradeAdapter
+        resultListView.adapter = resultAdapter
 
         val buyingPriceText = view.findViewById<TextView>(R.id.trade_buying_price)
         val monitorTimeText = view.findViewById<TextView>(R.id.trade_monitor_time)
@@ -256,15 +284,18 @@ class TradeFragment: Fragment() {
         val lowPrice = tempInfo.minOf { it.tradePrice!!.toDouble() }
         val openPrice = tempInfo.first().tradePrice!!.toDouble()
         val closePrice = tempInfo.last().tradePrice!!.toDouble()
+        val avgPriceVolumePerMin =
+            minCandleMapInfo[marketId]!!.accPriceVolume.div(UNIT_MIN_CANDLE * UNIT_MIN_CANDLE_COUNT)
 
         tradeMapInfo[marketId] = tempInfo
-        tradeInfo[marketId] = ResultTradeInfo(marketId, tempInfo.size, tempInfo.last().timestamp, highPrice, lowPrice, openPrice, closePrice, accPriceVolume)
+        tradeInfo[marketId] = ResultTradeInfo(marketId, tempInfo.size, tempInfo.last().timestamp, highPrice, lowPrice, openPrice, closePrice, accPriceVolume, avgPriceVolumePerMin)
+
+        monitorAdapter!!.monitorSet = tradeInfo.filter { info -> (info.value.tickCount!! > 100 && info.value.getPriceVolumeRate() > 1)} as HashMap<String, ResultTradeInfo>
+        monitorAdapter!!.notifyDataSetChanged()
 
         if (tradeInfo[marketId] != null && minCandleMapInfo[marketId] != null) {
             val priceVolume = tradeInfo[marketId]!!.accPriceVolume
-            val avg1MinPriceVolume =
-                minCandleMapInfo[marketId]!!.accPriceVolume.div(UNIT_MIN_CANDLE * UNIT_MIN_CANDLE_COUNT)
-            val rate = priceVolume / avg1MinPriceVolume
+            val rate = tradeInfo[marketId]!!.getPriceVolumeRate()
             Log.d(
                 TAG, "[DEBUG] makeTradeMapInfo marketId: $marketId " +
                         "count: ${tradeInfo[marketId]!!.tickCount} " +
@@ -274,7 +305,7 @@ class TradeFragment: Fragment() {
                         "openPrice: ${Format.nonZeroFormat.format(tradeInfo[marketId]!!.tickCount)} " +
                         "closePrice: ${Format.nonZeroFormat.format(tradeInfo[marketId]!!.tickCount)} " +
                         "priceVolume: ${Format.nonZeroFormat.format(tradeInfo[marketId]!!.accPriceVolume.div(UNIT_PRICE))} " +
-                        "avg1MinPriceVolume: ${Format.nonZeroFormat.format(avg1MinPriceVolume.div(UNIT_PRICE))} " +
+                        "avg1MinPriceVolume: ${Format.nonZeroFormat.format(avgPriceVolumePerMin.div(UNIT_PRICE))} " +
                         "time: ${Format.timeFormat.format(tradeInfo[marketId]!!.timestamp)} "
             )
         }

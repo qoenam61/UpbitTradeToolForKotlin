@@ -342,7 +342,7 @@
                     </LinearLayout>
 
                     <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/coin_result_list"
+                        android:id="@+id/result_list_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"/>
                 </LinearLayout>
@@ -464,7 +464,7 @@
                     </LinearLayout>
 
                     <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/coin_buying_list"
+                        android:id="@+id/trade_list_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"/>
                 </LinearLayout>
@@ -586,7 +586,7 @@
                         </LinearLayout>
                     </LinearLayout>
                     <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/coin_evaluation_list"
+                        android:id="@+id/monitor_list_view"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"/>
                 </LinearLayout>
