@@ -93,9 +93,9 @@
                             android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:gravity="center"
-                            android:textSize="@dimen/coin_list_text_size_small"
+                            android:textSize="@dimen/coin_list_text_size"
                             android:textStyle="bold"
-                            android:text="분거래대금/\n평균거래대금"/>
+                            android:text="분/평균액"/>
                     </LinearLayout>
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/monitor_list_view"

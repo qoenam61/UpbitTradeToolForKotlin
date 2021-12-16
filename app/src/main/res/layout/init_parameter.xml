@@ -22,7 +22,7 @@
                     android:orientation="vertical">
                     <TextView
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="50dp"
                         android:gravity="center"
                         android:textSize="@dimen/coin_list_text_size"
                         android:textStyle="bold"
@@ -53,7 +53,7 @@
                     android:orientation="vertical">
                     <TextView
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="50dp"
                         android:gravity="center"
                         android:textSize="@dimen/coin_list_text_size"
                         android:textStyle="bold"
@@ -84,7 +84,7 @@
                     android:orientation="vertical">
                     <TextView
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="50dp"
                         android:gravity="center"
                         android:textSize="@dimen/coin_list_text_size"
                         android:textStyle="bold"
@@ -115,7 +115,7 @@
                     android:orientation="vertical">
                     <TextView
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="50dp"
                         android:gravity="center"
                         android:textSize="@dimen/coin_list_text_size"
                         android:textStyle="bold"
@@ -139,6 +139,38 @@
                         android:maxLength="5"
                         android:hint="틱개수를 입력"/>
                 </LinearLayout>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:gravity="center"
+                        android:textSize="@dimen/coin_list_text_size"
+                        android:textStyle="bold"
+                        android:text="분/평균액(%)"/>
+                    <TextView
+                        android:id="@+id/min_price_per_avg_price"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:textSize="@dimen/coin_list_text_size"
+                        android:maxLength="5"
+                        android:inputType="numberDecimal"
+                        android:text="0"/>
+                    <EditText
+                        android:id="@+id/input_min_price_per_avg_price"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:textSize="@dimen/coin_list_text_size"
+                        android:inputType="numberDecimal"
+                        android:maxLength="5"
+                        android:hint="분/평군 입력"/>
+                </LinearLayout>
+
             </LinearLayout>
             <Button
                 android:id="@+id/trade_input_button"
