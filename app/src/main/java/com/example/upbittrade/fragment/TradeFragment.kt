@@ -19,6 +19,8 @@ import com.example.upbittrade.model.*
 import com.example.upbittrade.utils.BackgroundProcessor
 import com.example.upbittrade.utils.InitPopupDialog
 import com.example.upbittrade.utils.TradeAdapter
+import com.example.upbittrade.utils.TradeAdapter.Companion.Type.MONITOR_LIST
+import okhttp3.internal.notifyAll
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -56,6 +58,7 @@ class TradeFragment: Fragment() {
         var baseTime: Double = 0.0
         var thresholdRate: Double = 0.0
         var thresholdTick: Double = 0.0
+        var thresholdPriceVolumeRate: Float = 1.0f
     }
 
     lateinit var mainActivity: TradePagerActivity
@@ -86,8 +89,10 @@ class TradeFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_trade, container, false)
+        monitorAdapter = TradeAdapter(requireContext(), MONITOR_LIST)
         monitorListView = view.findViewById(R.id.monitor_list_view)
-        monitorListView!!.layoutManager = LinearLayoutManager(context)
+        monitorListView!!.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        monitorListView!!.adapter = monitorAdapter
 
         val initDialog = InitPopupDialog(requireContext())
         initDialog.show()
@@ -219,13 +224,17 @@ class TradeFragment: Fragment() {
             tempInfo.last().getRate()
         )
 
-        val inputList = (tradeInfo.filter { (it.value.tickCount!! > 1 && it.value.getPriceVolumeRate() > 0.01)} as HashMap<String, ResultTradeInfo>).keys.toList()
-        if (inputList != null && inputList.isNotEmpty()) {
-            monitorAdapter = TradeAdapter(requireContext(), TradeAdapter.Companion.Type.MONITOR_LIST)
-            monitorAdapter!!.monitorMap = inputList
-            monitorListView!!.adapter = monitorAdapter
-        }
-        Log.d(TAG, "[DEBUG] makeTradeMapInfo - size: ${inputList?.size}")
+        Log.d(TAG, "[DEBUG] makeTradeMapInfo - size: ${UserParam.thresholdTick} priceVolumeRate: ${UserParam.thresholdPriceVolumeRate}")
+
+
+        val inputList = (tradeInfo.filter {
+            (it.value.tickCount!! > UserParam.thresholdTick
+                && it.value.getPriceVolumeRate() > UserParam.thresholdPriceVolumeRate)
+        } as HashMap<String, ResultTradeInfo>)
+            .toSortedMap(compareByDescending { sortedMapList(it) }).keys.toList()
+
+        monitorAdapter!!.monitorMap = inputList
+        monitorAdapter!!.notifyDataSetChanged()
 
         if (tradeInfo[marketId] != null && minCandleMapInfo[marketId] != null) {
             val priceVolume = tradeInfo[marketId]!!.accPriceVolume?.div(UNIT_PRICE)
@@ -243,5 +252,9 @@ class TradeFragment: Fragment() {
                         "time: ${Format.timeFormat.format(tradeInfo[marketId]!!.timestamp)} "
             )
         }
+    }
+
+    private fun sortedMapList(it: String): Int? {
+        return tradeInfo[it]?.tickCount
     }
 }

@@ -9,10 +9,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
 import com.example.upbittrade.fragment.TradeFragment
-import com.example.upbittrade.utils.TradeAdapter.Companion.Type
 import com.example.upbittrade.utils.TradeAdapter.Companion.Type.MONITOR_LIST
 
-class TradeAdapter(private val context: Context, val type: Type): RecyclerView.Adapter<CoinHolder>() {
+class TradeAdapter(private val context: Context, val type: Type): RecyclerView.Adapter<TradeAdapter.CoinHolder>() {
     companion object {
         const val TAG = "TradeFragmentView"
         enum class Type {
@@ -38,27 +37,27 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 LayoutInflater.from(context).inflate(R.layout.coin_result_item, parent, false)
             }
         }
-        Log.d(TAG, "[DEBUG] onCreateViewHolder itemCount : $itemCount")
+        Log.d(TAG, "[DEBUG] onCreateViewHolder itemCount : $itemCount viewType $viewType")
         return CoinHolder(view, type)
     }
 
     override fun onBindViewHolder(holder: CoinHolder, position: Int) {
-        Log.d(TAG, "[DEBUG] onBindViewHolder itemCount : $itemCount")
+        Log.d(TAG, "[DEBUG] onBindViewHolder itemCount : $itemCount ")
         when (type) {
             MONITOR_LIST -> {
                 val marketId = monitorMap?.get(position)
                 val tradeInfo = TradeFragment.tradeInfo[marketId]
                 if (tradeInfo != null) {
                     holder.marketId?.text = tradeInfo.marketId
-                    holder.trade_price?.text =
+                    holder.tradePrice?.text =
                         TradeFragment.Format.nonZeroFormat.format(tradeInfo.closePrice!!.toDouble())
-                    holder.trade_price_rate?.text =
+                    holder.tradePriceRate?.text =
                         TradeFragment.Format.percentFormat.format(tradeInfo.changeRate)
-                    holder.min_price_rate?.text =
+                    holder.minPriceRate?.text =
                         TradeFragment.Format.percentFormat.format(tradeInfo.getMinPriceRate())
-                    holder.trade_count?.text =
+                    holder.tradeCount?.text =
                         TradeFragment.Format.nonZeroFormat.format(tradeInfo.tickCount)
-                    holder.min_price_per_avg_price?.text =
+                    holder.minPricePerAvgPrice?.text =
                         TradeFragment.Format.percentFormat.format(tradeInfo.getPriceVolumeRate())
                 }
             }
@@ -72,10 +71,10 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
     }
 
     override fun getItemCount(): Int {
-        Log.d(TAG, "[DEBUG] getItemCount - type: $type")
-        return when (type) {
+        var count = 0
+        when (type) {
             MONITOR_LIST -> {
-                if (monitorMap == null) {
+                count = if (monitorMap == null) {
                     0
                 } else {
                     monitorMap!!.size
@@ -83,40 +82,41 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 Log.d(TAG, "[DEBUG] getItemCount - size: ${monitorMap?.size}")
             }
             Type.TRADE_LIST -> {
-                if (tradeSet == null) {
+                count = if (tradeSet == null) {
                     0
                 } else {
                     tradeSet!!.size
                 }
             }
             Type.RESULT_LIST -> {
-                if (resultSet == null) {
+                count = if (resultSet == null) {
                     0
                 } else {
                     resultSet!!.size
                 }
             }
         }
+        return count
     }
-}
 
-class CoinHolder : RecyclerView.ViewHolder {
-    var marketId: TextView? = null
-    var trade_price: TextView? = null
-    var trade_price_rate: TextView? = null
-    var min_price_rate: TextView? = null
-    var trade_count: TextView? = null
-    var min_price_per_avg_price: TextView? = null
+    inner class CoinHolder : RecyclerView.ViewHolder {
+        var marketId: TextView? = null
+        var tradePrice: TextView? = null
+        var tradePriceRate: TextView? = null
+        var minPriceRate: TextView? = null
+        var tradeCount: TextView? = null
+        var minPricePerAvgPrice: TextView? = null
 
-    constructor(itemView: View, type: Type) : super(itemView) {
-        when(type) {
-            MONITOR_LIST -> {
-                marketId = itemView.findViewById(R.id.market_id)
-                trade_price = itemView.findViewById(R.id.trade_price)
-                trade_price_rate = itemView.findViewById(R.id.trade_price_rate)
-                min_price_rate = itemView.findViewById(R.id.min_price_rate)
-                trade_count = itemView.findViewById(R.id.trade_count)
-                min_price_per_avg_price = itemView.findViewById(R.id.min_price_per_avg_price)
+        constructor(itemView: View, type: Type) : super(itemView) {
+            when(type) {
+                MONITOR_LIST -> {
+                    marketId = itemView.findViewById(R.id.market_id)
+                    tradePrice = itemView.findViewById(R.id.trade_price)
+                    tradePriceRate = itemView.findViewById(R.id.trade_price_rate)
+                    minPriceRate = itemView.findViewById(R.id.min_price_rate)
+                    tradeCount = itemView.findViewById(R.id.trade_count)
+                    minPricePerAvgPrice = itemView.findViewById(R.id.min_price_per_avg_price)
+                }
             }
         }
     }
