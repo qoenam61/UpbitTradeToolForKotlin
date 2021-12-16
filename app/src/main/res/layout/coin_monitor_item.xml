@@ -15,7 +15,7 @@
             <TextView
                 android:id="@+id/market_id"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:textSize="@dimen/coin_list_text_size"
@@ -24,7 +24,7 @@
             <TextView
                 android:id="@+id/trade_price"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:textStyle="bold"
@@ -33,7 +33,7 @@
             <TextView
                 android:id="@+id/trade_price_rate"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:textSize="@dimen/coin_list_text_size"
@@ -42,7 +42,7 @@
             <TextView
                 android:id="@+id/min_price_rate"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:textSize="@dimen/coin_list_text_size"
@@ -51,7 +51,7 @@
             <TextView
                 android:id="@+id/trade_count"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:textSize="@dimen/coin_list_text_size"
@@ -60,7 +60,7 @@
             <TextView
                 android:id="@+id/min_price_per_avg_price"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:textSize="@dimen/coin_list_text_size"

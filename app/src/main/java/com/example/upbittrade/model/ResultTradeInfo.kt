@@ -12,6 +12,7 @@ class ResultTradeInfo {
     var closePrice: Number? = null
     var accPriceVolume: Double? = 0.0
     var avgMinPriceVolume: Double? = 0.0
+    var changeRate: Double? = 0.0
 
     constructor(
         marketId: String?,
@@ -42,7 +43,8 @@ class ResultTradeInfo {
         openPrice: Number?,
         closePrice: Number?,
         accPriceVolume: Double?,
-        avgMinPriceVolume: Double?
+        avgMinPriceVolume: Double?,
+        changeRate: Double?
     ) {
         this.marketId = marketId
         this.tickCount = tickCount
@@ -53,6 +55,7 @@ class ResultTradeInfo {
         this.closePrice = closePrice
         this.accPriceVolume = accPriceVolume
         this.avgMinPriceVolume = avgMinPriceVolume
+        this.changeRate = changeRate
     }
 
     fun getCenterPrice(): Double {
@@ -68,5 +71,13 @@ class ResultTradeInfo {
             return 0.0
         }
         return accPriceVolume!! / avgMinPriceVolume!!
+    }
+
+    fun getMinPriceRate(): Double {
+        if (openPrice == null || closePrice == null) {
+            return 0.0
+        }
+        val diff = closePrice!!.toDouble().minus(openPrice!!.toDouble())
+        return diff.div(openPrice!!.toDouble())
     }
 }

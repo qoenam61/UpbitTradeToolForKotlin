@@ -36,4 +36,11 @@ class TradeInfo {
     fun getPriceVolume(): Double {
         return tradePrice!!.toDouble() * tradeVolume!!.toDouble()
     }
+
+    fun getRate(): Double {
+        if (changePrice == null || prevClosingPrice == null) {
+            return 0.0
+        }
+        return changePrice!!.toDouble() / prevClosingPrice!!.toDouble()
+    }
 }

@@ -1,16 +1,11 @@
 package com.example.upbittrade.fragment
 
 import android.app.Activity
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,13 +15,10 @@ import com.example.upbittrade.activity.TradePagerActivity.PostType.*
 import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.TaskItem
-import com.example.upbittrade.fragment.TradeFragment.UserParam.baseTime
-import com.example.upbittrade.fragment.TradeFragment.UserParam.limitAmount
-import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdRate
-import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdTick
 import com.example.upbittrade.model.*
 import com.example.upbittrade.utils.BackgroundProcessor
-import com.example.upbittrade.utils.TradeFragmentView
+import com.example.upbittrade.utils.InitPopupDialog
+import com.example.upbittrade.utils.TradeAdapter
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -36,10 +28,10 @@ import kotlin.collections.HashMap
 class TradeFragment: Fragment() {
     companion object {
         const val TAG = "TradeFragment"
-        private const val LIMIT_AMOUNT = 10000.0
-        private const val BASE_TIME = 3.0
-        private const val THRESHOLD_RATE = 0.03
-        private const val THRESHOLD_TICK = 1500
+        const val LIMIT_AMOUNT = 10000.0
+        const val BASE_TIME = 3.0
+        const val THRESHOLD_RATE = 0.03
+        const val THRESHOLD_TICK = 1500
 
         private const val UNIT_REPEAT_MARKET_INFO = 30 * 60 * 1000
         private const val UNIT_MIN_CANDLE = 60
@@ -59,6 +51,7 @@ class TradeFragment: Fragment() {
     }
 
     object UserParam {
+        var completed = false
         var limitAmount: Double = 0.0
         var baseTime: Double = 0.0
         var thresholdRate: Double = 0.0
@@ -71,10 +64,13 @@ class TradeFragment: Fragment() {
     private val marketMapInfo = HashMap<String, MarketInfo>()
     private val minCandleMapInfo = HashMap<String, ResultTradeInfo>()
     private val tradeMapInfo = HashMap<String, List<TradeInfo>>()
-    private var tradeView: TradeFragmentView? = null
-    private var monitorAdapter: TradeFragmentView.TradeAdapter? = null
+    private var tradeView: TradeAdapter? = null
+    private var monitorAdapter: TradeAdapter? = null
 //    private var tradeAdapter: TradeFragmentView.TradeAdapter? = null
 //    private var resultAdapter: TradeFragmentView.TradeAdapter? = null
+
+    private var monitorListView: RecyclerView? = null
+
 
     var isRunning = false
 
@@ -90,92 +86,11 @@ class TradeFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_trade, container, false)
-        tradeView = TradeFragmentView(view)
-        monitorAdapter = TradeFragmentView.TradeAdapter(TradeFragmentView.Companion.Type.MONITOR_LIST)
-//        tradeAdapter = TradeFragmentView.TradeAdapter(TradeFragmentView.Companion.Type.TRADE_LIST)
-//        resultAdapter = TradeFragmentView.TradeAdapter(TradeFragmentView.Companion.Type.RESULT_LIST)
+        monitorListView = view.findViewById(R.id.monitor_list_view)
+        monitorListView!!.layoutManager = LinearLayoutManager(context)
 
-        val monitorListView = view.findViewById<RecyclerView>(R.id.monitor_list_view)
-        val tradeListView = view.findViewById<RecyclerView>(R.id.monitor_list_view)
-        val resultListView = view.findViewById<RecyclerView>(R.id.monitor_list_view)
-
-        val monitorLm = LinearLayoutManager(context)
-        monitorListView.layoutManager = monitorLm
-//        val tradeLm = LinearLayoutManager(context)
-//        tradeListView.layoutManager = tradeLm
-//        val resultLm = LinearLayoutManager(context)
-//        resultListView.layoutManager = resultLm
-
-
-        monitorListView.adapter = monitorAdapter
-//        tradeListView.adapter = tradeAdapter
-//        resultListView.adapter = resultAdapter
-
-        val buyingPriceText = view.findViewById<TextView>(R.id.trade_buying_price)
-        val monitorTimeText = view.findViewById<TextView>(R.id.trade_monitor_time)
-        val monitorRateText = view.findViewById<TextView>(R.id.trade_monitor_rate)
-        val monitorTickText = view.findViewById<TextView>(R.id.trade_monitor_tick)
-        val buyingPriceEditText = view.findViewById<EditText>(R.id.trade_input_buying_price)
-        val monitorTimeEditText = view.findViewById<EditText>(R.id.trade_input_monitor_time)
-        val monitorRateEditText = view.findViewById<EditText>(R.id.trade_input_monitor_rate)
-        val monitorTickEditText = view.findViewById<EditText>(R.id.trade_input_monitor_tick)
-
-        buyingPriceText.text = Format.nonZeroFormat.format(LIMIT_AMOUNT)
-        monitorTimeText.text = Format.zeroFormat.format(BASE_TIME)
-        monitorRateText.text = Format.percentFormat.format(THRESHOLD_RATE)
-        monitorTickText.text = Format.nonZeroFormat.format(THRESHOLD_TICK)
-        buyingPriceEditText.setText(Format.nonZeroFormat.format(LIMIT_AMOUNT))
-        monitorTimeEditText.setText(Format.zeroFormat.format(BASE_TIME))
-        monitorRateEditText.setText((THRESHOLD_RATE * 100).toString())
-        monitorTickEditText.setText(Format.nonZeroFormat.format(THRESHOLD_TICK))
-
-        val applyButton = view.findViewById<Button>(R.id.trade_input_button)
-        applyButton?.setOnClickListener {
-            val buyingPrice = buyingPriceEditText.text.toString()
-            val monitorTime = monitorTimeEditText.text.toString()
-            val monitorRate = monitorRateEditText.text.toString()
-            val monitorTick = monitorTickEditText.text.toString()
-            try {
-                limitAmount =
-                    if (buyingPrice.isNotBlank()) buyingPrice.replace(",", "").toDouble()
-                    else LIMIT_AMOUNT
-
-                baseTime =
-                    if (monitorTime.isNotBlank()) monitorTime.toDouble() * 60 * 1000
-                    else BASE_TIME * 60 * 1000
-
-                thresholdRate =
-                    if (monitorRate.isNotBlank()) monitorRate.replace("%", "").toDouble() / 100
-                    else THRESHOLD_RATE
-
-                thresholdTick =
-                    if (monitorTick.isNotBlank()) monitorTick.replace(",", "").toDouble()
-                    else THRESHOLD_TICK.toDouble()
-
-            } catch (e: NumberFormatException) {
-                Log.e(
-                    TAG,
-                    "Error NumberFormatException"
-                )
-            }
-
-            buyingPriceText.text = Format.nonZeroFormat.format(limitAmount)
-            monitorTimeText.text = Format.zeroFormat.format(baseTime / (60 * 1000))
-            monitorRateText.text = Format.percentFormat.format(thresholdRate)
-            monitorTickText.text = Format.nonZeroFormat.format(thresholdTick)
-            buyingPriceEditText.setText(Format.nonZeroFormat.format(limitAmount))
-            monitorTimeEditText.setText(Format.zeroFormat.format(baseTime / (60 * 1000)))
-            monitorRateEditText.setText((thresholdRate * 100).toString())
-            monitorTickEditText.setText(Format.nonZeroFormat.format(thresholdTick))
-
-            buyingPriceEditText.clearFocus()
-            monitorTimeEditText.clearFocus()
-            monitorRateEditText.clearFocus()
-            monitorTickEditText.clearFocus()
-
-            val inputMethodManager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            inputMethodManager.hideSoftInputFromWindow(buyingPriceEditText.windowToken, 0)
-        }
+        val initDialog = InitPopupDialog(requireContext())
+        initDialog.show()
 
         return view
     }
@@ -263,6 +178,10 @@ class TradeFragment: Fragment() {
     }
 
     private fun makeTradeMapInfo(tradesInfoList: List<TradeInfo>) {
+        if (tradesInfoList.isNullOrEmpty()) {
+            return
+        }
+
         var marketId: String = tradesInfoList.first().marketId.toString()
 
         var tempInfo: List<TradeInfo> = if (tradeMapInfo[marketId] == null) {
@@ -288,11 +207,25 @@ class TradeFragment: Fragment() {
             minCandleMapInfo[marketId]?.accPriceVolume?.div(UNIT_MIN_CANDLE * UNIT_MIN_CANDLE_COUNT)
 
         tradeMapInfo[marketId] = tempInfo
-        tradeInfo[marketId] = ResultTradeInfo(marketId, tempInfo.size, tempInfo.last().timestamp, highPrice, lowPrice, openPrice, closePrice, accPriceVolume, avgPriceVolumePerMin)
+        tradeInfo[marketId] = ResultTradeInfo(marketId,
+            tempInfo.size,
+            tempInfo.last().timestamp,
+            highPrice,
+            lowPrice,
+            openPrice,
+            closePrice,
+            accPriceVolume,
+            avgPriceVolumePerMin,
+            tempInfo.last().getRate()
+        )
 
-        monitorAdapter!!.monitorMap = tradeInfo.filter { (it.value.tickCount!! > 1 && it.value.getPriceVolumeRate() > 0.1)} as HashMap<String, ResultTradeInfo>
-        monitorAdapter!!.notifyDataSetChanged()
-        Log.d(TAG, "[DEBUG] makeTradeMapInfo - size: ${monitorAdapter!!.monitorMap.size}")
+        val inputList = (tradeInfo.filter { (it.value.tickCount!! > 1 && it.value.getPriceVolumeRate() > 0.01)} as HashMap<String, ResultTradeInfo>).keys.toList()
+        if (inputList != null && inputList.isNotEmpty()) {
+            monitorAdapter = TradeAdapter(requireContext(), TradeAdapter.Companion.Type.MONITOR_LIST)
+            monitorAdapter!!.monitorMap = inputList
+            monitorListView!!.adapter = monitorAdapter
+        }
+        Log.d(TAG, "[DEBUG] makeTradeMapInfo - size: ${inputList?.size}")
 
         if (tradeInfo[marketId] != null && minCandleMapInfo[marketId] != null) {
             val priceVolume = tradeInfo[marketId]!!.accPriceVolume?.div(UNIT_PRICE)
