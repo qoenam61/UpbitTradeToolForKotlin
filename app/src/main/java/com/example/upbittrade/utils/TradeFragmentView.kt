@@ -1,15 +1,16 @@
 package com.example.upbittrade.utils
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
 import com.example.upbittrade.model.ResultTradeInfo
-import com.example.upbittrade.model.TradeInfo
 
 class TradeFragmentView(view: View) {
     companion object {
+        const val TAG = "TradeFragmentView"
         enum class Type {
             MONITOR_LIST,
             TRADE_LIST,
@@ -24,7 +25,7 @@ class TradeFragmentView(view: View) {
     }
 
     class TradeAdapter(val type: Type): RecyclerView.Adapter<CoinHolder>() {
-        var monitorSet = HashMap<String, ResultTradeInfo>()
+        var monitorMap = HashMap<String, ResultTradeInfo>()
         var tradeSet = HashMap<String, ResultTradeInfo>()
         var resultSet = HashMap<String, ResultTradeInfo>()
 
@@ -47,9 +48,11 @@ class TradeFragmentView(view: View) {
         }
 
         override fun getItemCount(): Int {
+            Log.d(TAG, "[DEBUG] getItemCount - type: $type")
             return when (type) {
                 Type.MONITOR_LIST -> {
-                    monitorSet.size
+                    monitorMap.size
+                    Log.d(TAG, "[DEBUG] getItemCount - size: ${monitorMap.size}")
                 }
                 Type.TRADE_LIST -> {
                     tradeSet.size

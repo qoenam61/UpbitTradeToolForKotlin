@@ -10,8 +10,8 @@ class ResultTradeInfo {
     var lowPrice: Number? = null
     var openPrice: Number? = null
     var closePrice: Number? = null
-    var accPriceVolume: Double = 0.0
-    var avgMinPriceVolume: Double = 0.0
+    var accPriceVolume: Double? = 0.0
+    var avgMinPriceVolume: Double? = 0.0
 
     constructor(
         marketId: String?,
@@ -21,7 +21,7 @@ class ResultTradeInfo {
         lowPrice: Number?,
         openPrice: Number?,
         closePrice: Number?,
-        accPriceVolume: Double,
+        accPriceVolume: Double?,
     ) {
         this.marketId = marketId
         this.tickCount = tickCount
@@ -41,8 +41,8 @@ class ResultTradeInfo {
         lowPrice: Number?,
         openPrice: Number?,
         closePrice: Number?,
-        accPriceVolume: Double,
-        avgMinPriceVolume: Double
+        accPriceVolume: Double?,
+        avgMinPriceVolume: Double?
     ) {
         this.marketId = marketId
         this.tickCount = tickCount
@@ -64,6 +64,9 @@ class ResultTradeInfo {
     }
 
     fun getPriceVolumeRate(): Double {
-        return accPriceVolume / avgMinPriceVolume
+        if (accPriceVolume == null || avgMinPriceVolume == null) {
+            return 0.0
+        }
+        return accPriceVolume!! / avgMinPriceVolume!!
     }
 }
