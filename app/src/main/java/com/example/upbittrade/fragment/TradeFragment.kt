@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -96,6 +97,11 @@ class TradeFragment: Fragment() {
 
         val initDialog = InitPopupDialog(requireContext())
         initDialog.show()
+
+        val changeParamButton = view.findViewById<Button>(R.id.change_parameter)
+        changeParamButton.setOnClickListener {
+            initDialog.show()
+        }
 
         return view
     }

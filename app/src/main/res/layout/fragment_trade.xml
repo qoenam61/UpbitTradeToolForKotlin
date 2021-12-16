@@ -15,12 +15,25 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_margin="@dimen/default_margin">
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textStyle="bold"
-                android:textSize="@dimen/large_text_size"
-                android:text="모니터링 리스트"/>
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textStyle="bold"
+                    android:textSize="@dimen/large_text_size"
+                    android:text="모니터링 리스트"/>
+                <Button
+                    android:id="@+id/change_parameter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="@dimen/large_margin"
+                    android:text="조건"/>
+            </LinearLayout>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
