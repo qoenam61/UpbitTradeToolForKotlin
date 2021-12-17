@@ -37,12 +37,10 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 LayoutInflater.from(context).inflate(R.layout.coin_result_item, parent, false)
             }
         }
-        Log.d(TAG, "[DEBUG] onCreateViewHolder itemCount : $itemCount viewType $viewType")
         return CoinHolder(view, type)
     }
 
     override fun onBindViewHolder(holder: CoinHolder, position: Int) {
-        Log.d(TAG, "[DEBUG] onBindViewHolder itemCount : $itemCount ")
         when (type) {
             MONITOR_LIST -> {
                 val marketId = monitorMap?.get(position)
@@ -59,6 +57,10 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                         TradeFragment.Format.nonZeroFormat.format(tradeInfo.tickCount)
                     holder.minPricePerAvgPrice?.text =
                         TradeFragment.Format.percentFormat.format(tradeInfo.getPriceVolumeRate())
+                    holder.bidAskRate?.text =
+                        TradeFragment.Format.percentFormat.format(tradeInfo.getBidAskRate())
+                    holder.bidAskPriceRate?.text =
+                        TradeFragment.Format.percentFormat.format(tradeInfo.getBidAskPriceRate())
                 }
             }
             Type.TRADE_LIST -> {
@@ -79,7 +81,6 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 } else {
                     monitorMap!!.size
                 }
-                Log.d(TAG, "[DEBUG] getItemCount - size: ${monitorMap?.size}")
             }
             Type.TRADE_LIST -> {
                 count = if (tradeSet == null) {
@@ -106,6 +107,8 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         var minPriceRate: TextView? = null
         var tradeCount: TextView? = null
         var minPricePerAvgPrice: TextView? = null
+        var bidAskRate: TextView? = null
+        var bidAskPriceRate: TextView? = null
 
         constructor(itemView: View, type: Type) : super(itemView) {
             when(type) {
@@ -116,6 +119,8 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                     minPriceRate = itemView.findViewById(R.id.min_price_rate)
                     tradeCount = itemView.findViewById(R.id.trade_count)
                     minPricePerAvgPrice = itemView.findViewById(R.id.min_price_per_avg_price)
+                    bidAskRate = itemView.findViewById(R.id.bid_ask_rate)
+                    bidAskPriceRate = itemView.findViewById(R.id.bid_ask_rate_price_volume)
                 }
             }
         }

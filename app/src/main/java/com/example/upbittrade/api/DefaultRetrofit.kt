@@ -43,7 +43,6 @@ abstract class DefaultRetrofit(val accessKey: String, val secretKey: String) {
         override fun intercept(chain: Interceptor.Chain) = with(chain) {
             val origin: Request = chain.request()
             val newRequest: Request = changedRequest(origin)
-            Log.d(TAG.toString(), "intercept: $newRequest")
             proceed(newRequest)
         }
 

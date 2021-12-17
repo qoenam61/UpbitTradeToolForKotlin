@@ -16,8 +16,8 @@ import com.example.upbittrade.fragment.LoginFragment
 import com.example.upbittrade.utils.PreferenceUtil
 
 open class DefaultViewModel(application: Application): AndroidViewModel(application) {
-    object TAG {
-        const val name = "DefaultViewModel"
+    companion object {
+        const val TAG = "DefaultViewModel"
     }
 
     private val searchAccountsInfo = MutableLiveData<Boolean>()
@@ -29,7 +29,7 @@ open class DefaultViewModel(application: Application): AndroidViewModel(applicat
 
     private val upbitFetcher: UpbitFetcher = UpbitFetcher(object : UpbitFetcher.ConnectionState {
         override fun onConnection(isConnect: Boolean) {
-            Log.d(TAG.toString(), "[DEBUG] onConnection: $isConnect")
+            Log.d(TAG, "[DEBUG] onConnection: $isConnect")
             if (isConnect) {
                 val preferenceUtil = PreferenceUtil(application)
                 preferenceUtil.setString(PreferenceUtil.ACCESS_KEY, ACCESS_KEY!!)
@@ -52,7 +52,7 @@ open class DefaultViewModel(application: Application): AndroidViewModel(applicat
     })
 
     fun setSearchAccountInfo(input: Boolean) {
-        Log.d(TAG.toString(), "[DEBUG] setSearchAccountInfo: ")
+        Log.d(TAG, "setSearchAccountInfo: $input")
         searchAccountsInfo.value = input
     }
 

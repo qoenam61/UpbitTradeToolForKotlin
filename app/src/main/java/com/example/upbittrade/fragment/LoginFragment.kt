@@ -20,15 +20,6 @@ import com.example.upbittrade.model.DefaultViewModel
 import com.example.upbittrade.utils.PreferenceUtil
 
 class LoginFragment: Fragment() {
-
-//    fun newInstance(context: Context): Fragment {
-//        val fragment = LoginFragment()
-//        val bundle = Bundle(2)
-//        bundle.putString(PreferenceUtil.ACCESS_KEY, accessKey)
-//        bundle.putString(PreferenceUtil.SECRET_KEY, secretKey)
-//        return fragment
-//    }
-
     companion object {
         const val TAG = "LoginFragment"
         lateinit var mainActivity: LoginActivity
@@ -84,12 +75,12 @@ class LoginFragment: Fragment() {
 
         ACCESS_KEY = accessKey.text.toString()
         SECRET_KEY = secretKey.text.toString()
-        Log.d(LoginActivity.TAG.toString(),
+        Log.d(TAG,
             "onLoginButton - accessKey: $ACCESS_KEY secretKey: $SECRET_KEY"
         )
 
         if (ACCESS_KEY.isNullOrEmpty() || SECRET_KEY.isNullOrEmpty()) {
-            Log.d(TAG.toString(), "onLoginButton: null")
+            Log.d(TAG, "onLoginButton: null")
         } else {
             viewModel?.setKey(ACCESS_KEY!!, SECRET_KEY!!)
             viewModel?.setSearchAccountInfo(true)

@@ -24,7 +24,7 @@ class BackgroundProcessor : Thread {
     companion object {
         const val TAG = "BackgroundProcessor"
         var viewModel: AndroidViewModel? = null
-        val pingDelay: Long = 100
+        val pingDelay: Long = 110
     }
 
     constructor(model: AndroidViewModel) {
@@ -65,11 +65,9 @@ class BackgroundProcessor : Thread {
         override fun handleMessage(msg: Message) {
             super.handleMessage(msg)
             val item: TaskItem = msg.data.getSerializable("TaskItem") as TaskItem
-            Log.d(TAG, "MyHandler - $item")
             when(item.type) {
                 MARKETS_INFO -> {
                     if (viewModel is TradeViewModel) {
-                        Log.d(TAG, "handleMessage: MARKETS_INFO")
                         (viewModel as TradeViewModel).searchMarketsInfo.value = true
                     }
                 }
@@ -77,13 +75,11 @@ class BackgroundProcessor : Thread {
                 DELETE_ORDER_INFO -> {}
                 MIN_CANDLE_INFO -> {
                     if (viewModel is TradeViewModel) {
-                        Log.d(TAG, "handleMessage: MIN_CANDLE_INFO")
                         (viewModel as TradeViewModel).searchMinCandleInfo.value = (item as ExtendCandleItem)
                     }
                 }
                 DAY_CANDLE_INFO -> {
                     if (viewModel is TradeViewModel) {
-                        Log.d(TAG, "handleMessage: DAY_CANDLE_INFO")
                         (viewModel as TradeViewModel).searchDayCandleInfo.value = (item as ExtendCandleItem)
                     }
                 }
@@ -94,7 +90,6 @@ class BackgroundProcessor : Thread {
                 TICKER_INFO -> {}
                 TRADE_INFO -> {
                     if (viewModel is TradeViewModel) {
-                        Log.d(TAG, "handleMessage: TRADE_INFO")
                         (viewModel as TradeViewModel).searchTradeInfo.value = (item as CandleItem)
                     }
                 }
@@ -108,7 +103,6 @@ class BackgroundProcessor : Thread {
             val iterator = iterator()
             while (iterator.hasNext()) {
                 val taskItem = iterator.next()
-                Log.d(TAG, "MyHandler - ${taskItem.type} size: $size")
                 when(taskItem.type) {
                     MARKETS_INFO, MIN_CANDLE_INFO  -> {
                         sendMessage(taskItem)
@@ -126,8 +120,6 @@ class BackgroundProcessor : Thread {
         }
 
         private fun sendMessage(item: TaskItem) {
-            Log.d(TAG, "sendMessage - $item")
-
             val bundle = Bundle()
             bundle.putSerializable("TaskItem", item)
             val message = Message()

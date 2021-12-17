@@ -43,37 +43,11 @@ class TradeFetcher {
             ) {
                 if (response.body() != null) {
                     result.value = response.body() as List<MarketInfo>
-                    Log.d(TAG, "tMarketInfo onResponse: ${response.body()}")
                 }
-                if (!response.isSuccessful) {
-                    try {
-                        val jObjError = JSONObject(response.errorBody()!!.string())
-                        Log.w(
-                            TAG,
-                            "getMarketInfo onResponse - toString: " + call.toString()
-                                    + " code: " + response.code()
-                                    + " headers: " + response.headers()
-                                    + " raw: " + response.raw()
-                                    + " jObjError: " + (jObjError ?: "NULL")
-                        )
-//                        if (mActivity != null) {
-//                            mActivity.runOnUiThread(Runnable {
-//                                Toast.makeText(
-//                                    mActivity,
-//                                    jObjError.toString(),
-//                                    Toast.LENGTH_LONG
-//                                ).show()
-//                            })
-//                        }
-                    } catch (e: JSONException) {
-                        e.printStackTrace()
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    }
-                }            }
+            }
 
             override fun onFailure(call: Call<List<MarketInfo?>?>, t: Throwable) {
-                Log.d(TAG, "onFailure: $t")
+                Log.w(TAG, "onFailure: $t")
             }
         })
         return result
@@ -96,39 +70,11 @@ class TradeFetcher {
             ) {
                 if (response.body() != null) {
                     result.value = response.body() as List<Candle>
-                    Log.d(TAG, "getMinCandleInfo onResponse: ${response.body()}")
-                }
-                if (!response.isSuccessful) {
-                    try {
-                        Log.d(TAG, "getMinCandleInfo errorBody: ${response.errorBody()}")
-//                        val jObjError = JSONObject(response.errorBody()!!.string())
-                        Log.w(
-                            TAG,
-                            "getMinCandleInfo onResponse - toString: " + call.toString()
-                                    + " code: " + response.code()
-                                    + " headers: " + response.headers()
-                                    + " raw: " + response.raw()
-//                                    + " jObjError: " + (jObjError.names() ?: "NULL")
-                        )
-//                        if (mActivity != null) {
-//                            mActivity.runOnUiThread(Runnable {
-//                                Toast.makeText(
-//                                    mActivity,
-//                                    jObjError.toString(),
-//                                    Toast.LENGTH_LONG
-//                                ).show()
-//                            })
-//                        }
-                    } catch (e: JSONException) {
-                        e.printStackTrace()
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    }
                 }
             }
 
             override fun onFailure(call: Call<List<Candle?>?>, t: Throwable) {
-                Log.d(TAG, "onFailure: $t")
+                Log.w(TAG, "onFailure: $t")
             }
         })
         return result
@@ -150,38 +96,12 @@ class TradeFetcher {
             ) {
                 if (response.body() != null) {
                     result.value = response.body() as List<DayCandle>
-                    Log.d(TAG, "getDayCandleInfo onResponse: ${response.body()}")
                 }
-                if (!response.isSuccessful) {
-                    try {
-                        Log.d(TAG, "getDayCandleInfo errorBody: ${response.errorBody()}")
-//                        val jObjError = JSONObject(response.errorBody()!!.string())
-                        Log.w(
-                            TAG,
-                            "getDayCandleInfo onResponse - toString: " + call.toString()
-                                    + " code: " + response.code()
-                                    + " headers: " + response.headers()
-                                    + " raw: " + response.raw()
-//                                    + " jObjError: " + (jObjError.names() ?: "NULL")
-                        )
-//                        if (mActivity != null) {
-//                            mActivity.runOnUiThread(Runnable {
-//                                Toast.makeText(
-//                                    mActivity,
-//                                    jObjError.toString(),
-//                                    Toast.LENGTH_LONG
-//                                ).show()
-//                            })
-//                        }
-                    } catch (e: JSONException) {
-                        e.printStackTrace()
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    }
-                }            }
+
+            }
 
             override fun onFailure(call: Call<List<DayCandle?>?>, t: Throwable) {
-                Log.d(TAG, "onFailure: $t")
+                Log.w(TAG, "onFailure: $t")
             }
         })
         return result
@@ -201,38 +121,11 @@ class TradeFetcher {
             ) {
                 if (response.body() != null) {
                     result.value = response.body() as List<TradeInfo>
-                    Log.d(TAG, "getTradeInfo onResponse: ${response.body()}")
                 }
-                if (!response.isSuccessful) {
-                    try {
-                        Log.d(TAG, "getTradeInfo errorBody: ${response.errorBody()}")
-//                        val jObjError = JSONObject(response.errorBody()!!.string())
-                        Log.w(
-                            TAG,
-                            "getTradeInfo onResponse - toString: " + call.toString()
-                                    + " code: " + response.code()
-                                    + " headers: " + response.headers()
-                                    + " raw: " + response.raw()
-//                                    + " jObjError: " + (jObjError.names() ?: "NULL")
-                        )
-//                        if (mActivity != null) {
-//                            mActivity.runOnUiThread(Runnable {
-//                                Toast.makeText(
-//                                    mActivity,
-//                                    jObjError.toString(),
-//                                    Toast.LENGTH_LONG
-//                                ).show()
-//                            })
-//                        }
-                    } catch (e: JSONException) {
-                        e.printStackTrace()
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    }
-                }            }
+            }
 
             override fun onFailure(call: Call<List<TradeInfo?>?>, t: Throwable) {
-                Log.d(TAG, "onFailure: $t")
+                Log.w(TAG, "onFailure: $t")
             }
         })
         return result

@@ -21,7 +21,6 @@ import com.example.upbittrade.utils.BackgroundProcessor
 import com.example.upbittrade.utils.InitPopupDialog
 import com.example.upbittrade.utils.TradeAdapter
 import com.example.upbittrade.utils.TradeAdapter.Companion.Type.MONITOR_LIST
-import okhttp3.internal.notifyAll
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -214,8 +213,24 @@ class TradeFragment: Fragment() {
         val lowPrice = tempInfo.minOf { it.tradePrice!!.toDouble() }
         val openPrice = tempInfo.first().tradePrice!!.toDouble()
         val closePrice = tempInfo.last().tradePrice!!.toDouble()
-        val avgPriceVolumePerMin =
+        val avgPriceVolumePerDayMin =
             minCandleMapInfo[marketId]?.accPriceVolume?.div(UNIT_MIN_CANDLE * UNIT_MIN_CANDLE_COUNT)
+
+        val bid = tempInfo.fold(0) {
+                acc: Int, tradeInfo: TradeInfo -> acc + addCount(tradeInfo, "BID")
+        }
+
+        val ask = tempInfo.fold(0) {
+                acc: Int, tradeInfo: TradeInfo -> acc + addCount(tradeInfo, "ASK")
+        }
+
+        val bidPriceVolume = tempInfo.fold(0.0) {
+                acc: Double, tradeInfo: TradeInfo -> acc + addPriceVolume(tradeInfo, "BID")
+        }
+
+        val askPriceVolume = tempInfo.fold(0.0) {
+                acc: Double, tradeInfo: TradeInfo -> acc + addPriceVolume(tradeInfo, "ASK")
+        }
 
         tradeMapInfo[marketId] = tempInfo
         tradeInfo[marketId] = ResultTradeInfo(marketId,
@@ -226,12 +241,13 @@ class TradeFragment: Fragment() {
             openPrice,
             closePrice,
             accPriceVolume,
-            avgPriceVolumePerMin,
-            tempInfo.last().getRate()
+            avgPriceVolumePerDayMin,
+            tempInfo.last().getChangeRate(),
+            bid,
+            ask,
+            bidPriceVolume,
+            askPriceVolume
         )
-
-        Log.d(TAG, "[DEBUG] makeTradeMapInfo - size: ${UserParam.thresholdTick} priceVolumeRate: ${UserParam.thresholdPriceVolumeRate}")
-
 
         val inputList = (tradeInfo.filter {
             (it.value.tickCount!! > UserParam.thresholdTick
@@ -254,10 +270,30 @@ class TradeFragment: Fragment() {
                         "openPrice: ${Format.nonZeroFormat.format(tradeInfo[marketId]!!.tickCount)} " +
                         "closePrice: ${Format.nonZeroFormat.format(tradeInfo[marketId]!!.tickCount)} " +
                         "priceVolume: ${Format.nonZeroFormat.format(priceVolume)} " +
-                        "avg1MinPriceVolume: ${Format.nonZeroFormat.format(avgPriceVolumePerMin?.div(UNIT_PRICE))} " +
+                        "bid: ${Format.nonZeroFormat.format(bid)} " +
+                        "ask: ${Format.nonZeroFormat.format(ask)} " +
+                        "bid/ask: ${Format.percentFormat.format(tradeInfo[marketId]!!.getBidAskRate())} " +
+                        "bidPrice: ${Format.nonZeroFormat.format(bidPriceVolume)} " +
+                        "askPrice: ${Format.nonZeroFormat.format(askPriceVolume)} " +
+                        "bidPrice/askPrice: ${Format.percentFormat.format(tradeInfo[marketId]!!.getBidAskRate())} " +
+                        "avg1MinPriceVolume: ${Format.nonZeroFormat.format(avgPriceVolumePerDayMin?.div(UNIT_PRICE))} " +
                         "time: ${Format.timeFormat.format(tradeInfo[marketId]!!.timestamp)} "
             )
         }
+    }
+
+    private fun addCount(it: TradeInfo, string: String): Int {
+        if (it.askBid.equals(string)) {
+            return 1
+        }
+        return 0
+    }
+
+    private fun addPriceVolume(it: TradeInfo, string: String): Double {
+        if (it.askBid.equals(string)) {
+            return it.tradeVolume!!.toDouble() * it.tradePrice!!.toDouble()
+        }
+        return 0.0
     }
 
     private fun sortedMapList(it: String): Int? {

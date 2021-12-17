@@ -34,7 +34,6 @@ class UpbitFetcher(val listener: ConnectionState) {
         val call: Call<List<Accounts?>?>? = accountRetrofit?.getUpBitApi()?.getAccounts()
         call!!.enqueue(object : Callback<List<Accounts?>?> {
             override fun onResponse(call: Call<List<Accounts?>?>, response: Response<List<Accounts?>?>) {
-//                Log.d(TAG.toString(), "[DEBUG] onResponse getAccounts - isLogIn: $isLogIn" + " response: " + response.body())
                 if (response.body() != null) {
                     if (isLogIn) {
                         if (listener != null) {
@@ -49,38 +48,10 @@ class UpbitFetcher(val listener: ConnectionState) {
                         }
                     }
                 }
-                if (!response.isSuccessful) {
-                    try {
-                        val jObjError = JSONObject(response.errorBody().toString())
-                        Log.w(
-                            TAG.toString(),
-                            "onResponse getAccounts -toString: " + call.toString()
-                                    + " code: " + response.code()
-                                    + " headers: " + response.headers()
-                                    + " raw: " + response.raw()
-                                    + " jObjError: " + (jObjError ?: "NULL")
-                        )
-//                        if (mActivity != null) {
-//                            mActivity.runOnUiThread(Runnable {
-//                                Toast.makeText(
-//                                    this,
-//                                    jObjError.toString(),
-//                                    Toast.LENGTH_LONG
-//                                ).show()
-//                            })
-//                        }
-                    } catch (e: JSONException) {
-                        e.printStackTrace()
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    }
-                } else {
-                    Log.d(TAG.toString(), "onResponse successful - isLogIn: $isLogIn")
-                }
             }
 
             override fun onFailure(p0: Call<List<Accounts?>?>, p1: Throwable) {
-                Log.d(TAG.toString(), "onFailure - isLogIn: $isLogIn")
+                Log.w(TAG.toString(), "onFailure - isLogIn: $isLogIn")
                 if (isLogIn) {
                     if (listener != null) {
                         listener.onConnection(false)

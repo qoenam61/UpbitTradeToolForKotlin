@@ -1,7 +1,5 @@
 package com.example.upbittrade.model
 
-import com.google.gson.annotations.SerializedName
-
 class ResultTradeInfo {
     var marketId: String? = null
     var tickCount: Int? = null
@@ -11,8 +9,12 @@ class ResultTradeInfo {
     var openPrice: Number? = null
     var closePrice: Number? = null
     var accPriceVolume: Double? = 0.0
-    var avgMinPriceVolume: Double? = 0.0
+    var avgPriceVolumePerDayMin: Double? = 0.0
     var changeRate: Double? = 0.0
+    var bid: Int? = 0
+    var ask: Int? = 0
+    var bidPriceVolume: Double? = 0.0
+    var askPriceVolume: Double? = 0.0
 
     constructor(
         marketId: String?,
@@ -43,7 +45,7 @@ class ResultTradeInfo {
         openPrice: Number?,
         closePrice: Number?,
         accPriceVolume: Double?,
-        avgMinPriceVolume: Double?,
+        avgPriceVolumePerDayMin: Double?,
         changeRate: Double?
     ) {
         this.marketId = marketId
@@ -54,8 +56,40 @@ class ResultTradeInfo {
         this.openPrice = openPrice
         this.closePrice = closePrice
         this.accPriceVolume = accPriceVolume
-        this.avgMinPriceVolume = avgMinPriceVolume
+        this.avgPriceVolumePerDayMin = avgPriceVolumePerDayMin
         this.changeRate = changeRate
+    }
+
+    constructor(
+        marketId: String?,
+        tickCount: Int?,
+        timestamp: Long?,
+        highPrice: Number?,
+        lowPrice: Number?,
+        openPrice: Number?,
+        closePrice: Number?,
+        accPriceVolume: Double?,
+        avgPriceVolumePerDayMin: Double?,
+        changeRate: Double?,
+        bid: Int,
+        ask: Int,
+        bidPriceVolume: Double,
+        askPriceVolume: Double
+    ) {
+        this.marketId = marketId
+        this.tickCount = tickCount
+        this.timestamp = timestamp
+        this.highPrice = highPrice
+        this.lowPrice = lowPrice
+        this.openPrice = openPrice
+        this.closePrice = closePrice
+        this.accPriceVolume = accPriceVolume
+        this.avgPriceVolumePerDayMin = avgPriceVolumePerDayMin
+        this.changeRate = changeRate
+        this.bid = bid
+        this.ask = ask
+        this.bidPriceVolume = bidPriceVolume
+        this.askPriceVolume = askPriceVolume
     }
 
     fun getCenterPrice(): Double {
@@ -67,10 +101,10 @@ class ResultTradeInfo {
     }
 
     fun getPriceVolumeRate(): Double {
-        if (accPriceVolume == null || avgMinPriceVolume == null) {
+        if (accPriceVolume == null || avgPriceVolumePerDayMin == null) {
             return 0.0
         }
-        return accPriceVolume!! / avgMinPriceVolume!!
+        return accPriceVolume!! / avgPriceVolumePerDayMin!!
     }
 
     fun getMinPriceRate(): Double {
@@ -79,5 +113,19 @@ class ResultTradeInfo {
         }
         val diff = closePrice!!.toDouble().minus(openPrice!!.toDouble())
         return diff.div(openPrice!!.toDouble())
+    }
+
+    fun getBidAskRate(): Double {
+        if (bid == null || ask == null || (bid == 0 && ask ==0)) {
+            return 0.0
+        }
+        return bid!!.div(bid!! + ask!!) .toDouble()
+    }
+
+    fun getBidAskPriceRate(): Double {
+        if (bid == null || ask == null) {
+            return 0.0
+        }
+        return bidPriceVolume!!.div(bidPriceVolume!! + askPriceVolume!!)
     }
 }
