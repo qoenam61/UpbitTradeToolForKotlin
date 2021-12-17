@@ -15,6 +15,7 @@
             android:gravity="center"
             android:textSize="@dimen/coin_list_text_size"
             android:textStyle="bold"
+            android:background="@drawable/borderline"
             android:text="Market"/>
         <TextView
             android:id="@+id/trade_price"
@@ -24,6 +25,7 @@
             android:gravity="center"
             android:textStyle="bold"
             android:textSize="@dimen/coin_list_text_size"
+            android:background="@drawable/borderline"
             android:text="x"/>
         <TextView
             android:id="@+id/trade_price_rate"
@@ -33,6 +35,7 @@
             android:gravity="center"
             android:textSize="@dimen/coin_list_text_size"
             android:textStyle="bold"
+            android:background="@drawable/borderline"
             android:text="x.x%"/>
         <TextView
             android:id="@+id/min_price_rate"
@@ -42,6 +45,7 @@
             android:gravity="center"
             android:textSize="@dimen/coin_list_text_size"
             android:textStyle="bold"
+            android:background="@drawable/borderline"
             android:text="x.x%"/>
         <TextView
             android:id="@+id/trade_count"
@@ -51,6 +55,7 @@
             android:gravity="center"
             android:textSize="@dimen/coin_list_text_size"
             android:textStyle="bold"
+            android:background="@drawable/borderline"
             android:text="x"/>
         <TextView
             android:id="@+id/min_price_per_avg_price"
@@ -60,6 +65,7 @@
             android:gravity="center"
             android:textSize="@dimen/coin_list_text_size"
             android:textStyle="bold"
+            android:background="@drawable/borderline"
             android:text="x.x%"/>
     </LinearLayout>
 </LinearLayout>

@@ -14,6 +14,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/default_margin"
+                android:background="@drawable/borderline_bold"
                 android:orientation="horizontal">
                 <LinearLayout
                     android:layout_width="0dp"
@@ -26,6 +27,7 @@
                         android:gravity="center"
                         android:textSize="@dimen/coin_list_text_size"
                         android:textStyle="bold"
+                        android:background="@drawable/borderline_bold"
                         android:text="매수금액(KRW)"/>
                     <TextView
                         android:id="@+id/trade_buying_price"
@@ -34,6 +36,7 @@
                         android:gravity="center"
                         android:textSize="@dimen/coin_list_text_size"
                         android:maxLength="10"
+                        android:background="@drawable/borderline_bold"
                         android:inputType="numberDecimal"
                         android:text="0"/>
                     <EditText
@@ -44,6 +47,7 @@
                         android:textSize="@dimen/coin_list_text_size"
                         android:maxLength="10"
                         android:inputType="numberDecimal"
+                        android:background="@drawable/borderline"
                         android:hint="금액을 입력"/>
                 </LinearLayout>
                 <LinearLayout
@@ -57,6 +61,7 @@
                         android:gravity="center"
                         android:textSize="@dimen/coin_list_text_size"
                         android:textStyle="bold"
+                        android:background="@drawable/borderline_bold"
                         android:text="체크시간(min)"/>
                     <TextView
                         android:id="@+id/trade_monitor_time"
@@ -66,6 +71,7 @@
                         android:textSize="@dimen/coin_list_text_size"
                         android:maxLength="3"
                         android:text="0"
+                        android:background="@drawable/borderline_bold"
                         android:inputType="numberDecimal"/>
                     <EditText
                         android:id="@+id/trade_input_monitor_time"
@@ -75,6 +81,7 @@
                         android:textSize="@dimen/coin_list_text_size"
                         android:inputType="numberDecimal"
                         android:maxLength="3"
+                        android:background="@drawable/borderline"
                         android:hint="체크시간을 입력"/>
                 </LinearLayout>
                 <LinearLayout
@@ -88,6 +95,7 @@
                         android:gravity="center"
                         android:textSize="@dimen/coin_list_text_size"
                         android:textStyle="bold"
+                        android:background="@drawable/borderline_bold"
                         android:text="매수기준(%)"/>
                     <TextView
                         android:id="@+id/trade_monitor_rate"
@@ -97,6 +105,7 @@
                         android:textSize="@dimen/coin_list_text_size"
                         android:maxLength="4"
                         android:inputType="numberDecimal"
+                        android:background="@drawable/borderline_bold"
                         android:text="0"/>
                     <EditText
                         android:id="@+id/trade_input_monitor_rate"
@@ -106,6 +115,7 @@
                         android:textSize="@dimen/coin_list_text_size"
                         android:inputType="numberDecimal"
                         android:maxLength="4"
+                        android:background="@drawable/borderline"
                         android:hint="매수기준을 입력"/>
                 </LinearLayout>
                 <LinearLayout
@@ -119,6 +129,7 @@
                         android:gravity="center"
                         android:textSize="@dimen/coin_list_text_size"
                         android:textStyle="bold"
+                        android:background="@drawable/borderline_bold"
                         android:text="틱기준"/>
                     <TextView
                         android:id="@+id/trade_monitor_tick"
@@ -128,6 +139,7 @@
                         android:textSize="@dimen/coin_list_text_size"
                         android:maxLength="5"
                         android:inputType="numberDecimal"
+                        android:background="@drawable/borderline_bold"
                         android:text="0"/>
                     <EditText
                         android:id="@+id/trade_input_monitor_tick"
@@ -136,6 +148,7 @@
                         android:gravity="center"
                         android:textSize="@dimen/coin_list_text_size"
                         android:inputType="numberDecimal"
+                        android:background="@drawable/borderline"
                         android:maxLength="5"
                         android:hint="틱개수를 입력"/>
                 </LinearLayout>
@@ -150,6 +163,7 @@
                         android:gravity="center"
                         android:textSize="@dimen/coin_list_text_size"
                         android:textStyle="bold"
+                        android:background="@drawable/borderline_bold"
                         android:text="분/평균액(%)"/>
                     <TextView
                         android:id="@+id/min_price_per_avg_price"
@@ -159,6 +173,7 @@
                         android:textSize="@dimen/coin_list_text_size"
                         android:maxLength="5"
                         android:inputType="numberDecimal"
+                        android:background="@drawable/borderline_bold"
                         android:text="0"/>
                     <EditText
                         android:id="@+id/input_min_price_per_avg_price"
@@ -167,6 +182,7 @@
                         android:gravity="center"
                         android:textSize="@dimen/coin_list_text_size"
                         android:inputType="numberDecimal"
+                        android:background="@drawable/borderline"
                         android:maxLength="5"
                         android:hint="분/평군 입력"/>
                 </LinearLayout>

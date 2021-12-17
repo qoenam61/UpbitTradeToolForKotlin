@@ -13,7 +13,7 @@ import com.example.upbittrade.fragment.TradeFragment
 class InitPopupDialog: Dialog {
 
     constructor(context: Context): super(context) {
-        setContentView(R.layout.init_parameter)
+        setContentView(R.layout.init_parameter_popup)
         val buyingPriceText = findViewById<TextView>(R.id.trade_buying_price)
         val monitorTimeText = findViewById<TextView>(R.id.trade_monitor_time)
         val monitorRateText = findViewById<TextView>(R.id.trade_monitor_rate)
