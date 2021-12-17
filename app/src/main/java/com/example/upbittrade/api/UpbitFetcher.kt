@@ -12,8 +12,8 @@ import retrofit2.Response
 import java.io.IOException
 
 class UpbitFetcher(val listener: ConnectionState) {
-    object TAG {
-        const val name = "UpbitFetcher"
+    companion object {
+        const val TAG = "UpbitFetcher"
     }
 
     interface ConnectionState {
@@ -51,7 +51,7 @@ class UpbitFetcher(val listener: ConnectionState) {
             }
 
             override fun onFailure(p0: Call<List<Accounts?>?>, p1: Throwable) {
-                Log.w(TAG.toString(), "onFailure - isLogIn: $isLogIn")
+                Log.w(TAG, "onFailure - isLogIn: $isLogIn")
                 if (isLogIn) {
                     if (listener != null) {
                         listener.onConnection(false)

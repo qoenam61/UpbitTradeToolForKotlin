@@ -114,7 +114,7 @@ class BackgroundProcessor : Thread {
                 try {
                     sleep(pingDelay)
                 } catch (e : InterruptedException) {
-                    Log.e(TAG, "run: ", e)
+                    Log.e(TAG, "InterruptedException: exit sleep")
                 }
             }
         }

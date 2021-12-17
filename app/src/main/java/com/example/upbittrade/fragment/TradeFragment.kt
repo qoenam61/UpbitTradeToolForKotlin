@@ -67,8 +67,8 @@ class TradeFragment: Fragment() {
     private var processor: BackgroundProcessor? = null
     private val minCandleMapInfo = HashMap<String, ResultTradeInfo>()
     private val tradeMapInfo = HashMap<String, List<TradeInfo>>()
-    private var tradeView: TradeAdapter? = null
     private var monitorAdapter: TradeAdapter? = null
+    private var monitorList: List<String>? = null
 //    private var tradeAdapter: TradeFragmentView.TradeAdapter? = null
 //    private var resultAdapter: TradeFragmentView.TradeAdapter? = null
 
@@ -250,13 +250,13 @@ class TradeFragment: Fragment() {
             askPriceVolume
         )
 
-        val inputList = (tradeInfo.filter {
+        monitorList = (tradeInfo.filter {
             (it.value.tickCount!! > UserParam.thresholdTick
                 && it.value.getPriceVolumeRate() > UserParam.thresholdPriceVolumeRate)
         } as HashMap<String, ResultTradeInfo>)
             .toSortedMap(compareByDescending { sortedMapList(it) }).keys.toList()
 
-        monitorAdapter!!.monitorMap = inputList
+        monitorAdapter!!.monitorMap = monitorList
         monitorAdapter!!.notifyDataSetChanged()
 
         if (tradeInfo[marketId] != null && minCandleMapInfo[marketId] != null) {
