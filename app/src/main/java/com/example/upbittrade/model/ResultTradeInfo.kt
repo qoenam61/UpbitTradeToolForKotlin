@@ -119,13 +119,13 @@ class ResultTradeInfo {
         if (bid == null || ask == null || (bid == 0 && ask ==0)) {
             return 0.0
         }
-        return bid!!.div(bid!! + ask!!) .toDouble()
+        return (bid!!.toDouble() / (bid!!.toDouble() + ask!!.toDouble()))
     }
 
     fun getBidAskPriceRate(): Double {
-        if (bid == null || ask == null) {
+        if (bidPriceVolume == null || askPriceVolume == null || (bidPriceVolume == 0.0 && askPriceVolume == 0.0)) {
             return 0.0
         }
-        return bidPriceVolume!!.div(bidPriceVolume!! + askPriceVolume!!)
+        return (bidPriceVolume!!.toDouble() / (bidPriceVolume!!.toDouble() + askPriceVolume!!.toDouble()))
     }
 }
