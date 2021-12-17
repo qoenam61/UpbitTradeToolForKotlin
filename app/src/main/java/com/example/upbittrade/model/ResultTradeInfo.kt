@@ -74,7 +74,7 @@ class ResultTradeInfo {
         closePrice: Number?,
         accPriceVolume: Double?,
         avgPriceVolumePerDayMin: Double?,
-        changeRate: Double?,
+        changeRatePerDay: Double?,
         bid: Int,
         ask: Int,
         bidPriceVolume: Double,
@@ -89,7 +89,7 @@ class ResultTradeInfo {
         this.closePrice = closePrice
         this.accPriceVolume = accPriceVolume
         this.avgPriceVolumePerDayMin = avgPriceVolumePerDayMin
-        this.changeRate = changeRate
+        this.changeRate = changeRatePerDay
         this.bid = bid
         this.ask = ask
         this.bidPriceVolume = bidPriceVolume
@@ -111,7 +111,7 @@ class ResultTradeInfo {
         return accPriceVolume!! / avgPriceVolumePerDayMin!!
     }
 
-    fun getMinPriceRate(): Double {
+    fun getTradeInfoPriceRate(): Double {
         if (openPrice == null || closePrice == null) {
             return 0.0
         }

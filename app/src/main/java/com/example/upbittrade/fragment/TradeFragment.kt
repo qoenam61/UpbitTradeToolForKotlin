@@ -60,6 +60,8 @@ class TradeFragment: Fragment() {
         var thresholdRate: Double = THRESHOLD_RATE
         var thresholdTick: Int = UNIT_TRADE_COUNT
         var thresholdPriceVolumeRate: Float = 1.0f
+        var thresholdBidAskRate: Float = 0.5f
+        var thresholdBidAskPriceRate: Float = 0.5f
     }
 
     lateinit var mainActivity: TradePagerActivity

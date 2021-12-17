@@ -1,14 +1,11 @@
 package com.example.upbittrade.utils
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
 import com.example.upbittrade.fragment.TradeFragment
@@ -70,12 +67,12 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                     }
 
                     holder.minPriceRate?.text =
-                            TradeFragment.Format.percentFormat.format(tradeInfo.getMinPriceRate())
+                            TradeFragment.Format.percentFormat.format(tradeInfo.getTradeInfoPriceRate())
                     when {
-                        tradeInfo.getMinPriceRate().compareTo(0.0) > 0 -> {
+                        tradeInfo.getTradeInfoPriceRate().compareTo(0.0) > 0 -> {
                             holder.minPriceRate?.setTextColor(Color.RED)
                         }
-                        tradeInfo.getMinPriceRate().compareTo(0.0) < 0 -> {
+                        tradeInfo.getTradeInfoPriceRate().compareTo(0.0) < 0 -> {
                             holder.minPriceRate?.setTextColor(Color.BLUE)
                         }
                         else -> {
