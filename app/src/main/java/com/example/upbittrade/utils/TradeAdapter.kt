@@ -1,11 +1,14 @@
 package com.example.upbittrade.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
 import com.example.upbittrade.fragment.TradeFragment
@@ -51,16 +54,77 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                         TradeFragment.Format.nonZeroFormat.format(tradeInfo.closePrice!!.toDouble())
                     holder.tradePriceRate?.text =
                         TradeFragment.Format.percentFormat.format(tradeInfo.changeRate)
+                    when {
+                        tradeInfo.changeRate!!.compareTo(0.0) > 0 -> {
+                            holder.tradePrice?.setTextColor(Color.RED)
+                            holder.tradePriceRate?.setTextColor(Color.RED)
+                        }
+                        tradeInfo.changeRate!!.compareTo(0.0) < 0 -> {
+                            holder.tradePrice?.setTextColor(Color.BLUE)
+                            holder.tradePriceRate?.setTextColor(Color.BLUE)
+                        }
+                        else -> {
+                            holder.tradePrice?.setTextColor(Color.BLACK)
+                            holder.tradePriceRate?.setTextColor(Color.BLACK)
+                        }
+                    }
+
                     holder.minPriceRate?.text =
-                        TradeFragment.Format.percentFormat.format(tradeInfo.getMinPriceRate())
+                            TradeFragment.Format.percentFormat.format(tradeInfo.getMinPriceRate())
+                    when {
+                        tradeInfo.getMinPriceRate().compareTo(0.0) > 0 -> {
+                            holder.minPriceRate?.setTextColor(Color.RED)
+                        }
+                        tradeInfo.getMinPriceRate().compareTo(0.0) < 0 -> {
+                            holder.minPriceRate?.setTextColor(Color.BLUE)
+                        }
+                        else -> {
+                            holder.minPriceRate?.setTextColor(Color.BLACK)
+                        }
+                    }
+
                     holder.tradeCount?.text =
                         TradeFragment.Format.nonZeroFormat.format(tradeInfo.tickCount)
+
                     holder.minPricePerAvgPrice?.text =
                         TradeFragment.Format.percentFormat.format(tradeInfo.getPriceVolumeRate())
+                    when {
+                        tradeInfo.getPriceVolumeRate().compareTo(1.0) > 0 -> {
+                            holder.minPricePerAvgPrice?.setTextColor(Color.RED)
+                        }
+                        tradeInfo.getPriceVolumeRate().compareTo(1.0) < 0 -> {
+                            holder.minPricePerAvgPrice?.setTextColor(Color.BLUE)
+                        }
+                        else -> {
+                            holder.minPricePerAvgPrice?.setTextColor(Color.BLACK)
+                        }
+                    }
                     holder.bidAskRate?.text =
                         TradeFragment.Format.percentFormat.format(tradeInfo.getBidAskRate())
+                    when {
+                        tradeInfo.getBidAskRate().compareTo(0.5) > 0 -> {
+                            holder.bidAskRate?.setTextColor(Color.RED)
+                        }
+                        tradeInfo.getBidAskRate().compareTo(0.5) < 0 -> {
+                            holder.bidAskRate?.setTextColor(Color.BLUE)
+                        }
+                        else -> {
+                            holder.bidAskRate?.setTextColor(Color.BLACK)
+                        }
+                    }
                     holder.bidAskPriceRate?.text =
                         TradeFragment.Format.percentFormat.format(tradeInfo.getBidAskPriceRate())
+                    when {
+                        tradeInfo.getBidAskPriceRate().compareTo(0.5) > 0 -> {
+                            holder.bidAskPriceRate?.setTextColor(Color.RED)
+                        }
+                        tradeInfo.getBidAskRate().compareTo(0.5) < 0 -> {
+                            holder.bidAskPriceRate?.setTextColor(Color.BLUE)
+                        }
+                        else -> {
+                            holder.bidAskPriceRate?.setTextColor(Color.BLACK)
+                        }
+                    }
                 }
             }
             Type.TRADE_LIST -> {

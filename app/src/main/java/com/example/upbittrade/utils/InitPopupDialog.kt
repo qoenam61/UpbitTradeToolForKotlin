@@ -24,13 +24,13 @@ class InitPopupDialog: Dialog {
         val monitorTickEditText = findViewById<EditText>(R.id.trade_input_monitor_tick)
 
         buyingPriceText.text = TradeFragment.Format.nonZeroFormat.format(TradeFragment.LIMIT_AMOUNT)
-        monitorTimeText.text = TradeFragment.Format.zeroFormat.format(TradeFragment.BASE_TIME)
+        monitorTimeText.text = TradeFragment.Format.zeroFormat.format(TradeFragment.BASE_TIME / (60 * 1000))
         monitorRateText.text =
             TradeFragment.Format.percentFormat.format(TradeFragment.THRESHOLD_RATE)
         monitorTickText.text =
             TradeFragment.Format.nonZeroFormat.format(TradeFragment.THRESHOLD_TICK)
         buyingPriceEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.LIMIT_AMOUNT))
-        monitorTimeEditText.setText(TradeFragment.Format.zeroFormat.format(TradeFragment.BASE_TIME))
+        monitorTimeEditText.setText(TradeFragment.Format.zeroFormat.format(TradeFragment.BASE_TIME /  (60 * 1000)))
         monitorRateEditText.setText((TradeFragment.THRESHOLD_RATE * 100).toString())
         monitorTickEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.THRESHOLD_TICK))
 
@@ -41,21 +41,21 @@ class InitPopupDialog: Dialog {
             val monitorRate = monitorRateEditText.text.toString()
             val monitorTick = monitorTickEditText.text.toString()
             try {
-                TradeFragment.UserParam.limitAmount =
+                TradeFragment.UserParam.priceToBuy =
                     if (buyingPrice.isNotBlank()) buyingPrice.replace(",", "").toDouble()
                     else TradeFragment.LIMIT_AMOUNT
 
-                TradeFragment.UserParam.baseTime =
-                    if (monitorTime.isNotBlank()) monitorTime.toDouble() * 60 * 1000
-                    else TradeFragment.BASE_TIME * 60 * 1000
+                TradeFragment.UserParam.monitorTime =
+                    if (monitorTime.isNotBlank()) monitorTime.toLong() * 60 * 1000
+                    else TradeFragment.BASE_TIME
 
                 TradeFragment.UserParam.thresholdRate =
                     if (monitorRate.isNotBlank()) monitorRate.replace("%", "").toDouble() / 100
                     else TradeFragment.THRESHOLD_RATE
 
                 TradeFragment.UserParam.thresholdTick =
-                    if (monitorTick.isNotBlank()) monitorTick.replace(",", "").toDouble()
-                    else TradeFragment.THRESHOLD_TICK.toDouble()
+                    if (monitorTick.isNotBlank()) monitorTick.replace(",", "").toInt()
+                    else TradeFragment.THRESHOLD_TICK
 
             } catch (e: NumberFormatException) {
                 Log.e(
@@ -65,15 +65,15 @@ class InitPopupDialog: Dialog {
             }
 
             buyingPriceText.text =
-                TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.limitAmount)
+                TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.priceToBuy)
             monitorTimeText.text =
-                TradeFragment.Format.zeroFormat.format(TradeFragment.UserParam.baseTime / (60 * 1000))
+                TradeFragment.Format.zeroFormat.format(TradeFragment.UserParam.monitorTime / (60 * 1000))
             monitorRateText.text =
                 TradeFragment.Format.percentFormat.format(TradeFragment.UserParam.thresholdRate)
             monitorTickText.text =
                 TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.thresholdTick)
-            buyingPriceEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.limitAmount))
-            monitorTimeEditText.setText(TradeFragment.Format.zeroFormat.format(TradeFragment.UserParam.baseTime / (60 * 1000)))
+            buyingPriceEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.priceToBuy))
+            monitorTimeEditText.setText(TradeFragment.Format.zeroFormat.format(TradeFragment.UserParam.monitorTime / (60 * 1000)))
             monitorRateEditText.setText((TradeFragment.UserParam.thresholdRate * 100).toString())
             monitorTickEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.thresholdTick))
 

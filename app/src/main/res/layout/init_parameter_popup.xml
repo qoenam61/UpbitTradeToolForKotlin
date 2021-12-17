@@ -62,7 +62,7 @@
                         android:textSize="@dimen/coin_list_text_size"
                         android:textStyle="bold"
                         android:background="@drawable/borderline_bold"
-                        android:text="체크시간(min)"/>
+                        android:text="모니터(min)"/>
                     <TextView
                         android:id="@+id/trade_monitor_time"
                         android:layout_width="match_parent"

@@ -31,14 +31,14 @@ class TradeFragment: Fragment() {
     companion object {
         const val TAG = "TradeFragment"
         const val LIMIT_AMOUNT = 10000.0
-        const val BASE_TIME = 3.0
+        const val BASE_TIME: Long = 3 * 60 * 1000
         const val THRESHOLD_RATE = 0.03
         const val THRESHOLD_TICK = 1500
 
         private const val UNIT_REPEAT_MARKET_INFO = 30 * 60 * 1000
         private const val UNIT_MIN_CANDLE = 60
         private const val UNIT_MIN_CANDLE_COUNT = 24
-        private const val UNIT_MONITOR_TIME = 60 * 1000
+        private const val UNIT_MONITOR_TIME: Long = 60 * 1000
         private const val UNIT_TRADE_COUNT = 3000
         private const val UNIT_PRICE = 1000000
 
@@ -55,10 +55,10 @@ class TradeFragment: Fragment() {
 
     object UserParam {
         var completed = false
-        var limitAmount: Double = 0.0
-        var baseTime: Double = 0.0
-        var thresholdRate: Double = 0.0
-        var thresholdTick: Double = 0.0
+        var priceToBuy: Double = LIMIT_AMOUNT
+        var monitorTime: Long = UNIT_MONITOR_TIME
+        var thresholdRate: Double = THRESHOLD_RATE
+        var thresholdTick: Int = UNIT_TRADE_COUNT
         var thresholdPriceVolumeRate: Float = 1.0f
     }
 
@@ -196,14 +196,14 @@ class TradeFragment: Fragment() {
 
         var tempInfo: List<TradeInfo> = if (tradeMapInfo[marketId] == null) {
             tradesInfoList.filter { tradeInfo ->
-                tradesInfoList.first().timestamp - tradeInfo.timestamp < UNIT_MONITOR_TIME
+                tradesInfoList.first().timestamp - tradeInfo.timestamp < UserParam.monitorTime
             }.reversed()
         } else {
             val addList = tradesInfoList.asReversed().filter {tradeInfo ->
                 tradeMapInfo[marketId]!!.last().sequentialId < tradeInfo.sequentialId}
             val combineInfo = tradeMapInfo[marketId]!! + addList
             combineInfo.filter { tradeInfo ->
-                tradesInfoList.first().timestamp - tradeInfo.timestamp < UNIT_MONITOR_TIME }
+                tradesInfoList.first().timestamp - tradeInfo.timestamp < UserParam.monitorTime }
         }
 
         val accPriceVolume = tempInfo.fold(0.0) {
@@ -215,6 +215,7 @@ class TradeFragment: Fragment() {
         val closePrice = tempInfo.last().tradePrice!!.toDouble()
         val avgPriceVolumePerDayMin =
             minCandleMapInfo[marketId]?.accPriceVolume?.div(UNIT_MIN_CANDLE * UNIT_MIN_CANDLE_COUNT)
+                ?.times((UserParam.monitorTime / UNIT_MONITOR_TIME))
 
         val bid = tempInfo.fold(0) {
                 acc: Int, tradeInfo: TradeInfo -> acc + addCount(tradeInfo, "BID")
