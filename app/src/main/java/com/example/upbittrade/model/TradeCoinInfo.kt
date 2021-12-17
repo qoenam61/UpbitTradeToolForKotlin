@@ -4,7 +4,7 @@ import java.text.DecimalFormat
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
-class ResultTradeInfo {
+open class TradeCoinInfo {
     var marketId: String? = null
     var tickCount: Int? = null
     var timestamp: Long? = null
@@ -19,6 +19,8 @@ class ResultTradeInfo {
     var ask: Int? = 0
     var bidPriceVolume: Double? = 0.0
     var askPriceVolume: Double? = 0.0
+
+    constructor()
 
     constructor(
         marketId: String?,
@@ -104,7 +106,7 @@ class ResultTradeInfo {
         return (high!! + close!! + open!! + low!!) / 4
     }
 
-    fun getPriceVolumeRate(): Double {
+    fun getAvgMinVsAvgDayPriceVolumeRate(): Double {
         if (accPriceVolume == null || avgPriceVolumePerDayMin == null) {
             return 0.0
         }

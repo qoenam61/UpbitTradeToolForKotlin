@@ -18,21 +18,24 @@ class InitPopupDialog: Dialog {
         val monitorTimeText = findViewById<TextView>(R.id.trade_monitor_time)
         val monitorRateText = findViewById<TextView>(R.id.trade_monitor_rate)
         val monitorTickText = findViewById<TextView>(R.id.trade_monitor_tick)
+        val avgMinVsAvgDayText = findViewById<TextView>(R.id.min_price_per_avg_price)
         val buyingPriceEditText = findViewById<EditText>(R.id.trade_input_buying_price)
         val monitorTimeEditText = findViewById<EditText>(R.id.trade_input_monitor_time)
         val monitorRateEditText = findViewById<EditText>(R.id.trade_input_monitor_rate)
         val monitorTickEditText = findViewById<EditText>(R.id.trade_input_monitor_tick)
+        val avgMinVsAvgDayEditText = findViewById<EditText>(R.id.input_min_price_per_avg_price)
 
         buyingPriceText.text = TradeFragment.Format.nonZeroFormat.format(TradeFragment.LIMIT_AMOUNT)
         monitorTimeText.text = TradeFragment.Format.zeroFormat.format(TradeFragment.BASE_TIME / (60 * 1000))
-        monitorRateText.text =
-            TradeFragment.Format.percentFormat.format(TradeFragment.THRESHOLD_RATE)
-        monitorTickText.text =
-            TradeFragment.Format.nonZeroFormat.format(TradeFragment.THRESHOLD_TICK)
+        monitorRateText.text = TradeFragment.Format.percentFormat.format(TradeFragment.THRESHOLD_RATE)
+        monitorTickText.text = TradeFragment.Format.nonZeroFormat.format(TradeFragment.THRESHOLD_TICK)
+        avgMinVsAvgDayText.text = TradeFragment.Format.percentFormat.format(TradeFragment.THRESHOLD_AVG_MIN_AVG_DAY_PRICE_VOLUME)
+
         buyingPriceEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.LIMIT_AMOUNT))
         monitorTimeEditText.setText(TradeFragment.Format.zeroFormat.format(TradeFragment.BASE_TIME /  (60 * 1000)))
         monitorRateEditText.setText((TradeFragment.THRESHOLD_RATE * 100).toString())
         monitorTickEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.THRESHOLD_TICK))
+        avgMinVsAvgDayEditText.setText(TradeFragment.Format.percentFormat.format(TradeFragment.THRESHOLD_AVG_MIN_AVG_DAY_PRICE_VOLUME))
 
         val applyButton = findViewById<Button>(R.id.trade_input_button)
         applyButton?.setOnClickListener {
@@ -40,6 +43,7 @@ class InitPopupDialog: Dialog {
             val monitorTime = monitorTimeEditText.text.toString()
             val monitorRate = monitorRateEditText.text.toString()
             val monitorTick = monitorTickEditText.text.toString()
+            val avgMinVsAvgDay = avgMinVsAvgDayEditText.text.toString()
             try {
                 TradeFragment.UserParam.priceToBuy =
                     if (buyingPrice.isNotBlank()) buyingPrice.replace(",", "").toDouble()
@@ -57,6 +61,10 @@ class InitPopupDialog: Dialog {
                     if (monitorTick.isNotBlank()) monitorTick.replace(",", "").toInt()
                     else TradeFragment.THRESHOLD_TICK
 
+                TradeFragment.UserParam.thresholdAvgMinPerAvgDayPriceVolumeRate =
+                    if (avgMinVsAvgDay.isNotBlank()) avgMinVsAvgDay.replace("%", "").toFloat() / 100
+                    else TradeFragment.THRESHOLD_AVG_MIN_AVG_DAY_PRICE_VOLUME
+
             } catch (e: NumberFormatException) {
                 Log.e(
                     TradeFragment.TAG,
@@ -72,15 +80,20 @@ class InitPopupDialog: Dialog {
                 TradeFragment.Format.percentFormat.format(TradeFragment.UserParam.thresholdRate)
             monitorTickText.text =
                 TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.thresholdTick)
+            avgMinVsAvgDayText.text =
+                TradeFragment.Format.percentFormat.format(TradeFragment.UserParam.thresholdAvgMinPerAvgDayPriceVolumeRate)
+
             buyingPriceEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.priceToBuy))
             monitorTimeEditText.setText(TradeFragment.Format.zeroFormat.format(TradeFragment.UserParam.monitorTime / (60 * 1000)))
             monitorRateEditText.setText((TradeFragment.UserParam.thresholdRate * 100).toString())
             monitorTickEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.thresholdTick))
+            avgMinVsAvgDayEditText.setText((TradeFragment.UserParam.thresholdAvgMinPerAvgDayPriceVolumeRate * 100).toString())
 
             buyingPriceEditText.clearFocus()
             monitorTimeEditText.clearFocus()
             monitorRateEditText.clearFocus()
             monitorTickEditText.clearFocus()
+            avgMinVsAvgDayEditText.clearFocus()
 
             val inputMethodManager =
                 context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager

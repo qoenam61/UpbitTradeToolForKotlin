@@ -21,6 +21,7 @@ import com.example.upbittrade.utils.BackgroundProcessor
 import com.example.upbittrade.utils.InitPopupDialog
 import com.example.upbittrade.utils.TradeAdapter
 import com.example.upbittrade.utils.TradeAdapter.Companion.Type.MONITOR_LIST
+import com.example.upbittrade.utils.TradeManager
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -34,6 +35,7 @@ class TradeFragment: Fragment() {
         const val BASE_TIME: Long = 3 * 60 * 1000
         const val THRESHOLD_RATE = 0.03
         const val THRESHOLD_TICK = 1500
+        const val THRESHOLD_AVG_MIN_AVG_DAY_PRICE_VOLUME = 1.0f
 
         private const val UNIT_REPEAT_MARKET_INFO = 30 * 60 * 1000
         private const val UNIT_MIN_CANDLE = 60
@@ -43,7 +45,7 @@ class TradeFragment: Fragment() {
         private const val UNIT_PRICE = 1000000
 
         val marketMapInfo = HashMap<String, MarketInfo>()
-        val tradeInfo = HashMap<String, ResultTradeInfo>()
+        val tradeInfo = HashMap<String, TradeCoinInfo>()
     }
 
     object Format {
@@ -59,15 +61,18 @@ class TradeFragment: Fragment() {
         var monitorTime: Long = UNIT_MONITOR_TIME
         var thresholdRate: Double = THRESHOLD_RATE
         var thresholdTick: Int = UNIT_TRADE_COUNT
-        var thresholdPriceVolumeRate: Float = 1.0f
-        var thresholdBidAskRate: Float = 0.5f
-        var thresholdBidAskPriceRate: Float = 0.5f
+        var thresholdAvgMinPerAvgDayPriceVolumeRate: Float = THRESHOLD_AVG_MIN_AVG_DAY_PRICE_VOLUME
+        var thresholdBidAskRate: Float = 0.1f
+        var thresholdBidAskPriceRate: Float = 0.1f
     }
 
     lateinit var mainActivity: TradePagerActivity
+    lateinit var tradeManager: TradeManager
+
     private var viewModel: TradeViewModel? = null
     private var processor: BackgroundProcessor? = null
-    private val minCandleMapInfo = HashMap<String, ResultTradeInfo>()
+
+    private val minCandleMapInfo = HashMap<String, TradeCoinInfo>()
     private val tradeMapInfo = HashMap<String, List<TradeInfo>>()
     private var monitorAdapter: TradeAdapter? = null
     private var monitorList: List<String>? = null
@@ -103,6 +108,20 @@ class TradeFragment: Fragment() {
         changeParamButton.setOnClickListener {
             initDialog.show()
         }
+
+        tradeManager = TradeManager(object : TradeManager.TradeChangedListener {
+            override fun onPostBid(postBidMap: HashMap<String, OrderCoinInfo>) {
+                postBidMap.forEach() {
+                    Log.d(TAG, "[DEBUG] onPostBid - key: ${it.key}")
+                }
+            }
+
+            override fun onPostAsk(postAskMap: HashMap<String, OrderCoinInfo>) {
+                postAskMap.forEach() {
+                    Log.d(TAG, "[DEBUG] onPostAsk - key: ${it.key}")
+                }
+            }
+        })
 
         return view
     }
@@ -145,7 +164,7 @@ class TradeFragment: Fragment() {
             val lowPrice = minCandlesInfo.minOf { it.tradePrice!!.toDouble() }
             val openPrice = minCandlesInfo.first().tradePrice!!.toDouble()
             val closePrice = minCandlesInfo.last().tradePrice!!.toDouble()
-            minCandleMapInfo[marketId] = ResultTradeInfo(marketId,
+            minCandleMapInfo[marketId] = TradeCoinInfo(marketId,
                 minCandlesInfo.size, minCandlesInfo.last().timestamp,
                 highPrice, lowPrice, openPrice, closePrice, accPriceVolume)
         }
@@ -236,7 +255,7 @@ class TradeFragment: Fragment() {
         }
 
         tradeMapInfo[marketId] = tempInfo
-        tradeInfo[marketId] = ResultTradeInfo(marketId,
+        tradeInfo[marketId] = TradeCoinInfo(marketId,
             tempInfo.size,
             tempInfo.last().timestamp,
             highPrice,
@@ -254,16 +273,18 @@ class TradeFragment: Fragment() {
 
         monitorList = (tradeInfo.filter {
             (it.value.tickCount!! > UserParam.thresholdTick
-                && it.value.getPriceVolumeRate() > UserParam.thresholdPriceVolumeRate)
-        } as HashMap<String, ResultTradeInfo>)
+                && it.value.getAvgMinVsAvgDayPriceVolumeRate() > UserParam.thresholdAvgMinPerAvgDayPriceVolumeRate)
+        } as HashMap<String, TradeCoinInfo>)
             .toSortedMap(compareByDescending { sortedMapList(it) }).keys.toList()
+
+        tradeManager.setList(TradeManager.Type.POST_BID, monitorList)
 
         monitorAdapter!!.monitorMap = monitorList
         monitorAdapter!!.notifyDataSetChanged()
 
         if (tradeInfo[marketId] != null && minCandleMapInfo[marketId] != null) {
             val priceVolume = tradeInfo[marketId]!!.accPriceVolume?.div(UNIT_PRICE)
-            val rate = tradeInfo[marketId]!!.getPriceVolumeRate()
+            val rate = tradeInfo[marketId]!!.getAvgMinVsAvgDayPriceVolumeRate()
             Log.d(
                 TAG, "[DEBUG] makeTradeMapInfo marketId: $marketId " +
                         "count: ${tradeInfo[marketId]!!.tickCount} " +

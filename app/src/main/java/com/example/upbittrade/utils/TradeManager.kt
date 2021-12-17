@@ -1,67 +1,85 @@
 package com.example.upbittrade.utils
 
 import com.example.upbittrade.fragment.TradeFragment
-import com.example.upbittrade.model.ResultTradeInfo
+import com.example.upbittrade.model.OrderCoinInfo
+import com.example.upbittrade.model.TradeCoinInfo
 
-class TradeManager: Thread {
+class TradeManager(private val listener: TradeChangedListener) {
     companion object {
-        enum class Type {
-            POST_BID,
-            POST_ASK
-        }
-        var postBidKeyList: List<String>? = null
+        private const val TAG = "TradeManager"
     }
 
-    private var marketIdList: List<String>? = null
+    interface TradeChangedListener {
+        fun onPostBid(postBidMap: HashMap<String, OrderCoinInfo>)
+        fun onPostAsk(postAskMap: HashMap<String, OrderCoinInfo>)
+    }
+
+    enum class Type {
+        POST_BID,
+        POST_ASK
+    }
+
+    private val postBid = HashMap<String, OrderCoinInfo>()
+
     private var type: Type? = null
+    private var marketIdList: List<String>? = null
 
-
-    
-
-    constructor(type: Type, list: List<String>) {
+    fun setList(type: Type, list: List<String>?) {
         this.type = type
         marketIdList = list
+        FilterList(list).start()
     }
 
-    fun newInstance(type: Type, list: List<String>): TradeManager {
-        val manager = TradeManager(type, list)
-        manager.start()
-        return manager
-    }
+    inner class FilterList(val marketIdList: List<String>?): Thread() {
+        var filteredList: List<String>? = null
+        override fun run() {
+            super.run()
 
-    override fun run() {
-        super.run()
-        postBidKeyList = when(type) {
-            Type.POST_BID -> {
-                 marketIdList!!.filter { filterBuyList(TradeFragment.tradeInfo[it])}
+            filteredList = when(type) {
+                Type.POST_BID -> {
+                    marketIdList?.filter { filterBuyList(TradeFragment.tradeInfo[it])}
+                }
+
+                Type.POST_ASK -> {
+                    null
+                }
+                else -> {
+                    null
+                }
             }
 
-            Type.POST_ASK -> {
-                null
+            filteredList!!.forEach() {
+//                Log.d(TAG, "FilterList filterBuyList: $it ")
+                val orderCoinInfo = TradeFragment.tradeInfo[it]!! as OrderCoinInfo
+                orderCoinInfo.status = OrderCoinInfo.Status.READY
+                postBid[it] = orderCoinInfo
             }
-            else -> {
-                null
+
+            if (postBid.isNotEmpty()) {
+                listener.onPostBid(postBid)
             }
         }
-
-        // registerBackgroundProcess!!
     }
 
-    private fun filterBuyList(tradeInfo: ResultTradeInfo?): Boolean {
-        if (tradeInfo == null) {
+    private fun filterBuyList(tradeCoinInfo: TradeCoinInfo?): Boolean {
+        if (tradeCoinInfo == null) {
+            return false
+        }
+
+        if (postBid.containsKey(tradeCoinInfo.marketId)) {
             return false
         }
 
         // tick count > thresholdTick
         // getTradeInfoPriceRate() > thresholdRate
-        // getPriceVolumeRate() > thresholdPriceVolumeRate
-        // getBidAskRate() > 0.5
-        // getBidAskPriceRate() > 0.5
-        if (tradeInfo.tickCount!! > TradeFragment.UserParam.thresholdTick
-            && tradeInfo.getTradeInfoPriceRate() > TradeFragment.UserParam.thresholdRate
-            && tradeInfo.getPriceVolumeRate() > TradeFragment.UserParam.thresholdPriceVolumeRate
-            && tradeInfo.getBidAskRate() > TradeFragment.UserParam.thresholdBidAskRate
-            && tradeInfo.getBidAskPriceRate() > TradeFragment.UserParam.thresholdBidAskPriceRate
+        // getPriceVolumeRate() > thresholdAvgMinPerAvgDayPriceVolumeRate
+        // getBidAskRate() > thresholdBidAskRate
+        // getBidAskPriceRate() > thresholdBidAskPriceRate
+        if (tradeCoinInfo.tickCount!! > TradeFragment.UserParam.thresholdTick
+            && tradeCoinInfo.getTradeInfoPriceRate() > TradeFragment.UserParam.thresholdRate
+            && tradeCoinInfo.getAvgMinVsAvgDayPriceVolumeRate() > TradeFragment.UserParam.thresholdAvgMinPerAvgDayPriceVolumeRate
+            && tradeCoinInfo.getBidAskRate() > TradeFragment.UserParam.thresholdBidAskRate
+            && tradeCoinInfo.getBidAskPriceRate() > TradeFragment.UserParam.thresholdBidAskPriceRate
         ) {
             return true
         }
