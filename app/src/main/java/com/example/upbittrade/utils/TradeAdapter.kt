@@ -48,7 +48,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 val marketId = monitorMap?.get(position)
                 val tradeInfo = TradeFragment.tradeInfo[marketId]
                 if (tradeInfo != null) {
-                    holder.marketId?.text = tradeInfo.marketId
+                    holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
                     holder.tradePrice?.text =
                         TradeFragment.Format.nonZeroFormat.format(tradeInfo.closePrice!!.toDouble())
                     holder.tradePriceRate?.text =

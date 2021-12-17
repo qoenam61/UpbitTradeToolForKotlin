@@ -43,6 +43,7 @@ class TradeFragment: Fragment() {
         private const val UNIT_TRADE_COUNT = 3000
         private const val UNIT_PRICE = 1000000
 
+        val marketMapInfo = HashMap<String, MarketInfo>()
         val tradeInfo = HashMap<String, ResultTradeInfo>()
     }
 
@@ -65,7 +66,6 @@ class TradeFragment: Fragment() {
     lateinit var mainActivity: TradePagerActivity
     private var viewModel: TradeViewModel? = null
     private var processor: BackgroundProcessor? = null
-    private val marketMapInfo = HashMap<String, MarketInfo>()
     private val minCandleMapInfo = HashMap<String, ResultTradeInfo>()
     private val tradeMapInfo = HashMap<String, List<TradeInfo>>()
     private var tradeView: TradeAdapter? = null

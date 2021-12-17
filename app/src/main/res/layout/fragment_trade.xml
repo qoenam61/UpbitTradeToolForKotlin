@@ -66,42 +66,78 @@
                             android:textSize="@dimen/coin_list_text_size"
                             android:background="@drawable/borderline_bold"
                             android:text="현재가"/>
-                        <TextView
+                        <LinearLayout
                             android:layout_width="0dp"
-                            android:layout_height="match_parent"
                             android:layout_weight="1"
-                            android:gravity="center"
-                            android:textSize="@dimen/coin_list_text_size"
-                            android:textStyle="bold"
-                            android:background="@drawable/borderline_bold"
-                            android:text="전일대비"/>
-                        <TextView
+                            android:layout_height="match_parent"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:textSize="@dimen/coin_list_text_size"
+                                android:textStyle="bold"
+                                android:background="@drawable/borderline_bold"
+                                android:text="Rate/day"/>
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:textSize="@dimen/coin_list_text_size"
+                                android:textStyle="bold"
+                                android:background="@drawable/borderline_bold"
+                                android:text="Rate/min"/>
+                            </LinearLayout>
+                        <LinearLayout
                             android:layout_width="0dp"
-                            android:layout_height="match_parent"
                             android:layout_weight="1"
-                            android:gravity="center"
-                            android:textSize="@dimen/coin_list_text_size"
-                            android:textStyle="bold"
-                            android:background="@drawable/borderline_bold"
-                            android:text="분당상승"/>
-                        <TextView
+                            android:layout_height="match_parent"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:textSize="@dimen/coin_list_text_size"
+                                android:textStyle="bold"
+                                android:background="@drawable/borderline_bold"
+                                android:text="틱거래수"/>
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:textSize="@dimen/coin_list_text_size"
+                                android:textStyle="bold"
+                                android:background="@drawable/borderline_bold"
+                                android:text="분평/일평"/>
+                        </LinearLayout>
+                        <LinearLayout
                             android:layout_width="0dp"
-                            android:layout_height="match_parent"
                             android:layout_weight="1"
-                            android:gravity="center"
-                            android:textSize="@dimen/coin_list_text_size"
-                            android:textStyle="bold"
-                            android:background="@drawable/borderline_bold"
-                            android:text="틱거래수"/>
-                        <TextView
-                            android:layout_width="0dp"
                             android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:textSize="@dimen/coin_list_text_size"
-                            android:textStyle="bold"
-                            android:background="@drawable/borderline_bold_right"
-                            android:text="분/평균액"/>
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:textSize="@dimen/coin_list_text_size"
+                                android:textStyle="bold"
+                                android:background="@drawable/borderline_bold"
+                                android:text="bid/ask"/>
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:textSize="@dimen/coin_list_text_size"
+                                android:textStyle="bold"
+                                android:background="@drawable/borderline_bold"
+                                android:text="bidV/askV"/>
+                        </LinearLayout>
                     </LinearLayout>
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/monitor_list_view"
