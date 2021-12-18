@@ -234,7 +234,7 @@ class TradeFragment: Fragment() {
         val lowPrice = tempInfo.minOf { it.tradePrice!!.toDouble() }
         val openPrice = tempInfo.first().tradePrice!!.toDouble()
         val closePrice = tempInfo.last().tradePrice!!.toDouble()
-        val avgPriceVolumePerDayMin =
+        val avgAccPriceVolume =
             minCandleMapInfo[marketId]?.accPriceVolume?.div(UNIT_MIN_CANDLE * UNIT_MIN_CANDLE_COUNT)
                 ?.times((UserParam.monitorTime / UNIT_MONITOR_TIME))
 
@@ -263,7 +263,7 @@ class TradeFragment: Fragment() {
             openPrice,
             closePrice,
             accPriceVolume,
-            avgPriceVolumePerDayMin,
+            avgAccPriceVolume,
             tempInfo.last().getChangeRate(),
             bid,
             ask,
@@ -300,7 +300,7 @@ class TradeFragment: Fragment() {
                         "bidPrice: ${Format.nonZeroFormat.format(bidPriceVolume)} " +
                         "askPrice: ${Format.nonZeroFormat.format(askPriceVolume)} " +
                         "bidPrice/askPrice: ${Format.percentFormat.format(tradeInfo[marketId]!!.getBidAskRate())} " +
-                        "avg1MinPriceVolume: ${Format.nonZeroFormat.format(avgPriceVolumePerDayMin?.div(UNIT_PRICE))} " +
+                        "avg1MinPriceVolume: ${Format.nonZeroFormat.format(avgAccPriceVolume?.div(UNIT_PRICE))} " +
                         "time: ${Format.timeFormat.format(tradeInfo[marketId]!!.timestamp)} "
             )
         }

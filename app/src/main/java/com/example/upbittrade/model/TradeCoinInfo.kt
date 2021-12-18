@@ -13,7 +13,7 @@ open class TradeCoinInfo {
     var openPrice: Number? = null
     var closePrice: Number? = null
     var accPriceVolume: Double? = 0.0
-    var avgPriceVolumePerDayMin: Double? = 0.0
+    var avgAccPriceVolume: Double? = 0.0
     var changeRate: Double? = 0.0
     var bid: Int? = 0
     var ask: Int? = 0
@@ -51,7 +51,7 @@ open class TradeCoinInfo {
         openPrice: Number?,
         closePrice: Number?,
         accPriceVolume: Double?,
-        avgPriceVolumePerDayMin: Double?,
+        avgAccPriceVolume: Double?,
         changeRate: Double?
     ) {
         this.marketId = marketId
@@ -62,7 +62,7 @@ open class TradeCoinInfo {
         this.openPrice = openPrice
         this.closePrice = closePrice
         this.accPriceVolume = accPriceVolume
-        this.avgPriceVolumePerDayMin = avgPriceVolumePerDayMin
+        this.avgAccPriceVolume = avgAccPriceVolume
         this.changeRate = changeRate
     }
 
@@ -90,7 +90,7 @@ open class TradeCoinInfo {
         this.openPrice = openPrice
         this.closePrice = closePrice
         this.accPriceVolume = accPriceVolume
-        this.avgPriceVolumePerDayMin = avgPriceVolumePerDayMin
+        this.avgAccPriceVolume = avgPriceVolumePerDayMin
         this.changeRate = changeRatePerDay
         this.bid = bid
         this.ask = ask
@@ -107,10 +107,10 @@ open class TradeCoinInfo {
     }
 
     fun getAvgMinVsAvgDayPriceVolumeRate(): Double {
-        if (accPriceVolume == null || avgPriceVolumePerDayMin == null) {
+        if (accPriceVolume == null || avgAccPriceVolume == null) {
             return 0.0
         }
-        return accPriceVolume!! / avgPriceVolumePerDayMin!!
+        return accPriceVolume!! / avgAccPriceVolume!!
     }
 
     fun getTradeInfoPriceRate(): Double {

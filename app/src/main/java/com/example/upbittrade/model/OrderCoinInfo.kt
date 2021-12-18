@@ -9,4 +9,12 @@ class OrderCoinInfo: TradeCoinInfo() {
     }
 
     var status: Status = Status.READY
+
+    val bidPrice: Double? = null
+
+    val askPrice: Double? = null
+
+    val tickPrice: Double? = null
+
+
 }
