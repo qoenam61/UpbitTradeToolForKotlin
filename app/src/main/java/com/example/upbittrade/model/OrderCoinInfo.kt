@@ -4,13 +4,30 @@ import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class OrderCoinInfo: TradeCoinInfo() {
+class OrderCoinInfo: TradeCoinInfo {
     enum class Status {
         READY,
         WAIT,
         BUY,
         SELL
     }
+
+    constructor(tradeCoinInfo: TradeCoinInfo):
+            super(
+                tradeCoinInfo.marketId,
+                tradeCoinInfo.tickCount,
+                tradeCoinInfo.timestamp,
+                tradeCoinInfo.highPrice,
+                tradeCoinInfo.lowPrice,
+                tradeCoinInfo.openPrice,
+                tradeCoinInfo.closePrice,
+                tradeCoinInfo.accPriceVolume,
+                tradeCoinInfo.avgAccPriceVolume,
+                tradeCoinInfo.dayChangeRate,
+                tradeCoinInfo.bid,
+                tradeCoinInfo.ask,
+                tradeCoinInfo.bidPriceVolume,
+                tradeCoinInfo.askPriceVolume)
 
     // type0 : HHCO
     private var type0 =

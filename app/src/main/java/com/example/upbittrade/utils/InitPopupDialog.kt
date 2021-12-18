@@ -61,7 +61,7 @@ class InitPopupDialog: Dialog {
                     if (monitorTick.isNotBlank()) monitorTick.replace(",", "").toInt()
                     else TradeFragment.THRESHOLD_TICK
 
-                TradeFragment.UserParam.thresholdAvgMinPerAvgDayPriceVolumeRate =
+                TradeFragment.UserParam.thresholdAccPriceVolumeRate =
                     if (avgMinVsAvgDay.isNotBlank()) avgMinVsAvgDay.replace("%", "").toFloat() / 100
                     else TradeFragment.THRESHOLD_AVG_MIN_AVG_DAY_PRICE_VOLUME
 
@@ -81,13 +81,13 @@ class InitPopupDialog: Dialog {
             monitorTickText.text =
                 TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.thresholdTick)
             avgMinVsAvgDayText.text =
-                TradeFragment.Format.percentFormat.format(TradeFragment.UserParam.thresholdAvgMinPerAvgDayPriceVolumeRate)
+                TradeFragment.Format.percentFormat.format(TradeFragment.UserParam.thresholdAccPriceVolumeRate)
 
             buyingPriceEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.priceToBuy))
             monitorTimeEditText.setText(TradeFragment.Format.zeroFormat.format(TradeFragment.UserParam.monitorTime / (60 * 1000)))
             monitorRateEditText.setText((TradeFragment.UserParam.thresholdRate * 100).toString())
             monitorTickEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.thresholdTick))
-            avgMinVsAvgDayEditText.setText((TradeFragment.UserParam.thresholdAvgMinPerAvgDayPriceVolumeRate * 100).toString())
+            avgMinVsAvgDayEditText.setText((TradeFragment.UserParam.thresholdAccPriceVolumeRate * 100).toString())
 
             buyingPriceEditText.clearFocus()
             monitorTimeEditText.clearFocus()

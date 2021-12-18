@@ -61,7 +61,7 @@ class TradeFragment: Fragment() {
         var monitorTime: Long = UNIT_MONITOR_TIME
         var thresholdRate: Double = THRESHOLD_RATE
         var thresholdTick: Int = UNIT_TRADE_COUNT
-        var thresholdAvgMinPerAvgDayPriceVolumeRate: Float = THRESHOLD_AVG_MIN_AVG_DAY_PRICE_VOLUME
+        var thresholdAccPriceVolumeRate: Float = THRESHOLD_AVG_MIN_AVG_DAY_PRICE_VOLUME
         var thresholdBidAskRate: Float = 0.1f
         var thresholdBidAskPriceRate: Float = 0.1f
     }
@@ -112,7 +112,7 @@ class TradeFragment: Fragment() {
         tradeManager = TradeManager(object : TradeManager.TradeChangedListener {
             override fun onPostBid(postBidMap: HashMap<String, OrderCoinInfo>) {
                 postBidMap.forEach() {
-                    Log.d(TAG, "[DEBUG] onPostBid - key: ${it.key}")
+                    Log.d(TAG, "[DEBUG] onPostBid - key: ${it.key} bidPrice: ${Format.nonZeroFormat.format(it.value.getBidPrice())}")
                 }
             }
 
@@ -264,7 +264,7 @@ class TradeFragment: Fragment() {
             closePrice,
             accPriceVolume,
             avgAccPriceVolume,
-            tempInfo.last().getChangeRate(),
+            tempInfo.last().getDayChangeRate(),
             bid,
             ask,
             bidPriceVolume,
@@ -273,7 +273,7 @@ class TradeFragment: Fragment() {
 
         monitorList = (tradeInfo.filter {
             (it.value.tickCount!! > UserParam.thresholdTick
-                && it.value.getAvgMinVsAvgDayPriceVolumeRate() > UserParam.thresholdAvgMinPerAvgDayPriceVolumeRate)
+                && it.value.getAvgAccVolumeRate() > UserParam.thresholdAccPriceVolumeRate)
         } as HashMap<String, TradeCoinInfo>)
             .toSortedMap(compareByDescending { sortedMapList(it) }).keys.toList()
 
@@ -284,7 +284,7 @@ class TradeFragment: Fragment() {
 
         if (tradeInfo[marketId] != null && minCandleMapInfo[marketId] != null) {
             val priceVolume = tradeInfo[marketId]!!.accPriceVolume?.div(UNIT_PRICE)
-            val rate = tradeInfo[marketId]!!.getAvgMinVsAvgDayPriceVolumeRate()
+            val rate = tradeInfo[marketId]!!.getAvgAccVolumeRate()
             Log.d(
                 TAG, "[DEBUG] makeTradeMapInfo marketId: $marketId " +
                         "count: ${tradeInfo[marketId]!!.tickCount} " +

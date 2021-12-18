@@ -37,7 +37,7 @@ class TradeInfo {
         return tradePrice!!.toDouble() * tradeVolume!!.toDouble()
     }
 
-    fun getChangeRate(): Double {
+    fun getDayChangeRate(): Double {
         if (changePrice == null || prevClosingPrice == null) {
             return 0.0
         }

@@ -50,7 +50,8 @@ class TradeManager(private val listener: TradeChangedListener) {
 
             filteredList!!.forEach() {
 //                Log.d(TAG, "FilterList filterBuyList: $it ")
-                val orderCoinInfo = TradeFragment.tradeInfo[it]!! as OrderCoinInfo
+//                val orderCoinInfo = TradeFragment.tradeInfo[it]!!
+                val orderCoinInfo = OrderCoinInfo(TradeFragment.tradeInfo[it]!!)
                 orderCoinInfo.status = OrderCoinInfo.Status.READY
                 postBid[it] = orderCoinInfo
             }
@@ -76,8 +77,8 @@ class TradeManager(private val listener: TradeChangedListener) {
         // getBidAskRate() > thresholdBidAskRate
         // getBidAskPriceRate() > thresholdBidAskPriceRate
         if (tradeCoinInfo.tickCount!! > TradeFragment.UserParam.thresholdTick
-            && tradeCoinInfo.getTradeInfoPriceRate() > TradeFragment.UserParam.thresholdRate
-            && tradeCoinInfo.getAvgMinVsAvgDayPriceVolumeRate() > TradeFragment.UserParam.thresholdAvgMinPerAvgDayPriceVolumeRate
+            && tradeCoinInfo.getPriceRangeRate() > TradeFragment.UserParam.thresholdRate
+            && tradeCoinInfo.getAvgAccVolumeRate() > TradeFragment.UserParam.thresholdAccPriceVolumeRate
             && tradeCoinInfo.getBidAskRate() > TradeFragment.UserParam.thresholdBidAskRate
             && tradeCoinInfo.getBidAskPriceRate() > TradeFragment.UserParam.thresholdBidAskPriceRate
         ) {

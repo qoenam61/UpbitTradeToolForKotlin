@@ -14,7 +14,7 @@ open class TradeCoinInfo {
     var closePrice: Number? = null
     var accPriceVolume: Double? = 0.0
     var avgAccPriceVolume: Double? = 0.0
-    var changeRate: Double? = 0.0
+    var dayChangeRate: Double? = 0.0
     var bid: Int? = 0
     var ask: Int? = 0
     var bidPriceVolume: Double? = 0.0
@@ -63,7 +63,7 @@ open class TradeCoinInfo {
         this.closePrice = closePrice
         this.accPriceVolume = accPriceVolume
         this.avgAccPriceVolume = avgAccPriceVolume
-        this.changeRate = changeRate
+        this.dayChangeRate = changeRate
     }
 
     constructor(
@@ -76,11 +76,11 @@ open class TradeCoinInfo {
         closePrice: Number?,
         accPriceVolume: Double?,
         avgPriceVolumePerDayMin: Double?,
-        changeRatePerDay: Double?,
-        bid: Int,
-        ask: Int,
-        bidPriceVolume: Double,
-        askPriceVolume: Double
+        dayChangeRate: Double?,
+        bid: Int?,
+        ask: Int?,
+        bidPriceVolume: Double?,
+        askPriceVolume: Double?
     ) {
         this.marketId = marketId
         this.tickCount = tickCount
@@ -91,7 +91,7 @@ open class TradeCoinInfo {
         this.closePrice = closePrice
         this.accPriceVolume = accPriceVolume
         this.avgAccPriceVolume = avgPriceVolumePerDayMin
-        this.changeRate = changeRatePerDay
+        this.dayChangeRate = dayChangeRate
         this.bid = bid
         this.ask = ask
         this.bidPriceVolume = bidPriceVolume
@@ -106,19 +106,19 @@ open class TradeCoinInfo {
         return (high!! + close!! + open!! + low!!) / 4
     }
 
-    fun getAvgMinVsAvgDayPriceVolumeRate(): Double {
+    fun getAvgAccVolumeRate(): Double {
         if (accPriceVolume == null || avgAccPriceVolume == null) {
             return 0.0
         }
         return accPriceVolume!! / avgAccPriceVolume!!
     }
 
-    fun getTradeInfoPriceRate(): Double {
-        if (openPrice == null || closePrice == null) {
+    fun getPriceRangeRate(): Double {
+        if (lowPrice == null || highPrice == null) {
             return 0.0
         }
-        val diff = closePrice!!.toDouble().minus(openPrice!!.toDouble())
-        return diff.div(openPrice!!.toDouble())
+        val diff = highPrice!!.toDouble().minus(lowPrice!!.toDouble())
+        return diff.div(lowPrice!!.toDouble())
     }
 
     fun getBidAskRate(): Double {
@@ -134,6 +134,7 @@ open class TradeCoinInfo {
         }
         return (bidPriceVolume!!.toDouble() / (bidPriceVolume!!.toDouble() + askPriceVolume!!.toDouble()))
     }
+/*
 
     var tickPrice: Double = when {
         closePrice!!.toDouble() < 10 -> {
@@ -171,6 +172,7 @@ open class TradeCoinInfo {
         }
         else -> 0.0
     }
+*/
 
     fun convertPrice(price: Double): Double? {
         val mFormatUnder10 = DecimalFormat("#.##")
@@ -187,31 +189,26 @@ open class TradeCoinInfo {
             price < 10 -> {
                 priceResult = floor(price * 100) / 100
                 result = mFormatUnder10.format(priceResult)
-                tickPrice = 0.01
             }
             price < 100 -> {
                 priceResult = floor(price * 10) / 10
                 result = mFormatUnder100.format(priceResult)
-                tickPrice = 0.1
             }
             price < 1000 -> {
                 priceResult = floor(price)
                 result = mFormatUnder1_000.format(priceResult)
-                tickPrice = 1.0
             }
             price < 10000 -> {
                 // 5
                 val extra = ((price % 10 * 2 / 10).roundToInt() * 5).toDouble()
                 priceResult = floor(price / 10) * 10 + extra
                 result = mFormatUnder10_000.format(priceResult)
-                tickPrice = 5.0
             }
             price < 100000 -> {
                 // 10
                 val extra = ((price % 100 / 100).roundToInt() * 100).toDouble()
                 priceResult = floor(price / 100) * 100 + extra
                 result = mFormatUnder100_000.format(priceResult)
-                tickPrice = 10.0
             }
             price < 1000000 -> {
                 // 50, 100
@@ -220,11 +217,6 @@ open class TradeCoinInfo {
                     (Math.round(price % 100 * 2 / 100) * 50).toDouble()
                 } else {
                     (Math.round(price % 100 / 100) * 100).toDouble()
-                }
-                tickPrice = if (price < 500000) {
-                    50.0
-                } else {
-                    100.0
                 }
 
                 priceResult = floor(price / 100) * 100 + extra
@@ -235,14 +227,12 @@ open class TradeCoinInfo {
                 val extra = ((price % 1000 / 1000).roundToInt() * 1000).toDouble()
                 priceResult = floor(price / 1000) * 1000 + extra
                 result = mFormatUnder10_000_000.format(priceResult)
-                tickPrice = 1000.0
             }
             price < 100000000 -> {
                 // 1000
                 val extra = ((price % 1000 / 1000).roundToInt() * 1000).toDouble()
                 priceResult = floor(price / 1000) * 1000 + extra
                 result = mFormatUnder100_000_000.format(priceResult)
-                tickPrice = 1000.0
             }
         }
         return result?.toDouble()
