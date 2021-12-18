@@ -21,6 +21,7 @@ import com.example.upbittrade.utils.BackgroundProcessor
 import com.example.upbittrade.utils.InitPopupDialog
 import com.example.upbittrade.utils.TradeAdapter
 import com.example.upbittrade.utils.TradeAdapter.Companion.Type.MONITOR_LIST
+import com.example.upbittrade.utils.TradeAdapter.Companion.Type.TRADE_LIST
 import com.example.upbittrade.utils.TradeManager
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -75,11 +76,17 @@ class TradeFragment: Fragment() {
     private val minCandleMapInfo = HashMap<String, TradeCoinInfo>()
     private val tradeMapInfo = HashMap<String, List<TradeInfo>>()
     private var monitorAdapter: TradeAdapter? = null
+    private var tradeAdapter: TradeAdapter? = null
+
+
     private var monitorList: List<String>? = null
+
+
 //    private var tradeAdapter: TradeFragmentView.TradeAdapter? = null
 //    private var resultAdapter: TradeFragmentView.TradeAdapter? = null
 
     private var monitorListView: RecyclerView? = null
+    private var tradeListView: RecyclerView? = null
 
 
     var isRunning = false
@@ -100,6 +107,12 @@ class TradeFragment: Fragment() {
         monitorListView = view.findViewById(R.id.monitor_list_view)
         monitorListView!!.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         monitorListView!!.adapter = monitorAdapter
+
+        tradeAdapter = TradeAdapter(requireContext(), TRADE_LIST)
+        tradeListView = view.findViewById(R.id.trade_list_view)
+        tradeListView!!.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        tradeListView!!.adapter = tradeAdapter
+
 
         val initDialog = InitPopupDialog(requireContext())
         initDialog.show()

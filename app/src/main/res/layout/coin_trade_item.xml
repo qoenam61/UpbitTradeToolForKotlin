@@ -3,101 +3,108 @@
     android:id="@+id/coin_list_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/default_margin"
+        android:background="@drawable/borderline_bold_out"
         android:orientation="horizontal">
-        <LinearLayout
+        <TextView
+            android:id="@+id/market_id"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1.2"
-            android:layout_margin="@dimen/coin_list_item_margin"
-            android:orientation="vertical">
-            <TextView
-                android:id="@+id/name"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:gravity="left|center_vertical"
-                android:textSize="@dimen/coin_list_text_size"
-                android:text="비트코인"/>
-        </LinearLayout>
-        <LinearLayout
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="@dimen/coin_list_text_size"
+            android:textStyle="bold"
+            android:background="@drawable/borderline"
+            android:text="Market"/>
+        <TextView
+            android:id="@+id/trade_status"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1.2"
-            android:layout_margin="@dimen/coin_list_item_margin"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:textSize="@dimen/coin_list_text_size"
+            android:background="@drawable/borderline"
+            android:text="READY"/>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
             android:orientation="vertical">
             <TextView
-                android:id="@+id/status"
+                android:id="@+id/trade_profit"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:textSize="@dimen/coin_list_text_size"
-                android:text="Waiting"/>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_margin="@dimen/coin_list_item_margin"
-            android:orientation="vertical">
+                android:textStyle="bold"
+                android:background="@drawable/borderline"
+                android:text="x.x%"/>
             <TextView
-                android:id="@+id/current_price"
+                android:id="@+id/trade_profit_rate"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:gravity="right|center_vertical"
+                android:gravity="center"
                 android:textSize="@dimen/coin_list_text_size"
-                android:text="0"/>
+                android:textStyle="bold"
+                android:background="@drawable/borderline"
+                android:text="x.x%"/>
         </LinearLayout>
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:layout_margin="@dimen/coin_list_item_margin"
+            android:layout_height="match_parent"
             android:orientation="vertical">
             <TextView
-                android:id="@+id/change_rate"
+                android:id="@+id/trade_price"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:gravity="right|center_vertical"
+                android:gravity="center"
                 android:textSize="@dimen/coin_list_text_size"
-                android:text="0"/>
+                android:textStyle="bold"
+                android:background="@drawable/borderline"
+                android:text="x"/>
+            <TextView
+                android:id="@+id/trade_bid_price"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textSize="@dimen/coin_list_text_size"
+                android:textStyle="bold"
+                android:background="@drawable/borderline"
+                android:text="x.x%"/>
         </LinearLayout>
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:layout_margin="@dimen/coin_list_item_margin"
+            android:layout_height="match_parent"
             android:orientation="vertical">
             <TextView
-                android:id="@+id/buy_price"
+                android:id="@+id/trade_buy_time"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:gravity="right|center_vertical"
+                android:gravity="center"
                 android:textSize="@dimen/coin_list_text_size"
-                android:text="0"/>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_margin="@dimen/coin_list_item_margin"
-            android:orientation="vertical">
+                android:textStyle="bold"
+                android:background="@drawable/borderline"
+                android:text="x.x%"/>
             <TextView
-                android:id="@+id/buy_amount"
+                android:id="@+id/trade_buy_period"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:gravity="right|center_vertical"
+                android:gravity="center"
                 android:textSize="@dimen/coin_list_text_size"
-                android:text="0"/>
+                android:textStyle="bold"
+                android:background="@drawable/borderline"
+                android:text="x.x%"/>
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
