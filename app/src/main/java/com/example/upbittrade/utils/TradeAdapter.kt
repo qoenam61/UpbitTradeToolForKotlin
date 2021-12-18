@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
 import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.utils.TradeAdapter.Companion.Type.MONITOR_LIST
+import com.example.upbittrade.utils.TradeAdapter.Companion.Type.TRADE_LIST
 
 class TradeAdapter(private val context: Context, val type: Type): RecyclerView.Adapter<TradeAdapter.CoinHolder>() {
     companion object {
@@ -21,16 +22,16 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         }
     }
 
-    var monitorMap: List<String>? = null
-    var tradeSet: List<String>? = null
-    var resultSet: List<String>? = null
+    var monitorKeyList: List<String>? = null
+    var tradeKeyList: List<String>? = null
+    var resultKeyList: List<String>? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CoinHolder {
         var view = when (type) {
             MONITOR_LIST -> {
                 LayoutInflater.from(context).inflate(R.layout.coin_monitor_item, parent, false)
             }
-            Type.TRADE_LIST -> {
+            TRADE_LIST -> {
                 LayoutInflater.from(context).inflate(R.layout.coin_trade_item, parent, false)
             }
             Type.RESULT_LIST -> {
@@ -43,7 +44,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
     override fun onBindViewHolder(holder: CoinHolder, position: Int) {
         when (type) {
             MONITOR_LIST -> {
-                val marketId = monitorMap?.get(position)
+                val marketId = monitorKeyList?.get(position)
                 val tradeInfo = TradeFragment.tradeInfo[marketId]
                 if (tradeInfo != null) {
                     holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
@@ -124,11 +125,57 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                     }
                 }
             }
-            Type.TRADE_LIST -> {
-                tradeSet?.size
+            TRADE_LIST -> {
+
+                val marketId = tradeKeyList?.get(position)
+                val tradeInfo = TradeFragment.tradePostInfo?.get(marketId)
+                if (tradeInfo != null) {
+                    holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
+                    holder.tradeStatus?.text = tradeInfo.status.name
+
+                    if (tradeInfo.getProfit() != null) {
+                        holder.tradeProfit?.text =
+                            TradeFragment.Format.percentFormat.format(tradeInfo.getProfit())
+                    }
+
+                    if (tradeInfo.getProfitRate() != null) {
+                        holder.tradeProfitRate?.text =
+                            TradeFragment.Format.percentFormat.format(tradeInfo.getProfitRate())
+
+                        when {
+                            tradeInfo.getProfitRate()!!.compareTo(0.0) > 0 -> {
+                                holder.tradeProfitRate?.setTextColor(Color.RED)
+                            }
+                            tradeInfo.getProfitRate()!!.compareTo(0.0) < 0 -> {
+                                holder.tradeProfitRate?.setTextColor(Color.BLUE)
+                            }
+                            else -> {
+                                holder.tradeProfitRate?.setTextColor(Color.BLACK)
+                            }
+                        }
+                    }
+                    if (tradeInfo.currentPrice != null) {
+                        holder.tradePrice?.text =
+                            TradeFragment.Format.nonZeroFormat.format(tradeInfo.currentPrice)
+                    }
+
+                    if (tradeInfo.getBidPrice() != null) {
+                        holder.tradeBidPrice?.text =
+                            TradeFragment.Format.nonZeroFormat.format(tradeInfo.getBidPrice())
+                    }
+                    if (tradeInfo.tradeBuyTime != null) {
+                        holder.tradeBuyTime?.text =
+                            TradeFragment.Format.timeFormat.format(tradeInfo.tradeBuyTime)
+                    }
+
+                    if (tradeInfo.getBuyDuration() != null) {
+                        holder.tradeBuyDuration?.text =
+                            TradeFragment.Format.timeFormat.format(tradeInfo.getBuyDuration())
+                    }
+                }
             }
             Type.RESULT_LIST -> {
-                resultSet?.size
+                resultKeyList?.size
             }
         }
     }
@@ -137,24 +184,24 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         var count = 0
         when (type) {
             MONITOR_LIST -> {
-                count = if (monitorMap == null) {
+                count = if (monitorKeyList == null) {
                     0
                 } else {
-                    monitorMap!!.size
+                    monitorKeyList!!.size
                 }
             }
-            Type.TRADE_LIST -> {
-                count = if (tradeSet == null) {
+            TRADE_LIST -> {
+                count = if (tradeKeyList == null) {
                     0
                 } else {
-                    tradeSet!!.size
+                    tradeKeyList!!.size
                 }
             }
             Type.RESULT_LIST -> {
-                count = if (resultSet == null) {
+                count = if (resultKeyList == null) {
                     0
                 } else {
-                    resultSet!!.size
+                    resultKeyList!!.size
                 }
             }
         }
@@ -164,12 +211,21 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
     inner class CoinHolder : RecyclerView.ViewHolder {
         var marketId: TextView? = null
         var tradePrice: TextView? = null
+
         var tradePriceRate: TextView? = null
         var minPriceRate: TextView? = null
         var tradeCount: TextView? = null
         var minPricePerAvgPrice: TextView? = null
         var bidAskRate: TextView? = null
         var bidAskPriceRate: TextView? = null
+
+        var tradeStatus: TextView? = null
+        var tradeProfit: TextView? = null
+        var tradeProfitRate: TextView? = null
+        var tradeBidPrice: TextView? = null
+        var tradeBuyTime: TextView? = null
+        var tradeBuyDuration: TextView? = null
+
 
         constructor(itemView: View, type: Type) : super(itemView) {
             when(type) {
@@ -182,6 +238,16 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                     minPricePerAvgPrice = itemView.findViewById(R.id.min_price_per_avg_price)
                     bidAskRate = itemView.findViewById(R.id.bid_ask_rate)
                     bidAskPriceRate = itemView.findViewById(R.id.bid_ask_rate_price_volume)
+                }
+                TRADE_LIST -> {
+                    marketId = itemView.findViewById(R.id.market_id)
+                    tradeStatus = itemView.findViewById(R.id.trade_status)
+                    tradeProfit = itemView.findViewById(R.id.trade_profit)
+                    tradeProfitRate = itemView.findViewById(R.id.trade_profit_rate)
+                    tradePrice = itemView.findViewById(R.id.trade_price)
+                    tradeBidPrice = itemView.findViewById(R.id.trade_bid_price)
+                    tradeBuyTime = itemView.findViewById(R.id.trade_buy_time)
+                    tradeBuyDuration = itemView.findViewById(R.id.trade_buy_duration)
                 }
             }
         }

@@ -39,6 +39,12 @@ class OrderCoinInfo: TradeCoinInfo {
 
     val askPrice: Double? = null
 
+    var currentPrice: Double? = null
+
+    val tradeBuyTime: Long? = null
+    var currentTime: Long? = null
+
+
     fun getBidPrice(): Double? {
         val highTail: Double = (highPrice!!.toDouble() - closePrice!!.toDouble()
             .coerceAtLeast(openPrice!!.toDouble()))
@@ -53,38 +59,60 @@ class OrderCoinInfo: TradeCoinInfo {
             body / length == 1.0 -> {
                 // type0 : HHCO
                 convertPrice(sqrt((highPrice!!.toDouble().pow(2.0) + highPrice!!.toDouble().pow(2.0)
-                        + closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)) / 4))
+                        + closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)) / 4))!!.toDouble()
             }
 
             body / length == 0.9 -> {
                 // type1 : HCO
                 convertPrice(
                     sqrt((highPrice!!.toDouble().pow(2.0) + closePrice!!.toDouble().pow(2.0)
-                        + openPrice!!.toDouble().pow(2.0)) / 3)
-                )
+                        + openPrice!!.toDouble().pow(2.0)) / 3))!!.toDouble()
             }
 
             body / length == 0.8 -> {
                 // type2 : HCOL
                 convertPrice(sqrt((highPrice!!.toDouble().pow(2.0) + closePrice!!.toDouble().pow(2.0)
-                        + openPrice!!.toDouble().pow(2.0) + lowPrice!!.toDouble().pow(2.0)) / 4))
+                        + openPrice!!.toDouble().pow(2.0) + lowPrice!!.toDouble().pow(2.0)) / 4))!!.toDouble()
             }
 
             (body + lowTail) / length == 1.0 -> {
                 // type3 : COL
                 convertPrice(sqrt((closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)
-                        + lowPrice!!.toDouble().pow(2.0)) / 3))
+                        + lowPrice!!.toDouble().pow(2.0)) / 3))!!.toDouble()
             }
 
             (body + lowTail) / length > 0.8 -> {
                 // type4 : COLL
                 convertPrice(sqrt((closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)
-                        + lowPrice!!.toDouble().pow(2.0) + lowPrice!!.toDouble().pow(2.0)) / 4))
+                        + lowPrice!!.toDouble().pow(2.0) + lowPrice!!.toDouble().pow(2.0)) / 4))!!.toDouble()
             }
 
             else -> null
         }
     }
 
+    fun getProfit(): Double? {
+        val bidPrice = getBidPrice()
+        if (currentPrice == null || bidPrice == null) {
+            return null
+        }
+        return currentPrice!! - bidPrice
+    }
+
+    fun getProfitRate(): Double? {
+        val profit = getProfit()
+        val bidPrice = getBidPrice()
+        if (profit == null || bidPrice == null) {
+            return null
+        }
+        return profit / bidPrice
+    }
+
+    fun getBuyDuration(): Long? {
+        if (tradeBuyTime == null || currentTime == null) {
+            return null
+        }
+        return currentTime!!.minus(tradeBuyTime!!)
+    }
 
 }

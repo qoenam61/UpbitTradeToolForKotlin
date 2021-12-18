@@ -47,6 +47,7 @@ class TradeFragment: Fragment() {
 
         val marketMapInfo = HashMap<String, MarketInfo>()
         val tradeInfo = HashMap<String, TradeCoinInfo>()
+        var tradePostInfo: HashMap<String, OrderCoinInfo>? = null
     }
 
     object Format {
@@ -79,7 +80,8 @@ class TradeFragment: Fragment() {
     private var tradeAdapter: TradeAdapter? = null
 
 
-    private var monitorList: List<String>? = null
+    private var monitorKeyList: List<String>? = null
+    private var tradeKeyList: List<String>? = null
 
 
 //    private var tradeAdapter: TradeFragmentView.TradeAdapter? = null
@@ -102,6 +104,8 @@ class TradeFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        Format.timeFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
+
         val view = inflater.inflate(R.layout.fragment_trade, container, false)
         monitorAdapter = TradeAdapter(requireContext(), MONITOR_LIST)
         monitorListView = view.findViewById(R.id.monitor_list_view)
@@ -124,8 +128,16 @@ class TradeFragment: Fragment() {
 
         tradeManager = TradeManager(object : TradeManager.TradeChangedListener {
             override fun onPostBid(postBidMap: HashMap<String, OrderCoinInfo>) {
+                tradeKeyList = postBidMap.keys.toList()
+                tradePostInfo = postBidMap
+
+                tradeAdapter?.tradeKeyList = tradeKeyList
+                activity?.runOnUiThread {
+                    tradeAdapter?.notifyDataSetChanged()
+                }
+
                 postBidMap.forEach() {
-                    Log.d(TAG, "[DEBUG] onPostBid - key: ${it.key} bidPrice: ${Format.nonZeroFormat.format(it.value.getBidPrice())}")
+                    Log.d(TAG, "[DEBUG] onPostBid - key: ${it.key}}")
                 }
             }
 
@@ -167,7 +179,6 @@ class TradeFragment: Fragment() {
         viewModel?.resultMinCandleInfo?.observe(viewCycleOwner) {
             minCandlesInfo ->
             val iterator = minCandlesInfo.reversed().iterator()
-            Format.timeFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
 
             var marketId: String = minCandlesInfo.first().marketId.toString()
             var accPriceVolume = minCandlesInfo.fold(0.0) {
@@ -284,15 +295,15 @@ class TradeFragment: Fragment() {
             askPriceVolume
         )
 
-        monitorList = (tradeInfo.filter {
+        monitorKeyList = (tradeInfo.filter {
             (it.value.tickCount!! > UserParam.thresholdTick
                 && it.value.getAvgAccVolumeRate() > UserParam.thresholdAccPriceVolumeRate)
         } as HashMap<String, TradeCoinInfo>)
             .toSortedMap(compareByDescending { sortedMapList(it) }).keys.toList()
 
-        tradeManager.setList(TradeManager.Type.POST_BID, monitorList)
+        tradeManager.setList(TradeManager.Type.POST_BID, monitorKeyList)
 
-        monitorAdapter!!.monitorMap = monitorList
+        monitorAdapter!!.monitorKeyList = monitorKeyList
         monitorAdapter!!.notifyDataSetChanged()
 
         if (tradeInfo[marketId] != null && minCandleMapInfo[marketId] != null) {
