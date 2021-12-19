@@ -47,7 +47,7 @@ class TradeFragment: Fragment() {
 
         val marketMapInfo = HashMap<String, MarketInfo>()
         val tradeInfo = HashMap<String, TradeCoinInfo>()
-        var tradePostInfo: HashMap<String, OrderCoinInfo>? = null
+        var tradePostInfo = HashMap<String, OrderCoinInfo>()
     }
 
     object Format {
@@ -81,7 +81,6 @@ class TradeFragment: Fragment() {
 
 
     private var monitorKeyList: List<String>? = null
-    private var tradeKeyList: List<String>? = null
 
 
 //    private var tradeAdapter: TradeFragmentView.TradeAdapter? = null
@@ -127,24 +126,19 @@ class TradeFragment: Fragment() {
         }
 
         tradeManager = TradeManager(object : TradeManager.TradeChangedListener {
-            override fun onPostBid(postBidMap: HashMap<String, OrderCoinInfo>) {
-                tradeKeyList = postBidMap.keys.toList()
-                tradePostInfo = postBidMap
-
-                tradeAdapter?.tradeKeyList = tradeKeyList
+            override fun onPostBid(marketId: String, orderCoinInfo: OrderCoinInfo) {
+                tradePostInfo[marketId] = orderCoinInfo
+                tradeAdapter?.tradeKeyList = tradePostInfo.keys.toList()
                 activity?.runOnUiThread {
                     tradeAdapter?.notifyDataSetChanged()
                 }
+                processor?.registerProcess(TaskItem(TICKER_INFO, marketId))
 
-                postBidMap.forEach() {
-                    Log.d(TAG, "[DEBUG] onPostBid - key: ${it.key}}")
-                }
+                Log.d(TAG, "[DEBUG] onPostBid - key: $marketId")
             }
 
-            override fun onPostAsk(postAskMap: HashMap<String, OrderCoinInfo>) {
-                postAskMap.forEach() {
-                    Log.d(TAG, "[DEBUG] onPostAsk - key: ${it.key}")
-                }
+            override fun onPostAsk(marketId: String, orderCoinInfo: OrderCoinInfo) {
+                Log.d(TAG, "[DEBUG] onPostAsk - key: $marketId")
             }
         })
 
@@ -194,8 +188,17 @@ class TradeFragment: Fragment() {
         }
 
         viewModel?.resultTradeInfo?.observe(viewCycleOwner) {
-            tradesInfo ->
+                tradesInfo ->
             makeTradeMapInfo(tradesInfo)
+        }
+
+        viewModel?.resultTickerInfo?.observe(viewCycleOwner) {
+                tickersInfo ->
+            val marketId = tickersInfo.first().marketId
+            tradePostInfo[marketId]?.currentPrice = tickersInfo.first().tradePrice?.toDouble()
+            tradePostInfo[marketId]?.currentTime = tickersInfo.first().timestamp
+            tradeAdapter?.notifyDataSetChanged()
+            Log.d(TAG, "[DEBUG] resultTickerInfo - marketId: $marketId")
         }
 
     }
@@ -313,10 +316,10 @@ class TradeFragment: Fragment() {
                 TAG, "[DEBUG] makeTradeMapInfo marketId: $marketId " +
                         "count: ${tradeInfo[marketId]!!.tickCount} " +
                         "rate: ${Format.percentFormat.format(rate)} " +
-                        "highPrice: ${Format.nonZeroFormat.format(tradeInfo[marketId]!!.tickCount)} " +
-                        "lowPrice: ${Format.nonZeroFormat.format(tradeInfo[marketId]!!.tickCount)} " +
-                        "openPrice: ${Format.nonZeroFormat.format(tradeInfo[marketId]!!.tickCount)} " +
-                        "closePrice: ${Format.nonZeroFormat.format(tradeInfo[marketId]!!.tickCount)} " +
+                        "highPrice: ${Format.nonZeroFormat.format(tradeInfo[marketId]!!.highPrice)} " +
+                        "lowPrice: ${Format.nonZeroFormat.format(tradeInfo[marketId]!!.lowPrice)} " +
+                        "openPrice: ${Format.nonZeroFormat.format(tradeInfo[marketId]!!.openPrice)} " +
+                        "closePrice: ${Format.nonZeroFormat.format(tradeInfo[marketId]!!.closePrice)} " +
                         "priceVolume: ${Format.nonZeroFormat.format(priceVolume)} " +
                         "bid: ${Format.nonZeroFormat.format(bid)} " +
                         "ask: ${Format.nonZeroFormat.format(ask)} " +

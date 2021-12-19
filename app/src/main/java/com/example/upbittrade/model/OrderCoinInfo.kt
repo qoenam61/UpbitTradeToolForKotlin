@@ -29,19 +29,12 @@ class OrderCoinInfo: TradeCoinInfo {
                 tradeCoinInfo.bidPriceVolume,
                 tradeCoinInfo.askPriceVolume)
 
-    // type0 : HHCO
-    private var type0 =
-        (highPrice!!.toDouble().pow(2.0) + highPrice!!.toDouble().pow(2.0)
-                + closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)) / 4
-    private var priceTypeHHCO: Double? = convertPrice(sqrt(type0))
-
     var status: Status = Status.READY
-
-    val askPrice: Double? = null
 
     var currentPrice: Double? = null
 
     val tradeBuyTime: Long? = null
+
     var currentTime: Long? = null
 
 
@@ -58,33 +51,43 @@ class OrderCoinInfo: TradeCoinInfo {
         return when {
             body / length == 1.0 -> {
                 // type0 : HHCO
-                convertPrice(sqrt((highPrice!!.toDouble().pow(2.0) + highPrice!!.toDouble().pow(2.0)
-                        + closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)) / 4))!!.toDouble()
+                convertPrice(sqrt(
+                    (highPrice!!.toDouble().pow(2.0) + highPrice!!.toDouble().pow(2.0)
+                        + closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)) / 4)
+                )!!.toDouble()
             }
 
-            body / length == 0.9 -> {
+            body / length > 0.9 -> {
                 // type1 : HCO
                 convertPrice(
-                    sqrt((highPrice!!.toDouble().pow(2.0) + closePrice!!.toDouble().pow(2.0)
-                        + openPrice!!.toDouble().pow(2.0)) / 3))!!.toDouble()
+                    sqrt(
+                        (highPrice!!.toDouble().pow(2.0) + closePrice!!.toDouble().pow(2.0)
+                        + openPrice!!.toDouble().pow(2.0)) / 3)
+                )!!.toDouble()
             }
 
-            body / length == 0.8 -> {
+            body / length > 0.8 -> {
                 // type2 : HCOL
-                convertPrice(sqrt((highPrice!!.toDouble().pow(2.0) + closePrice!!.toDouble().pow(2.0)
-                        + openPrice!!.toDouble().pow(2.0) + lowPrice!!.toDouble().pow(2.0)) / 4))!!.toDouble()
+                convertPrice(sqrt(
+                    (highPrice!!.toDouble().pow(2.0) + closePrice!!.toDouble().pow(2.0)
+                        + openPrice!!.toDouble().pow(2.0) + lowPrice!!.toDouble().pow(2.0)) / 4)
+                )!!.toDouble()
             }
 
             (body + lowTail) / length == 1.0 -> {
                 // type3 : COL
-                convertPrice(sqrt((closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)
-                        + lowPrice!!.toDouble().pow(2.0)) / 3))!!.toDouble()
+                convertPrice(sqrt(
+                    (closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)
+                        + lowPrice!!.toDouble().pow(2.0)) / 3)
+                )!!.toDouble()
             }
 
             (body + lowTail) / length > 0.8 -> {
                 // type4 : COLL
-                convertPrice(sqrt((closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)
-                        + lowPrice!!.toDouble().pow(2.0) + lowPrice!!.toDouble().pow(2.0)) / 4))!!.toDouble()
+                convertPrice(sqrt(
+                    (closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)
+                        + lowPrice!!.toDouble().pow(2.0) + lowPrice!!.toDouble().pow(2.0)) / 4)
+                )!!.toDouble()
             }
 
             else -> null
@@ -115,4 +118,7 @@ class OrderCoinInfo: TradeCoinInfo {
         return currentTime!!.minus(tradeBuyTime!!)
     }
 
+    fun getAskPrice(): Double {
+        return 0.0
+    }
 }

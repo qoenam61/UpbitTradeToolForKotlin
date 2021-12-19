@@ -16,14 +16,12 @@
             android:orientation="vertical">
             <include
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_height="@dimen/default_view_height"
                 layout="@layout/monitor_list_layout"/>
 
             <include
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_height="@dimen/default_view_height"
                 layout="@layout/trade_list_layout"/>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

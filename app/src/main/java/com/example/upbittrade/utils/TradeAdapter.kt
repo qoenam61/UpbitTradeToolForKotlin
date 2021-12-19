@@ -128,14 +128,14 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
             TRADE_LIST -> {
 
                 val marketId = tradeKeyList?.get(position)
-                val tradeInfo = TradeFragment.tradePostInfo?.get(marketId)
+                val tradeInfo = TradeFragment.tradePostInfo[marketId]
                 if (tradeInfo != null) {
                     holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
                     holder.tradeStatus?.text = tradeInfo.status.name
 
                     if (tradeInfo.getProfit() != null) {
                         holder.tradeProfit?.text =
-                            TradeFragment.Format.percentFormat.format(tradeInfo.getProfit())
+                            TradeFragment.Format.nonZeroFormat.format(tradeInfo.getProfit())
                     }
 
                     if (tradeInfo.getProfitRate() != null) {

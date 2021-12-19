@@ -87,7 +87,11 @@ class BackgroundProcessor : Thread {
                 MONTH_CANDLE_INFO -> {}
                 ACCOUNTS_INFO -> {}
                 CHANCE_INFO -> {}
-                TICKER_INFO -> {}
+                TICKER_INFO -> {
+                    if (viewModel is TradeViewModel) {
+                        (viewModel as TradeViewModel).searchTickerInfo.value = item.marketId
+                    }
+                }
                 TRADE_INFO -> {
                     if (viewModel is TradeViewModel) {
                         (viewModel as TradeViewModel).searchTradeInfo.value = (item as CandleItem)

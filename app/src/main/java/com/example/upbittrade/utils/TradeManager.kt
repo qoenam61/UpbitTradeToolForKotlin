@@ -1,5 +1,6 @@
 package com.example.upbittrade.utils
 
+import android.util.Log
 import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.model.OrderCoinInfo
 import com.example.upbittrade.model.TradeCoinInfo
@@ -10,8 +11,8 @@ class TradeManager(private val listener: TradeChangedListener) {
     }
 
     interface TradeChangedListener {
-        fun onPostBid(postBidMap: HashMap<String, OrderCoinInfo>)
-        fun onPostAsk(postAskMap: HashMap<String, OrderCoinInfo>)
+        fun onPostBid(marketId: String, orderCoinInfo: OrderCoinInfo)
+        fun onPostAsk(marketId: String, orderCoinInfo: OrderCoinInfo)
     }
 
     enum class Type {
@@ -49,15 +50,11 @@ class TradeManager(private val listener: TradeChangedListener) {
             }
 
             filteredList!!.forEach() {
-//                Log.d(TAG, "FilterList filterBuyList: $it ")
-//                val orderCoinInfo = TradeFragment.tradeInfo[it]!!
                 val orderCoinInfo = OrderCoinInfo(TradeFragment.tradeInfo[it]!!)
                 orderCoinInfo.status = OrderCoinInfo.Status.READY
-                postBid[it] = orderCoinInfo
-            }
-
-            if (postBid.isNotEmpty()) {
-                listener.onPostBid(postBid)
+                if (orderCoinInfo.getBidPrice() != null) {
+                    listener.onPostBid(it, orderCoinInfo)
+                }
             }
         }
     }
@@ -67,7 +64,7 @@ class TradeManager(private val listener: TradeChangedListener) {
             return false
         }
 
-        if (postBid.containsKey(tradeCoinInfo.marketId)) {
+        if (TradeFragment.tradePostInfo.containsKey(tradeCoinInfo.marketId)) {
             return false
         }
 

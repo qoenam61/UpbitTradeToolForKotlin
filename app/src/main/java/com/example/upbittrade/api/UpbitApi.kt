@@ -48,4 +48,7 @@ interface UpbitApi {
         @Query("market") marketId: String?,
         @Query("count") count: Int
     ): Call<List<TradeInfo?>?>?
+
+    @GET("/v1/ticker")
+    fun getTicker(@Query("markets") marketId: String?): Call<List<Ticker?>?>?
 }

@@ -1,23 +1,14 @@
 package com.example.upbittrade.api
 
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
-import com.example.upbittrade.data.TaskItem
-import com.example.upbittrade.model.Candle
-import com.example.upbittrade.model.DayCandle
-import com.example.upbittrade.model.MarketInfo
-import com.example.upbittrade.model.TradeInfo
-import com.google.gson.JsonParser
-import org.json.JSONException
-import org.json.JSONObject
+import com.example.upbittrade.model.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.io.IOException
 
 class TradeFetcher {
     companion object {
@@ -125,6 +116,27 @@ class TradeFetcher {
             }
 
             override fun onFailure(call: Call<List<TradeInfo?>?>, t: Throwable) {
+                Log.w(TAG, "onFailure: $t")
+            }
+        })
+        return result
+    }
+
+    fun getTickerInfo(marketId: String): LiveData<List<Ticker>> {
+        val result = MutableLiveData<List<Ticker>>()
+        val call: Call<List<Ticker?>?>? = tradeInfoRetrofit?.getUpBitApi()?.getTicker(marketId)
+
+        call!!.enqueue(object : Callback<List<Ticker?>?> {
+            override fun onResponse(
+                call: Call<List<Ticker?>?>,
+                response: Response<List<Ticker?>?>
+            ) {
+                if (response.body() != null) {
+                    result.value = response.body() as List<Ticker>
+                }
+            }
+
+            override fun onFailure(call: Call<List<Ticker?>?>, t: Throwable) {
                 Log.w(TAG, "onFailure: $t")
             }
         })

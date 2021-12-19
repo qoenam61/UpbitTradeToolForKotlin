@@ -6,7 +6,7 @@ import java.io.Serializable
 class Ticker: Serializable {
 
     @SerializedName("market")
-    var market: String? = null
+    var marketId: String? = null
 
     @SerializedName("trade_date")
     var tradeDate: String? = null
