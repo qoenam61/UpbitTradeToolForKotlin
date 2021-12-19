@@ -9,6 +9,8 @@ import com.example.upbittrade.activity.TradePagerActivity
 import com.example.upbittrade.api.TradeFetcher
 import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
+import com.example.upbittrade.data.PostOrderItem
+import java.util.*
 
 class TradeViewModel: AndroidViewModel {
 
@@ -28,6 +30,9 @@ class TradeViewModel: AndroidViewModel {
     val searchMonthCandleInfo = MutableLiveData<CandleItem>()
     val searchTradeInfo = MutableLiveData<CandleItem>()
     val searchTickerInfo = MutableLiveData<String>()
+    val postOrderInfo = MutableLiveData<PostOrderItem>()
+    val searchOrderInfo = MutableLiveData<UUID>()
+    val deleteOrderInfo = MutableLiveData<UUID>()
 
 
     var resultMarketsInfo: LiveData<List<MarketInfo>>? = Transformations.switchMap(searchMarketsInfo) {
@@ -48,6 +53,18 @@ class TradeViewModel: AndroidViewModel {
 
     val resultTickerInfo: LiveData<List<Ticker>>? = Transformations.switchMap(searchTickerInfo) {
             input -> upbitFetcher?.getTickerInfo(input)
+    }
+
+    val resultPostOrderInfo: LiveData<ResponseOrder>? = Transformations.switchMap(postOrderInfo) {
+            input -> upbitFetcher?.postOrderInfo(input)
+    }
+
+    val resultSearchOrderInfo: LiveData<ResponseOrder>? = Transformations.switchMap(searchOrderInfo) {
+            input -> upbitFetcher?.searchOrderInfo(input)
+    }
+
+    val resultDeleteOrderInfo: LiveData<ResponseOrder>? = Transformations.switchMap(deleteOrderInfo) {
+            input -> upbitFetcher?.deleteOrderInfo(input)
     }
 
     private class CandleInput {

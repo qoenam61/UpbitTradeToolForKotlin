@@ -3,10 +3,12 @@ package com.example.upbittrade.data
 import com.example.upbittrade.activity.TradePagerActivity.PostType
 import okhttp3.internal.concurrent.Task
 import java.io.Serializable
+import java.util.*
 
 open class TaskItem: Serializable {
     var type: PostType
     var marketId: String? = null
+    var uuid: UUID? = null
 
     constructor(type: PostType) {
         this.type = type
@@ -15,6 +17,12 @@ open class TaskItem: Serializable {
     constructor(type: PostType, marketId: String?) {
         this.type = type
         this.marketId = marketId
+    }
+
+    constructor(type: PostType, marketId: String?, uuid: UUID) {
+        this.type = type
+        this.marketId = marketId
+        this.uuid = uuid
     }
 }
 
@@ -67,7 +75,7 @@ open class PostOrderItem: TaskItem {
     var volume: String? = null
     var price: String? = null
     var ord_type: String? = null
-    var identifier: String? = null
+    var identifier: UUID? = null
 
     constructor(
         type: PostType,
@@ -76,7 +84,7 @@ open class PostOrderItem: TaskItem {
         volume: String?,
         price: String?,
         ord_type: String?,
-        identifier: String?
+        identifier: UUID?
     ) : super(type, marketId) {
         this.side = side
         this.volume = volume

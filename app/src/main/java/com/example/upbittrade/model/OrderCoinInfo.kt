@@ -33,8 +33,8 @@ class OrderCoinInfo: TradeCoinInfo {
 
     var currentPrice: Double? = null
 
-    val tradeBuyTime: Long? = null
-
+    var registerTime: Long? = null
+    var tradeBuyTime: Long? = null
     var currentTime: Long? = null
 
 
@@ -109,6 +109,13 @@ class OrderCoinInfo: TradeCoinInfo {
             return null
         }
         return profit / bidPrice
+    }
+
+    fun getRegisterDuration(): Long? {
+        if (registerTime == null || currentTime == null) {
+            return null
+        }
+        return currentTime!!.minus(registerTime!!)
     }
 
     fun getBuyDuration(): Long? {

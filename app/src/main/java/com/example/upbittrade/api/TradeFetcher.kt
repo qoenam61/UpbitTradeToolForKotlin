@@ -155,7 +155,7 @@ class TradeFetcher {
         val volume: String? = postOrderItem.volume
         val price: String? = postOrderItem.price
         val ordType: String? = postOrderItem.ord_type
-        val identifier: String? = postOrderItem.identifier
+        val identifier: UUID? = postOrderItem.identifier
 
         val params = HashMap<String?, String?>()
         params["market"] = marketId
@@ -163,7 +163,7 @@ class TradeFetcher {
         params["volume"] = volume
         params["price"] = price
         params["ord_type"] = ordType
-        params["identifier"] = identifier
+        params["identifier"] = identifier.toString()
         postOrderRetrofit?.params = params
 
         val result = MutableLiveData<ResponseOrder>()
@@ -206,13 +206,13 @@ class TradeFetcher {
         return result
     }
 
-    fun searchOrderInfo(uuid: String): LiveData<ResponseOrder> {
+    fun searchOrderInfo(uuid: UUID): LiveData<ResponseOrder> {
         val params = HashMap<String?, String?>()
-        params["uuid"] = uuid
+        params["uuid"] = uuid.toString()
         postOrderRetrofit?.params = params
 
         val result = MutableLiveData<ResponseOrder>()
-        val call: Call<ResponseOrder?>? = postOrderRetrofit?.getUpBitApi()?.searchOrderInfo(uuid)
+        val call: Call<ResponseOrder?>? = postOrderRetrofit?.getUpBitApi()?.searchOrderInfo(uuid.toString())
         call!!.enqueue(object : Callback<ResponseOrder?> {
             override fun onResponse(
                 call: Call<ResponseOrder?>,
@@ -230,13 +230,13 @@ class TradeFetcher {
         return result
     }
 
-    fun deleteOrderInfo(uuid: String): LiveData<ResponseOrder> {
+    fun deleteOrderInfo(uuid: UUID): LiveData<ResponseOrder> {
         val params = HashMap<String?, String?>()
-        params["uuid"] = uuid
+        params["uuid"] = uuid.toString()
         postOrderRetrofit?.params = params
 
         val result = MutableLiveData<ResponseOrder>()
-        val call: Call<ResponseOrder?>? = postOrderRetrofit?.getUpBitApi()?.searchOrderInfo(uuid)
+        val call: Call<ResponseOrder?>? = postOrderRetrofit?.getUpBitApi()?.searchOrderInfo(uuid.toString())
         call!!.enqueue(object : Callback<ResponseOrder?> {
             override fun onResponse(
                 call: Call<ResponseOrder?>,

@@ -22,7 +22,7 @@ class ResponseOrder {
     var state: String? = null
 
     @SerializedName("market")
-    var market: String? = null
+    var marketId: String? = null
 
     @SerializedName("created_at")
     var created_at: String? = null

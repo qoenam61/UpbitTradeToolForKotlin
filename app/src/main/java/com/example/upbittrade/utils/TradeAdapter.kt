@@ -45,7 +45,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         when (type) {
             MONITOR_LIST -> {
                 val marketId = monitorKeyList?.get(position)
-                val tradeInfo = TradeFragment.tradeInfo[marketId]
+                val tradeInfo = TradeFragment.tradeMonitorMapInfo[marketId]
                 if (tradeInfo != null) {
                     holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
                     holder.tradePrice?.text =
@@ -128,7 +128,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
             TRADE_LIST -> {
 
                 val marketId = tradeKeyList?.get(position)
-                val tradeInfo = TradeFragment.tradePostInfo[marketId]
+                val tradeInfo = TradeFragment.tradePostMapInfo[marketId]
                 if (tradeInfo != null) {
                     holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
                     holder.tradeStatus?.text = tradeInfo.status.name

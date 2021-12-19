@@ -9,6 +9,7 @@ import androidx.lifecycle.AndroidViewModel
 import com.example.upbittrade.activity.TradePagerActivity.PostType.*
 import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
+import com.example.upbittrade.data.PostOrderItem
 import com.example.upbittrade.data.TaskItem
 import com.example.upbittrade.model.TradeViewModel
 import okhttp3.internal.notify
@@ -71,8 +72,16 @@ class BackgroundProcessor : Thread {
                         (viewModel as TradeViewModel).searchMarketsInfo.value = true
                     }
                 }
-                POST_ORDER_INFO -> {}
-                DELETE_ORDER_INFO -> {}
+                POST_ORDER_INFO -> {
+                    if (viewModel is TradeViewModel) {
+                        (viewModel as TradeViewModel).postOrderInfo.value = item as PostOrderItem
+                    }
+                }
+                DELETE_ORDER_INFO -> {
+                    if (viewModel is TradeViewModel) {
+                        (viewModel as TradeViewModel).deleteOrderInfo.value = item.uuid
+                    }
+                }
                 MIN_CANDLE_INFO -> {
                     if (viewModel is TradeViewModel) {
                         (viewModel as TradeViewModel).searchMinCandleInfo.value = (item as ExtendCandleItem)
@@ -97,7 +106,11 @@ class BackgroundProcessor : Thread {
                         (viewModel as TradeViewModel).searchTradeInfo.value = (item as CandleItem)
                     }
                 }
-                SEARCH_ORDER_INFO -> {}
+                SEARCH_ORDER_INFO -> {
+                    if (viewModel is TradeViewModel) {
+                        (viewModel as TradeViewModel).searchOrderInfo.value = item.uuid
+                    }
+                }
             }
         }
     }

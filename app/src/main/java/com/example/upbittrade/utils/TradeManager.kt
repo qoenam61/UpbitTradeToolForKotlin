@@ -1,6 +1,5 @@
 package com.example.upbittrade.utils
 
-import android.util.Log
 import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.model.OrderCoinInfo
 import com.example.upbittrade.model.TradeCoinInfo
@@ -38,7 +37,7 @@ class TradeManager(private val listener: TradeChangedListener) {
 
             filteredList = when(type) {
                 Type.POST_BID -> {
-                    marketIdList?.filter { filterBuyList(TradeFragment.tradeInfo[it])}
+                    marketIdList?.filter { filterBuyList(TradeFragment.tradeMonitorMapInfo[it])}
                 }
 
                 Type.POST_ASK -> {
@@ -50,7 +49,7 @@ class TradeManager(private val listener: TradeChangedListener) {
             }
 
             filteredList!!.forEach() {
-                val orderCoinInfo = OrderCoinInfo(TradeFragment.tradeInfo[it]!!)
+                val orderCoinInfo = OrderCoinInfo(TradeFragment.tradeMonitorMapInfo[it]!!)
                 orderCoinInfo.status = OrderCoinInfo.Status.READY
                 if (orderCoinInfo.getBidPrice() != null) {
                     listener.onPostBid(it, orderCoinInfo)
@@ -64,7 +63,7 @@ class TradeManager(private val listener: TradeChangedListener) {
             return false
         }
 
-        if (TradeFragment.tradePostInfo.containsKey(tradeCoinInfo.marketId)) {
+        if (TradeFragment.tradePostMapInfo.containsKey(tradeCoinInfo.marketId)) {
             return false
         }
 
