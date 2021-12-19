@@ -151,6 +151,10 @@ class BackgroundProcessor : Thread {
         TaskList.offer(item)
     }
 
+    fun unregisterProcess(item: TaskItem) {
+        TaskList.remove(item)
+    }
+
     fun release() {
         interrupt()
         TaskList.clear()

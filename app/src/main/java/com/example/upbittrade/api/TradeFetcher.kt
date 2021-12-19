@@ -5,10 +5,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
+import com.example.upbittrade.data.PostOrderItem
 import com.example.upbittrade.model.*
+import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.util.*
 
 class TradeFetcher {
     companion object {
@@ -16,12 +19,15 @@ class TradeFetcher {
     }
 
     var tradeInfoRetrofit: TradeInfoRetrofit? = null
+    var postOrderRetrofit: PostOrderRetrofit? = null
 
 
     fun makeRetrofit(accessKey: String, secretKey: String) {
         Log.d(TAG, "makeRetrofit - accessKey: $accessKey secretKey: $secretKey")
         tradeInfoRetrofit = TradeInfoRetrofit(accessKey, secretKey)
         tradeInfoRetrofit?.makeUpBitApi()
+        postOrderRetrofit = PostOrderRetrofit(accessKey, secretKey)
+        postOrderRetrofit?.makeUpBitApi()
     }
 
     fun getMarketInfo(isDetails: Boolean): LiveData<List<MarketInfo>> {
@@ -137,6 +143,111 @@ class TradeFetcher {
             }
 
             override fun onFailure(call: Call<List<Ticker?>?>, t: Throwable) {
+                Log.w(TAG, "onFailure: $t")
+            }
+        })
+        return result
+    }
+
+    fun postOrderInfo(postOrderItem: PostOrderItem): LiveData<ResponseOrder> {
+        val marketId: String = postOrderItem.marketId!!
+        val side: String? = postOrderItem.side
+        val volume: String? = postOrderItem.volume
+        val price: String? = postOrderItem.price
+        val ordType: String? = postOrderItem.ord_type
+        val identifier: String? = postOrderItem.identifier
+
+        val params = HashMap<String?, String?>()
+        params["market"] = marketId
+        params["side"] = side
+        params["volume"] = volume
+        params["price"] = price
+        params["ord_type"] = ordType
+        params["identifier"] = identifier
+        postOrderRetrofit?.params = params
+
+        val result = MutableLiveData<ResponseOrder>()
+        val call: Call<ResponseOrder?>? = postOrderRetrofit?.getUpBitApi()?.postOrderInfo(params)
+
+        call!!.enqueue(object : Callback<ResponseOrder?> {
+            override fun onResponse(
+                call: Call<ResponseOrder?>,
+                response: Response<ResponseOrder?>
+            ) {
+                if (response.body() != null && response.isSuccessful) {
+                    result.value = response.body() as ResponseOrder
+                } /*else {
+                    val jObjError = JSONObject(
+                        response.errorBody()!!.string()
+                    )
+                    val errorObj = jObjError.get("error")
+                    if (response.code() == 400 && errorObj != null && errorObj.get("name") != null && errorObj.get(
+                            "name"
+                        ) == "insufficient_funds_ask"
+                    ) {
+                        if (mListener != null) {
+                            mListener.shortMoney(identifier, "ask")
+                        }
+                    } else if (response.code() == 400 && errorObj != null && errorObj.get("name") != null && errorObj.get(
+                            "name"
+                        ) == "insufficient_funds_bid"
+                    ) {
+                        if (mListener != null) {
+                            mListener.shortMoney(identifier, "bid")
+                        }
+                    }
+                }*/
+            }
+
+            override fun onFailure(call: Call<ResponseOrder?>, t: Throwable) {
+                Log.w(TAG, "onFailure: $t")
+            }
+        })
+        return result
+    }
+
+    fun searchOrderInfo(uuid: String): LiveData<ResponseOrder> {
+        val params = HashMap<String?, String?>()
+        params["uuid"] = uuid
+        postOrderRetrofit?.params = params
+
+        val result = MutableLiveData<ResponseOrder>()
+        val call: Call<ResponseOrder?>? = postOrderRetrofit?.getUpBitApi()?.searchOrderInfo(uuid)
+        call!!.enqueue(object : Callback<ResponseOrder?> {
+            override fun onResponse(
+                call: Call<ResponseOrder?>,
+                response: Response<ResponseOrder?>
+            ) {
+                if (response.body() != null && response.isSuccessful) {
+                    result.value = response.body() as ResponseOrder
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseOrder?>, t: Throwable) {
+                Log.w(TAG, "onFailure: $t")
+            }
+        })
+        return result
+    }
+
+    fun deleteOrderInfo(uuid: String): LiveData<ResponseOrder> {
+        val params = HashMap<String?, String?>()
+        params["uuid"] = uuid
+        postOrderRetrofit?.params = params
+
+        val result = MutableLiveData<ResponseOrder>()
+        val call: Call<ResponseOrder?>? = postOrderRetrofit?.getUpBitApi()?.searchOrderInfo(uuid)
+        call!!.enqueue(object : Callback<ResponseOrder?> {
+            override fun onResponse(
+                call: Call<ResponseOrder?>,
+                response: Response<ResponseOrder?>
+            ) {
+                if (response.body() != null && response.isSuccessful) {
+                    result.value = response.body() as ResponseOrder
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseOrder?>, t: Throwable) {
                 Log.w(TAG, "onFailure: $t")
             }
         })

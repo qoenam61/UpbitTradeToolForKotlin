@@ -2,9 +2,7 @@ package com.example.upbittrade.api
 
 import com.example.upbittrade.model.*
 import retrofit2.Call
-import retrofit2.http.GET
-import retrofit2.http.Path
-import retrofit2.http.Query
+import retrofit2.http.*
 
 interface UpbitApi {
     @GET("/v1/accounts")
@@ -51,4 +49,14 @@ interface UpbitApi {
 
     @GET("/v1/ticker")
     fun getTicker(@Query("markets") marketId: String?): Call<List<Ticker?>?>?
+
+    @FormUrlEncoded
+    @POST("/v1/orders")
+    fun postOrderInfo(@FieldMap fields: Map<String?, String?>?): Call<ResponseOrder?>?
+
+    @GET("/v1/order")
+    fun searchOrderInfo(@Query("uuid") uuid: String?): Call<ResponseOrder?>?
+
+    @DELETE("/v1/order")
+    fun deleteOrderInfo(@Query("uuid") uuid: String?): Call<ResponseOrder?>?
 }

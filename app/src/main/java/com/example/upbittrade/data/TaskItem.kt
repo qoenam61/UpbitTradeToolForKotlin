@@ -1,6 +1,7 @@
 package com.example.upbittrade.data
 
 import com.example.upbittrade.activity.TradePagerActivity.PostType
+import okhttp3.internal.concurrent.Task
 import java.io.Serializable
 
 open class TaskItem: Serializable {
@@ -58,5 +59,29 @@ open class ExtendCandleItem: CandleItem {
         convertingPriceUnit: String?
     ) : super(type, marketId, to, count){
         this.convertingPriceUnit = convertingPriceUnit
+    }
+}
+
+open class PostOrderItem: TaskItem {
+    var side: String? = null
+    var volume: String? = null
+    var price: String? = null
+    var ord_type: String? = null
+    var identifier: String? = null
+
+    constructor(
+        type: PostType,
+        marketId: String?,
+        side: String?,
+        volume: String?,
+        price: String?,
+        ord_type: String?,
+        identifier: String?
+    ) : super(type, marketId) {
+        this.side = side
+        this.volume = volume
+        this.price = price
+        this.ord_type = ord_type
+        this.identifier = identifier
     }
 }
