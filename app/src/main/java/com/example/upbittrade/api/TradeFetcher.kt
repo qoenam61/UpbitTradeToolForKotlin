@@ -7,6 +7,7 @@ import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.PostOrderItem
 import com.example.upbittrade.model.*
+import com.google.gson.Gson
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
@@ -174,8 +175,10 @@ class TradeFetcher {
                 call: Call<ResponseOrder?>,
                 response: Response<ResponseOrder?>
             ) {
+                Log.d(TAG, "[DEBUG] postOrderInfo onResponse: ${(response.body() as ResponseOrder)}")
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as ResponseOrder
+
                 } /*else {
                     val jObjError = JSONObject(
                         response.errorBody()!!.string()
