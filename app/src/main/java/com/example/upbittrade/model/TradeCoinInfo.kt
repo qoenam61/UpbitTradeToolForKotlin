@@ -113,12 +113,20 @@ open class TradeCoinInfo {
         return accPriceVolume!! / avgAccPriceVolume!!
     }
 
-    fun getPriceRangeRate(): Double {
-        if (lowPrice == null || highPrice == null) {
+    fun getPriceRate(): Double {
+        if (closePrice == null || openPrice == null) {
             return 0.0
         }
-        val diff = highPrice!!.toDouble().minus(lowPrice!!.toDouble())
-        return diff.div(lowPrice!!.toDouble())
+        val diff = closePrice!!.toDouble() - openPrice!!.toDouble()
+        return diff / closePrice!!.toDouble()
+    }
+
+    fun getPriceRangeRate(): Double {
+        if (highPrice == null || lowPrice == null) {
+            return 0.0
+        }
+        val diff = highPrice!!.toDouble() - lowPrice!!.toDouble()
+        return diff / lowPrice!!.toDouble()
     }
 
     fun getBidAskRate(): Double {

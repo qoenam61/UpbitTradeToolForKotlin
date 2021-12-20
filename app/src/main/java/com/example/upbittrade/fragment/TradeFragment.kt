@@ -202,28 +202,37 @@ class TradeFragment: Fragment() {
             val marketId = tickersInfo.first().marketId
             val time: Long = SystemClock.uptimeMillis()
             val currentPrice = tickersInfo.first().tradePrice?.toDouble()
+            Log.d(TAG, "[DEBUG] resultTickerInfo - marketId: $marketId currentPrice: $currentPrice time: $time")
 
-            tradePostMapInfo[marketId]?.currentPrice = currentPrice
-            tradePostMapInfo[marketId]?.currentTime = time
-            tradeAdapter?.notifyDataSetChanged()
+            val postInfo: OrderCoinInfo = tradePostMapInfo[marketId]!!
+            val responseOrder: ResponseOrder = tradeResponseMapInfo[marketId]!!
+
+            postInfo.currentPrice = currentPrice
+            postInfo.currentTime = time
 
             tradePostMapInfo[marketId!!] = tradeManager.updateTickerInfoToBuyList(tickersInfo,
-                tradePostMapInfo[marketId]!!,
-                tradeResponseMapInfo[marketId]!!,
+                postInfo,
+                responseOrder,
                 processor!!
             )
 
-            Log.d(TAG, "[DEBUG] resultTickerInfo - marketId: $marketId currentPrice: $currentPrice time: $time")
+            tradeAdapter?.notifyDataSetChanged()
         }
 
         viewModel?.resultPostOrderInfo?.observe(viewCycleOwner) {
             responseOrder ->
             val marketId = responseOrder.marketId
             val time: Long = SystemClock.uptimeMillis()
+            val registerTime: Long? = tradePostMapInfo[marketId]?.registerTime
+
+            tradeResponseMapInfo[marketId!!] = responseOrder
 
             Log.d(TAG, "[DEBUG] resultPostOrderInfo marketId: $marketId state: ${responseOrder.state} side: ${responseOrder.side} time: ${Format.timeFormat.format(time)}")
 
-            tradeResponseMapInfo[marketId!!] = responseOrder
+            if (registerTime == null) {
+                tradePostMapInfo[marketId]?.registerTime = time
+            }
+            tradePostMapInfo[marketId]?.currentTime = time
 
             if (responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
                 if (responseOrder.state.equals("wait")) {
@@ -238,23 +247,31 @@ class TradeFragment: Fragment() {
                 } else if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0
                     && tradePostMapInfo[marketId]?.tradeBuyTime == null
                 ) {
+                    tradePostMapInfo[marketId]?.registerTime = null
                     tradePostMapInfo[marketId]?.tradeBuyTime = time
                     tradePostMapInfo[marketId]?.state = OrderCoinInfo.State.BUY
                 }
-                tradePostMapInfo[marketId]?.registerTime = time
-                tradePostMapInfo[marketId]?.currentTime = time
+
             }
+            if (responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
+                if (responseOrder.state.equals("wait")) {
+                    tradePostMapInfo[marketId]?.state = OrderCoinInfo.State.WAIT
+                } else if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0) {
+
+                }
+            }
+
 
         }
 
         viewModel?.resultSearchOrderInfo?.observe(viewCycleOwner) {
             responseOrder ->
+
             val marketId = responseOrder.marketId
             val time: Long = SystemClock.uptimeMillis()
+            tradeResponseMapInfo[marketId!!] = responseOrder
 
             Log.d(TAG, "[DEBUG] resultSearchOrderInfo marketId: $marketId state: ${responseOrder.state} side: ${responseOrder.side} time: ${Format.timeFormat.format(time)}")
-
-            tradeResponseMapInfo[marketId!!] = responseOrder
 
             if (responseOrder.state.equals("done")  && responseOrder.remainingVolume?.toDouble() == 0.0) {
                 tradePostMapInfo[marketId]?.tradeBuyTime = time

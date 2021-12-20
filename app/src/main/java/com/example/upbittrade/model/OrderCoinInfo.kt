@@ -1,5 +1,6 @@
 package com.example.upbittrade.model
 
+import com.example.upbittrade.utils.Utils
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -53,7 +54,7 @@ class OrderCoinInfo: TradeCoinInfo {
         return when {
             body / length == 1.0 -> {
                 // type0 : HHCO
-                convertPrice(sqrt(
+                Utils().convertPrice(sqrt(
                     (highPrice!!.toDouble().pow(2.0) + highPrice!!.toDouble().pow(2.0)
                         + closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)) / 4)
                 )!!.toDouble()
@@ -61,7 +62,7 @@ class OrderCoinInfo: TradeCoinInfo {
 
             body / length > 0.9 -> {
                 // type1 : HCO
-                convertPrice(
+                Utils().convertPrice(
                     sqrt(
                         (highPrice!!.toDouble().pow(2.0) + closePrice!!.toDouble().pow(2.0)
                         + openPrice!!.toDouble().pow(2.0)) / 3)
@@ -70,7 +71,7 @@ class OrderCoinInfo: TradeCoinInfo {
 
             body / length > 0.8 -> {
                 // type2 : HCOL
-                convertPrice(sqrt(
+                Utils().convertPrice(sqrt(
                     (highPrice!!.toDouble().pow(2.0) + closePrice!!.toDouble().pow(2.0)
                         + openPrice!!.toDouble().pow(2.0) + lowPrice!!.toDouble().pow(2.0)) / 4)
                 )!!.toDouble()
@@ -78,7 +79,7 @@ class OrderCoinInfo: TradeCoinInfo {
 
             (body + lowTail) / length == 1.0 -> {
                 // type3 : COL
-                convertPrice(sqrt(
+                Utils().convertPrice(sqrt(
                     (closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)
                         + lowPrice!!.toDouble().pow(2.0)) / 3)
                 )!!.toDouble()
@@ -86,7 +87,7 @@ class OrderCoinInfo: TradeCoinInfo {
 
             (body + lowTail) / length > 0.8 -> {
                 // type4 : COLL
-                convertPrice(sqrt(
+                Utils().convertPrice(sqrt(
                     (closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)
                         + lowPrice!!.toDouble().pow(2.0) + lowPrice!!.toDouble().pow(2.0)) / 4)
                 )!!.toDouble()

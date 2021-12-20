@@ -68,12 +68,12 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                     }
 
                     holder.minPriceRate?.text =
-                            TradeFragment.Format.percentFormat.format(tradeInfo.getPriceRangeRate())
+                            TradeFragment.Format.percentFormat.format(tradeInfo.getPriceRate())
                     when {
-                        tradeInfo.getPriceRangeRate().compareTo(0.0) > 0 -> {
+                        tradeInfo.getPriceRate().compareTo(0.0) > 0 -> {
                             holder.minPriceRate?.setTextColor(Color.RED)
                         }
-                        tradeInfo.getPriceRangeRate().compareTo(0.0) < 0 -> {
+                        tradeInfo.getPriceRate().compareTo(0.0) < 0 -> {
                             holder.minPriceRate?.setTextColor(Color.BLUE)
                         }
                         else -> {
