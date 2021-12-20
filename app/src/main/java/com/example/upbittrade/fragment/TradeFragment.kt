@@ -63,7 +63,7 @@ class TradeFragment: Fragment() {
     object UserParam {
         var completed = false
         var priceToBuy: Double = LIMIT_AMOUNT
-        var monitorTime: Long = UNIT_MONITOR_TIME
+        var monitorTime: Long = BASE_TIME
         var thresholdRate: Double = THRESHOLD_RATE
         var thresholdTick: Int = UNIT_TRADE_COUNT
         var thresholdAccPriceVolumeRate: Float = THRESHOLD_AVG_MIN_AVG_DAY_PRICE_VOLUME
@@ -126,19 +126,19 @@ class TradeFragment: Fragment() {
 
         tradeManager = TradeManager(object : TradeManager.TradeChangedListener {
             override fun onPostBid(marketId: String, orderCoinInfo: OrderCoinInfo) {
-                tradePostMapInfo[marketId] = orderCoinInfo
-                tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
-                activity?.runOnUiThread {
-                    tradeAdapter?.notifyDataSetChanged()
-                }
-                processor?.registerProcess(TaskItem(TICKER_INFO, marketId))
+                Log.d(TAG, "[DEBUG] onPostBid - key: $marketId")
 
                 val bidPrice = orderCoinInfo.getBidPrice()
                 val volume = (UserParam.priceToBuy / bidPrice!!).toString()
                 processor?.registerProcess(PostOrderItem(POST_ORDER_INFO, marketId,
                     "bid", volume, bidPrice.toString(), "limit", UUID.randomUUID()))
 
-                Log.d(TAG, "[DEBUG] onPostBid - key: $marketId")
+                tradePostMapInfo[marketId] = orderCoinInfo
+                tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
+                activity?.runOnUiThread {
+                    tradeAdapter?.notifyDataSetChanged()
+                }
+                processor?.registerProcess(TaskItem(TICKER_INFO, marketId))
             }
 
             override fun onPostAsk(marketId: String, orderCoinInfo: OrderCoinInfo) {
@@ -198,46 +198,83 @@ class TradeFragment: Fragment() {
 
         viewModel?.resultTickerInfo?.observe(viewCycleOwner) {
                 tickersInfo ->
+
             val marketId = tickersInfo.first().marketId
-            tradePostMapInfo[marketId]?.currentPrice = tickersInfo.first().tradePrice?.toDouble()
-            tradePostMapInfo[marketId]?.currentTime = SystemClock.uptimeMillis()
+            val time: Long = SystemClock.uptimeMillis()
+            val currentPrice = tickersInfo.first().tradePrice?.toDouble()
+
+            tradePostMapInfo[marketId]?.currentPrice = currentPrice
+            tradePostMapInfo[marketId]?.currentTime = time
             tradeAdapter?.notifyDataSetChanged()
-            Log.d(TAG, "[DEBUG] resultTickerInfo - marketId: $marketId")
+
+            tradePostMapInfo[marketId!!] = tradeManager.updateTickerInfoToBuyList(tickersInfo,
+                tradePostMapInfo[marketId]!!,
+                tradeResponseMapInfo[marketId]!!,
+                processor!!
+            )
+
+            Log.d(TAG, "[DEBUG] resultTickerInfo - marketId: $marketId currentPrice: $currentPrice time: $time")
         }
 
         viewModel?.resultPostOrderInfo?.observe(viewCycleOwner) {
             responseOrder ->
             val marketId = responseOrder.marketId
             val time: Long = SystemClock.uptimeMillis()
-            tradePostMapInfo[marketId]?.status = OrderCoinInfo.Status.WAIT
-            if (responseOrder.state.equals("done") && tradePostMapInfo[marketId]?.tradeBuyTime == null) {
-                Log.d(TAG, "[DEBUG] resultPostOrderInfo - marketId: $marketId tradeBuyTime: ${Format.timeFormat.format(time)}")
-                tradePostMapInfo[marketId]?.tradeBuyTime = time
-                tradePostMapInfo[marketId]?.status = OrderCoinInfo.Status.BUY
-            }
-            tradePostMapInfo[marketId]?.registerTime = time
-            tradePostMapInfo[marketId]?.currentTime = time
+
+            Log.d(TAG, "[DEBUG] resultPostOrderInfo marketId: $marketId state: ${responseOrder.state} side: ${responseOrder.side} time: ${Format.timeFormat.format(time)}")
 
             tradeResponseMapInfo[marketId!!] = responseOrder
-            processor?.registerProcess(TaskItem(SEARCH_ORDER_INFO, marketId, UUID.fromString(responseOrder.uuid)))
+
+            if (responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
+                if (responseOrder.state.equals("wait")) {
+                    tradePostMapInfo[marketId]?.state = OrderCoinInfo.State.WAIT
+                    processor?.registerProcess(
+                        TaskItem(
+                            SEARCH_ORDER_INFO,
+                            marketId,
+                            UUID.fromString(responseOrder.uuid)
+                        )
+                    )
+                } else if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0
+                    && tradePostMapInfo[marketId]?.tradeBuyTime == null
+                ) {
+                    tradePostMapInfo[marketId]?.tradeBuyTime = time
+                    tradePostMapInfo[marketId]?.state = OrderCoinInfo.State.BUY
+                }
+                tradePostMapInfo[marketId]?.registerTime = time
+                tradePostMapInfo[marketId]?.currentTime = time
+            }
+
         }
 
         viewModel?.resultSearchOrderInfo?.observe(viewCycleOwner) {
             responseOrder ->
             val marketId = responseOrder.marketId
+            val time: Long = SystemClock.uptimeMillis()
+
+            Log.d(TAG, "[DEBUG] resultSearchOrderInfo marketId: $marketId state: ${responseOrder.state} side: ${responseOrder.side} time: ${Format.timeFormat.format(time)}")
 
             tradeResponseMapInfo[marketId!!] = responseOrder
 
-            val time: Long = SystemClock.uptimeMillis()
-            if (responseOrder.state.equals("done") && tradePostMapInfo[marketId]?.tradeBuyTime == null) {
-                Log.d(TAG, "[DEBUG] resultSearchOrderInfo - marketId: $marketId tradeBuyTime: ${Format.timeFormat.format(time)}")
+            if (responseOrder.state.equals("done")  && responseOrder.remainingVolume?.toDouble() == 0.0) {
                 tradePostMapInfo[marketId]?.tradeBuyTime = time
-                tradePostMapInfo[marketId]?.status = OrderCoinInfo.Status.BUY
+                tradePostMapInfo[marketId]?.state = OrderCoinInfo.State.BUY
+                processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
             }
             tradePostMapInfo[marketId]?.currentTime = time
-
         }
 
+        viewModel?.resultDeleteOrderInfo?.observe(viewCycleOwner) {
+            responseOrder ->
+            val marketId = responseOrder.marketId
+
+            tradePostMapInfo.remove(marketId)
+            tradeResponseMapInfo.remove(marketId)
+            processor?.unregisterProcess(TICKER_INFO, marketId!!)
+
+
+            Log.d(TAG, "[DEBUG] resultDeleteOrderInfo marketId : $marketId")
+        }
     }
 
     override fun onResume() {

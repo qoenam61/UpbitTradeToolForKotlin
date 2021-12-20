@@ -131,7 +131,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 val tradeInfo = TradeFragment.tradePostMapInfo[marketId]
                 if (tradeInfo != null) {
                     holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
-                    holder.tradeStatus?.text = tradeInfo.status.name
+                    holder.tradeStatus?.text = tradeInfo.state.name
 
                     if (tradeInfo.getProfit() != null) {
                         holder.tradeProfit?.text =

@@ -6,6 +6,7 @@ import android.os.Message
 import android.os.SystemClock
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import com.example.upbittrade.activity.TradePagerActivity
 import com.example.upbittrade.activity.TradePagerActivity.PostType.*
 import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
@@ -121,7 +122,7 @@ class BackgroundProcessor : Thread {
             while (iterator.hasNext()) {
                 val taskItem = iterator.next()
                 when(taskItem.type) {
-                    MARKETS_INFO, MIN_CANDLE_INFO  -> {
+                    MARKETS_INFO, MIN_CANDLE_INFO, POST_ORDER_INFO, DELETE_ORDER_INFO  -> {
                         sendMessage(taskItem)
                         poll()
                     } else -> {
@@ -155,7 +156,7 @@ class BackgroundProcessor : Thread {
         while (iterator.hasNext()) {
             val list = iterator.next()
             if (list.type == item.type && list.marketId.equals(item.marketId)) {
-                Log.d(TAG, "registerProcess type: ${item.type} duplicated id: " + item.marketId)
+                Log.d(TAG, "registerProcess type: ${item.type} duplicated id: ${item.marketId}")
                 return
             }
         }
@@ -166,6 +167,18 @@ class BackgroundProcessor : Thread {
 
     fun unregisterProcess(item: TaskItem) {
         TaskList.remove(item)
+    }
+
+    fun unregisterProcess(postType: TradePagerActivity.PostType, marketId: String) {
+        val iterator = TaskList.iterator()
+        while (iterator.hasNext()) {
+            val list = iterator.next()
+            if (list.type == postType && list.marketId.equals(marketId)) {
+                Log.d(TAG, "unregisterProcess type: $postType duplicated id: $marketId")
+                iterator.remove()
+                return
+            }
+        }
     }
 
     fun release() {

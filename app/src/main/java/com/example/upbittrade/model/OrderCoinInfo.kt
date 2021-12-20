@@ -5,7 +5,7 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 class OrderCoinInfo: TradeCoinInfo {
-    enum class Status {
+    enum class State {
         READY,
         WAIT,
         BUY,
@@ -29,7 +29,7 @@ class OrderCoinInfo: TradeCoinInfo {
                 tradeCoinInfo.bidPriceVolume,
                 tradeCoinInfo.askPriceVolume)
 
-    var status: Status = Status.READY
+    var state: State = State.READY
 
     var currentPrice: Double? = null
 
@@ -37,6 +37,8 @@ class OrderCoinInfo: TradeCoinInfo {
     var tradeBuyTime: Long? = null
     var currentTime: Long? = null
 
+    var maxProfitRate: Double = 0.0
+    var maxPrice: Double = 0.0
 
     fun getBidPrice(): Double? {
         val highTail: Double = (highPrice!!.toDouble() - closePrice!!.toDouble()

@@ -250,7 +250,7 @@ class TradeFetcher {
         postOrderRetrofit?.params = params
 
         val result = MutableLiveData<ResponseOrder>()
-        val call: Call<ResponseOrder?>? = postOrderRetrofit?.getUpBitApi()?.searchOrderInfo(uuid.toString())
+        val call: Call<ResponseOrder?>? = postOrderRetrofit?.getUpBitApi()?.deleteOrderInfo(uuid.toString())
         call!!.enqueue(object : Callback<ResponseOrder?> {
             override fun onResponse(
                 call: Call<ResponseOrder?>,
