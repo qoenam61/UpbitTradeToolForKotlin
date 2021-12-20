@@ -177,7 +177,7 @@ class TradeFetcher {
             ) {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as ResponseOrder
-                    Log.d(TAG, "[DEBUG] onResponse postOrderInfo:  " +
+                    Log.i(TAG, "[DEBUG] onResponse postOrderInfo:  " +
                             "raw: ${response.raw()} " +
                             "body: ${(response.body() as ResponseOrder)}"
                     )
@@ -234,6 +234,22 @@ class TradeFetcher {
             ) {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as ResponseOrder
+                    Log.i(TAG, "[DEBUG] onResponse searchOrderInfo:  " +
+                            "raw: ${response.raw()} " +
+                            "body: ${(response.body() as ResponseOrder)}"
+                    )
+                } else {
+                    val jObjError = JSONObject(
+                        response.errorBody()!!.string()
+                    )
+                    Log.w(
+                        TAG,
+                        "[DEBUG] onResponse searchOrderInfo"
+                                + " code: " + response.code()
+                                + " headers: " + response.headers()
+                                + " raw: " + response.raw()
+                                + " jObjError: " + (jObjError ?: "NULL")
+                    )
                 }
             }
 
@@ -258,6 +274,22 @@ class TradeFetcher {
             ) {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as ResponseOrder
+                    Log.i(TAG, "[DEBUG] onResponse deleteOrderInfo:  " +
+                            "raw: ${response.raw()} " +
+                            "body: ${(response.body() as ResponseOrder)}"
+                    )
+                } else {
+                    val jObjError = JSONObject(
+                        response.errorBody()!!.string()
+                    )
+                    Log.w(
+                        TAG,
+                        "[DEBUG] onResponse deleteOrderInfo"
+                                + " code: " + response.code()
+                                + " headers: " + response.headers()
+                                + " raw: " + response.raw()
+                                + " jObjError: " + (jObjError ?: "NULL")
+                    )
                 }
             }
 
