@@ -50,4 +50,30 @@ class ResponseOrder {
 
     @SerializedName("trades_count")
     var tradesCount: Int? = null
+
+
+    override fun toString(): String {
+        val result = StringBuilder()
+        val newLine = System.getProperty("line.separator")
+        result.append(this.javaClass.name)
+        result.append("{")
+//        result.append(newLine)
+        // 클래스의 필드 리스트를 가져옴
+        val fields = this.javaClass.declaredFields
+        // 필드 리스트에서 필드를 하나하나 꺼내옴
+        for (field in fields) {
+            result.append(" ")
+            try {
+                result.append(field.name)
+                result.append(": ")
+                result.append(field[this])
+            } catch (ex: IllegalAccessException) {
+                println(ex)
+            }
+//            result.append(newLine)
+        }
+        result.append("}")
+        return result.toString()
+    }
+
 }

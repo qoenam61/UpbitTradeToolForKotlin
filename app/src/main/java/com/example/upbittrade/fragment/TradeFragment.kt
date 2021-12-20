@@ -34,11 +34,11 @@ import kotlin.collections.HashMap
 class TradeFragment: Fragment() {
     companion object {
         const val TAG = "TradeFragment"
-        const val LIMIT_AMOUNT = 10000.0
+        const val LIMIT_AMOUNT = 6000.0
         const val BASE_TIME: Long = 3 * 60 * 1000
-        const val THRESHOLD_RATE = 0.03
-        const val THRESHOLD_TICK = 1500
-        const val THRESHOLD_AVG_MIN_AVG_DAY_PRICE_VOLUME = 1.0f
+        const val THRESHOLD_RATE = 0.005
+        const val THRESHOLD_TICK = 50
+        const val THRESHOLD_AVG_MIN_AVG_DAY_PRICE_VOLUME = 0.1f
 
         private const val UNIT_REPEAT_MARKET_INFO = 30 * 60 * 1000
         private const val UNIT_MIN_CANDLE = 60

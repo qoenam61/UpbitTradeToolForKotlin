@@ -1,13 +1,13 @@
 package com.example.upbittrade.api
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.PostOrderItem
 import com.example.upbittrade.model.*
-import com.google.gson.Gson
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
@@ -175,31 +175,42 @@ class TradeFetcher {
                 call: Call<ResponseOrder?>,
                 response: Response<ResponseOrder?>
             ) {
-                Log.d(TAG, "[DEBUG] postOrderInfo onResponse: ${(response.body() as ResponseOrder)}")
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as ResponseOrder
+                    Log.d(TAG, "[DEBUG] onResponse postOrderInfo:  " +
+                            "raw: ${response.raw()} " +
+                            "body: ${(response.body() as ResponseOrder)}"
+                    )
+                } else {
 
-                } /*else {
                     val jObjError = JSONObject(
                         response.errorBody()!!.string()
                     )
-                    val errorObj = jObjError.get("error")
-                    if (response.code() == 400 && errorObj != null && errorObj.get("name") != null && errorObj.get(
-                            "name"
-                        ) == "insufficient_funds_ask"
-                    ) {
-                        if (mListener != null) {
-                            mListener.shortMoney(identifier, "ask")
-                        }
-                    } else if (response.code() == 400 && errorObj != null && errorObj.get("name") != null && errorObj.get(
-                            "name"
-                        ) == "insufficient_funds_bid"
-                    ) {
-                        if (mListener != null) {
-                            mListener.shortMoney(identifier, "bid")
-                        }
+                    Log.w(
+                        TAG,
+                        "[DEBUG] onResponse postOrderInfo"
+                                + " code: " + response.code()
+                                + " headers: " + response.headers()
+                                + " raw: " + response.raw()
+                                + " jObjError: " + (jObjError ?: "NULL")
+                    )
+
+                    val errorObj = jObjError["error"] as JSONObject
+                    if (response.code() == 400 && errorObj != null
+                        && errorObj["name"] != null
+                        && errorObj["name"] == "insufficient_funds_ask") {
+
+                        Log.w(TAG, "onResponse: insufficient_funds_ask")
+
+                    } else if (response.code() == 400 && errorObj != null
+                        && errorObj["name"] != null
+                        && errorObj["name"] == "insufficient_funds_bid") {
+
+                        Log.w(TAG, "onResponse: insufficient_funds_bid")
+
                     }
-                }*/
+
+                }
             }
 
             override fun onFailure(call: Call<ResponseOrder?>, t: Throwable) {
