@@ -204,19 +204,23 @@ class TradeFragment: Fragment() {
             val currentPrice = tickersInfo.first().tradePrice?.toDouble()
             Log.d(TAG, "[DEBUG] resultTickerInfo - marketId: $marketId currentPrice: $currentPrice time: $time")
 
-            val postInfo: OrderCoinInfo = tradePostMapInfo[marketId]!!
-            val responseOrder: ResponseOrder = tradeResponseMapInfo[marketId]!!
+            if (tradePostMapInfo != null) {
 
-            postInfo.currentPrice = currentPrice
-            postInfo.currentTime = time
+                val postInfo: OrderCoinInfo = tradePostMapInfo[marketId]!!
+                val responseOrder: ResponseOrder? = tradeResponseMapInfo[marketId]
 
-            tradePostMapInfo[marketId!!] = tradeManager.updateTickerInfoToBuyList(tickersInfo,
-                postInfo,
-                responseOrder,
-                processor!!
-            )
+                postInfo.currentPrice = currentPrice
+                postInfo.currentTime = time
 
-            tradeAdapter?.notifyDataSetChanged()
+                tradePostMapInfo[marketId!!] = tradeManager.updateTickerInfoToTrade(
+                    tickersInfo,
+                    postInfo,
+                    responseOrder,
+                    processor!!
+                )
+
+                tradeAdapter?.notifyDataSetChanged()
+            }
         }
 
         viewModel?.resultPostOrderInfo?.observe(viewCycleOwner) {
@@ -247,17 +251,28 @@ class TradeFragment: Fragment() {
                 } else if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0
                     && tradePostMapInfo[marketId]?.tradeBuyTime == null
                 ) {
+                    tradePostMapInfo[marketId]?.state = OrderCoinInfo.State.BUY
                     tradePostMapInfo[marketId]?.registerTime = null
                     tradePostMapInfo[marketId]?.tradeBuyTime = time
-                    tradePostMapInfo[marketId]?.state = OrderCoinInfo.State.BUY
                 }
 
             }
             if (responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
                 if (responseOrder.state.equals("wait")) {
                     tradePostMapInfo[marketId]?.state = OrderCoinInfo.State.WAIT
+                    processor?.registerProcess(
+                        TaskItem(
+                            SEARCH_ORDER_INFO,
+                            marketId,
+                            UUID.fromString(responseOrder.uuid)
+                        )
+                    )
                 } else if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0) {
-
+                    tradePostMapInfo[marketId]?.state = OrderCoinInfo.State.SELL
+                    tradePostMapInfo[marketId]?.registerTime = null
+                    tradePostMapInfo[marketId]?.tradeSellTime = time
+                    processor?.unregisterProcess(TICKER_INFO, marketId!!)
+                    processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId!!)
                 }
             }
 
@@ -273,22 +288,35 @@ class TradeFragment: Fragment() {
 
             Log.d(TAG, "[DEBUG] resultSearchOrderInfo marketId: $marketId state: ${responseOrder.state} side: ${responseOrder.side} time: ${Format.timeFormat.format(time)}")
 
-            if (responseOrder.state.equals("done")  && responseOrder.remainingVolume?.toDouble() == 0.0) {
-                tradePostMapInfo[marketId]?.tradeBuyTime = time
-                tradePostMapInfo[marketId]?.state = OrderCoinInfo.State.BUY
-                processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
-            }
             tradePostMapInfo[marketId]?.currentTime = time
+
+            if (responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
+                if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0) {
+                    tradePostMapInfo[marketId]?.tradeBuyTime = time
+                    tradePostMapInfo[marketId]?.state = OrderCoinInfo.State.BUY
+                    processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+                }
+            }
+
+            if (responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
+                if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0) {
+                    tradePostMapInfo[marketId]?.tradeSellTime = time
+                    tradePostMapInfo[marketId]?.state = OrderCoinInfo.State.SELL
+                    processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+                }
+            }
         }
 
         viewModel?.resultDeleteOrderInfo?.observe(viewCycleOwner) {
             responseOrder ->
             val marketId = responseOrder.marketId
 
-            tradePostMapInfo.remove(marketId)
-            tradeResponseMapInfo.remove(marketId)
-            processor?.unregisterProcess(TICKER_INFO, marketId!!)
-
+            if (responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
+                tradePostMapInfo.remove(marketId)
+                tradeResponseMapInfo.remove(marketId)
+                processor?.unregisterProcess(TICKER_INFO, marketId!!)
+                processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId!!)
+            }
 
             Log.d(TAG, "[DEBUG] resultDeleteOrderInfo marketId : $marketId")
         }

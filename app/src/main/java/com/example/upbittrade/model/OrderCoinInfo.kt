@@ -31,11 +31,11 @@ class OrderCoinInfo: TradeCoinInfo {
                 tradeCoinInfo.askPriceVolume)
 
     var state: State = State.READY
-
     var currentPrice: Double? = null
 
     var registerTime: Long? = null
     var tradeBuyTime: Long? = null
+    var tradeSellTime: Long? = null
     var currentTime: Long? = null
 
     var maxProfitRate: Double = 0.0
