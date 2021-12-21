@@ -123,7 +123,7 @@
                 </LinearLayout>
             </LinearLayout>
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/trade_list_view"
+                android:id="@+id/trade_report_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/borderline"/>

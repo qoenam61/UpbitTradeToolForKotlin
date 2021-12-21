@@ -291,8 +291,8 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
     }
 
     private fun reportList(holder: CoinHolder, position: Int) {
-        val marketId = tradeKeyList?.get(position)
-        val tradeInfo = TradeFragment.tradePostMapInfo[marketId]
+        val marketId = reportKeyList?.get(position)
+        val tradeInfo = TradeFragment.tradeReportMapInfo[marketId]
         if (tradeInfo != null) {
             holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
             holder.tradeStatus?.text = tradeInfo.state.name

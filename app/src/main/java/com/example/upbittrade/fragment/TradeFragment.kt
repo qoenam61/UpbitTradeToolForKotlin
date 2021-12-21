@@ -21,8 +21,7 @@ import com.example.upbittrade.data.PostOrderItem
 import com.example.upbittrade.data.TaskItem
 import com.example.upbittrade.model.*
 import com.example.upbittrade.utils.*
-import com.example.upbittrade.utils.TradeAdapter.Companion.Type.MONITOR_LIST
-import com.example.upbittrade.utils.TradeAdapter.Companion.Type.TRADE_LIST
+import com.example.upbittrade.utils.TradeAdapter.Companion.Type.*
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -81,13 +80,15 @@ class TradeFragment: Fragment() {
     private val minCandleMapInfo = HashMap<String, TradeCoinInfo>()
     private val tradeMapInfo = HashMap<String, List<TradeInfo>>()
 
+    private var monitorKeyList: List<String>? = null
     private var monitorAdapter: TradeAdapter? = null
     private var tradeAdapter: TradeAdapter? = null
+    private var reportAdapter: TradeAdapter? = null
 
-    private var monitorKeyList: List<String>? = null
 
     private var monitorListView: RecyclerView? = null
     private var tradeListView: RecyclerView? = null
+    private var reportListView: RecyclerView? = null
 
 
     var isRunning = false
@@ -123,6 +124,10 @@ class TradeFragment: Fragment() {
         tradeListView!!.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         tradeListView!!.adapter = tradeAdapter
 
+        reportAdapter = TradeAdapter(requireContext(), REPORT_LIST)
+        reportListView = view.findViewById(R.id.trade_report_list)
+        reportListView!!.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        reportListView!!.adapter = reportAdapter
 
         val initDialog = InitPopupDialog(requireContext())
         initDialog.show()
@@ -333,6 +338,8 @@ class TradeFragment: Fragment() {
                     tradePostInfo.tradeSellTime = time
 
                     tradeReportMapInfo[marketId] = tradePostInfo
+                    reportAdapter?.reportKeyList = tradeReportMapInfo.keys.toList()
+
                     processor?.registerProcess(
                         TaskItem(
                             DELETE_ORDER_INFO,
@@ -380,6 +387,8 @@ class TradeFragment: Fragment() {
                     tradePostInfo.sellPrice = responseOrder.price?.toDouble()
 
                     tradeReportMapInfo[marketId] = tradePostInfo
+                    reportAdapter?.reportKeyList = tradeReportMapInfo.keys.toList()
+
                     processor?.registerProcess(
                         TaskItem(
                             DELETE_ORDER_INFO,
