@@ -19,12 +19,9 @@ import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.PostOrderItem
 import com.example.upbittrade.data.TaskItem
 import com.example.upbittrade.model.*
-import com.example.upbittrade.utils.BackgroundProcessor
-import com.example.upbittrade.utils.InitPopupDialog
-import com.example.upbittrade.utils.TradeAdapter
+import com.example.upbittrade.utils.*
 import com.example.upbittrade.utils.TradeAdapter.Companion.Type.MONITOR_LIST
 import com.example.upbittrade.utils.TradeAdapter.Companion.Type.TRADE_LIST
-import com.example.upbittrade.utils.TradeManager
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -127,13 +124,22 @@ class TradeFragment: Fragment() {
         tradeManager = TradeManager(object : TradeManager.TradeChangedListener {
             override fun onPostBid(marketId: String, orderCoinInfo: OrderCoinInfo) {
                 Log.d(TAG, "[DEBUG] onPostBid - key: $marketId")
+                tradePostMapInfo[marketId] = orderCoinInfo
 
                 val bidPrice = orderCoinInfo.getBidPrice()
                 val volume = (UserParam.priceToBuy / bidPrice!!).toString()
-                tradePostMapInfo[marketId] = orderCoinInfo
 
-                processor?.registerProcess(PostOrderItem(POST_ORDER_INFO, marketId,
-                    "bid", volume, bidPrice.toString(), "limit", UUID.randomUUID()))
+                processor?.registerProcess(
+                    PostOrderItem(
+                        POST_ORDER_INFO,
+                        marketId,
+                        "bid",
+                        volume,
+                        bidPrice.toString(),
+                        "limit",
+                        UUID.randomUUID()
+                    )
+                )
 
                 tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
                 activity?.runOnUiThread {
@@ -143,8 +149,41 @@ class TradeFragment: Fragment() {
                 processor?.registerProcess(TaskItem(TICKER_INFO, marketId))
             }
 
-            override fun onPostAsk(marketId: String, orderCoinInfo: OrderCoinInfo) {
-                Log.d(TAG, "[DEBUG] onPostAsk - key: $marketId")
+            override fun onPostAsk(marketId: String, orderCoinInfo: OrderCoinInfo, orderType: String, sellPrice: Double?, volume: Double) {
+                Log.d(TAG, "[DEBUG] onPostAsk - key: $marketId sellPrice: ${Format.nonZeroFormat.format(sellPrice)} volume: ${Format.nonZeroFormat.format(volume)}")
+                tradePostMapInfo[marketId] = orderCoinInfo
+                processor?.registerProcess(
+                    PostOrderItem(
+                        POST_ORDER_INFO,
+                        marketId,
+                        "ask",
+                        volume.toString(),
+                        sellPrice.toString(),
+                        orderType,
+                        UUID.randomUUID()
+                    )
+                )
+
+                tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
+                activity?.runOnUiThread {
+                    tradeAdapter?.notifyDataSetChanged()
+                }
+            }
+
+            override fun onDelete(marketId: String, uuid: UUID) {
+                Log.d(TAG, "[DEBUG] onDelete - key: $marketId uuid: $uuid")
+                processor?.registerProcess(
+                    TaskItem(
+                        DELETE_ORDER_INFO,
+                        marketId,
+                        uuid
+                    )
+                )
+
+                tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
+                activity?.runOnUiThread {
+                    tradeAdapter?.notifyDataSetChanged()
+                }
             }
         })
 
@@ -204,7 +243,6 @@ class TradeFragment: Fragment() {
             val marketId = tickersInfo.first().marketId
             val time: Long = SystemClock.uptimeMillis()
             val currentPrice = tickersInfo.first().tradePrice?.toDouble()
-            Log.d(TAG, "[DEBUG] resultTickerInfo - marketId: $marketId currentPrice: $currentPrice time: $time")
 
             if (tradePostMapInfo != null) {
 
@@ -222,8 +260,7 @@ class TradeFragment: Fragment() {
                         processor!!
                     )
                 }
-
-                tradeAdapter?.notifyDataSetChanged()
+                updateView()
             }
         }
 
@@ -266,6 +303,7 @@ class TradeFragment: Fragment() {
             if (responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
                 if (responseOrder.state.equals("wait")) {
                     tradePostInfo.state = OrderCoinInfo.State.WAIT
+                    tradePostInfo.sellPrice = responseOrder.price?.toDouble()
                     processor?.registerProcess(
                         TaskItem(
                             SEARCH_ORDER_INFO,
@@ -275,6 +313,7 @@ class TradeFragment: Fragment() {
                     )
                 } else if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0) {
                     tradePostInfo.state = OrderCoinInfo.State.SELL
+                    tradePostInfo.sellPrice = responseOrder.price?.toDouble()
                     tradePostInfo.registerTime = null
                     tradePostInfo.tradeSellTime = time
                     processor?.unregisterProcess(TICKER_INFO, marketId)
@@ -283,6 +322,8 @@ class TradeFragment: Fragment() {
             }
 
             tradePostMapInfo[marketId] = tradePostInfo
+
+            updateView()
         }
 
         viewModel?.resultSearchOrderInfo?.observe(viewCycleOwner) {
@@ -308,9 +349,12 @@ class TradeFragment: Fragment() {
                 if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0) {
                     tradePostMapInfo[marketId]?.tradeSellTime = time
                     tradePostMapInfo[marketId]?.state = OrderCoinInfo.State.SELL
+                    tradePostMapInfo[marketId]?.sellPrice = responseOrder.price?.toDouble()
                     processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
                 }
             }
+
+            updateView()
         }
 
         viewModel?.resultDeleteOrderInfo?.observe(viewCycleOwner) {
@@ -323,6 +367,7 @@ class TradeFragment: Fragment() {
                 processor?.unregisterProcess(TICKER_INFO, marketId!!)
                 processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId!!)
             }
+            updateView()
 
             Log.d(TAG, "[DEBUG] resultDeleteOrderInfo marketId : $marketId side: ${responseOrder.side}")
         }
@@ -423,6 +468,7 @@ class TradeFragment: Fragment() {
             askPriceVolume
         )
 
+        // thresholdTick , thresholdAccPriceVolumeRate
         monitorKeyList = (tradeMonitorMapInfo.filter {
             (it.value.tickCount!! > UserParam.thresholdTick
                 && it.value.getAvgAccVolumeRate() > UserParam.thresholdAccPriceVolumeRate)
@@ -431,8 +477,7 @@ class TradeFragment: Fragment() {
 
         tradeManager.setList(TradeManager.Type.POST_BID, monitorKeyList)
 
-        monitorAdapter!!.monitorKeyList = monitorKeyList
-        monitorAdapter!!.notifyDataSetChanged()
+        updateView()
 
         if (tradeMonitorMapInfo[marketId] != null && minCandleMapInfo[marketId] != null) {
             val priceVolume = tradeMonitorMapInfo[marketId]!!.accPriceVolume?.div(UNIT_PRICE)
@@ -474,5 +519,12 @@ class TradeFragment: Fragment() {
 
     private fun sortedMapList(it: String): Int? {
         return tradeMonitorMapInfo[it]?.tickCount
+    }
+
+    private fun updateView() {
+        monitorAdapter!!.monitorKeyList = monitorKeyList
+        monitorAdapter!!.notifyDataSetChanged()
+        tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
+        tradeAdapter?.notifyDataSetChanged()
     }
 }

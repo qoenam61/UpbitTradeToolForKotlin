@@ -169,7 +169,6 @@ class TradeFetcher {
 
         val result = MutableLiveData<ResponseOrder>()
         val call: Call<ResponseOrder?>? = postOrderRetrofit?.getUpBitApi()?.postOrderInfo(params)
-
         call!!.enqueue(object : Callback<ResponseOrder?> {
             override fun onResponse(
                 call: Call<ResponseOrder?>,
@@ -177,7 +176,7 @@ class TradeFetcher {
             ) {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as ResponseOrder
-                    Log.i(TAG, "[DEBUG] onResponse postOrderInfo:  " +
+                    Log.i(TAG, "postOrderInfo:  " +
                             "raw: ${response.raw()} " +
                             "body: ${(response.body() as ResponseOrder)}"
                     )
@@ -188,7 +187,8 @@ class TradeFetcher {
                     )
                     Log.w(
                         TAG,
-                        "[DEBUG] onResponse postOrderInfo"
+                        "postOrderInfo"
+                                + " call: " + call.request()
                                 + " code: " + response.code()
                                 + " headers: " + response.headers()
                                 + " raw: " + response.raw()
@@ -200,13 +200,13 @@ class TradeFetcher {
                         && errorObj["name"] != null
                         && errorObj["name"] == "insufficient_funds_ask") {
 
-                        Log.w(TAG, "onResponse: insufficient_funds_ask")
+                        Log.w(TAG, "postOrderInfo: insufficient_funds_ask")
 
                     } else if (response.code() == 400 && errorObj != null
                         && errorObj["name"] != null
                         && errorObj["name"] == "insufficient_funds_bid") {
 
-                        Log.w(TAG, "onResponse: insufficient_funds_bid")
+                        Log.w(TAG, "postOrderInfo: insufficient_funds_bid")
 
                     }
 
@@ -234,7 +234,7 @@ class TradeFetcher {
             ) {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as ResponseOrder
-                    Log.i(TAG, "[DEBUG] onResponse searchOrderInfo:  " +
+                    Log.i(TAG, "searchOrderInfo :  " +
                             "raw: ${response.raw()} " +
                             "body: ${(response.body() as ResponseOrder)}"
                     )
@@ -244,7 +244,7 @@ class TradeFetcher {
                     )
                     Log.w(
                         TAG,
-                        "[DEBUG] onResponse searchOrderInfo"
+                        "searchOrderInfo"
                                 + " code: " + response.code()
                                 + " headers: " + response.headers()
                                 + " raw: " + response.raw()
@@ -274,7 +274,7 @@ class TradeFetcher {
             ) {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as ResponseOrder
-                    Log.i(TAG, "[DEBUG] onResponse deleteOrderInfo:  " +
+                    Log.i(TAG, "deleteOrderInfo:  " +
                             "raw: ${response.raw()} " +
                             "body: ${(response.body() as ResponseOrder)}"
                     )
@@ -284,7 +284,7 @@ class TradeFetcher {
                     )
                     Log.w(
                         TAG,
-                        "[DEBUG] onResponse deleteOrderInfo"
+                        "deleteOrderInfo"
                                 + " code: " + response.code()
                                 + " headers: " + response.headers()
                                 + " raw: " + response.raw()

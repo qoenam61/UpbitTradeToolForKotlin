@@ -50,10 +50,10 @@ class BackgroundProcessor : Thread {
             }
 
             try {
-                Log.i(
-                    TAG,
-                    "[DEBUG] run: " + SystemClock.uptimeMillis() + " size: " + taskList?.size
-                )
+//                Log.i(
+//                    TAG,
+//                    "[DEBUG] run: " + SystemClock.uptimeMillis() + " size: " + taskList?.size
+//                )
                 sleep(pingDelay * (taskList?.size?.toLong() ?: 10) + 1)
             } catch (e: InterruptedException) {
                 isRunning = false
@@ -118,15 +118,14 @@ class BackgroundProcessor : Thread {
 
     object TaskList: ConcurrentLinkedDeque<TaskItem>(), Runnable {
         override fun run() {
-            val iterator = iterator()
-            while (iterator.hasNext()) {
-                val taskItem = iterator.next()
-                when(taskItem.type) {
+            forEach() {
+//                Log.d(TAG, "[DEBUG] run: ${it.type} marketId: ${it.marketId} uuid: ${it.uuid}")
+                when(it.type) {
                     MARKETS_INFO, MIN_CANDLE_INFO, POST_ORDER_INFO, DELETE_ORDER_INFO  -> {
-                        sendMessage(taskItem)
-                        poll()
+                        sendMessage(it)
+                        TaskList.remove(it)
                     } else -> {
-                        sendMessage(taskItem)
+                    sendMessage(it)
                     }
                 }
                 try {
@@ -170,6 +169,18 @@ class BackgroundProcessor : Thread {
     }
 
     fun unregisterProcess(postType: TradePagerActivity.PostType, marketId: String) {
+        val iterator = TaskList.iterator()
+        while (iterator.hasNext()) {
+            val list = iterator.next()
+            if (list.type == postType && list.marketId.equals(marketId)) {
+                Log.d(TAG, "unregisterProcess type: $postType duplicated id: $marketId")
+                iterator.remove()
+                return
+            }
+        }
+    }
+
+    fun unregisterProcess(postType: TradePagerActivity.PostType, marketId: String, uuid: UUID) {
         val iterator = TaskList.iterator()
         while (iterator.hasNext()) {
             val list = iterator.next()

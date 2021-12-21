@@ -24,7 +24,8 @@ class TradeManager(private val listener: TradeChangedListener) {
 
     interface TradeChangedListener {
         fun onPostBid(marketId: String, orderCoinInfo: OrderCoinInfo)
-        fun onPostAsk(marketId: String, orderCoinInfo: OrderCoinInfo)
+        fun onPostAsk(marketId: String, orderCoinInfo: OrderCoinInfo, orderType: String, sellPrice: Double?, volume: Double)
+        fun onDelete(marketId: String, uuid: UUID)
     }
 
     enum class Type {
@@ -109,12 +110,13 @@ class TradeManager(private val listener: TradeChangedListener) {
                 "state: $state " +
                 "time: ${TradeFragment.Format.timeFormat.format(time)}")
 
-        if (postInfo.state == OrderCoinInfo.State.WAIT) {
+        if (postInfo.state == OrderCoinInfo.State.WAIT && responseOrder != null) {
             if (postInfo.getRegisterDuration() != null && postInfo.getRegisterDuration()!! > TradeFragment.UserParam.monitorTime) {
                 Log.d(TAG, "[DEBUG] updateTickerInfoToTrade: DELETE_ORDER_INFO")
                 postInfo.registerTime = null
                 postInfo.state = OrderCoinInfo.State.READY
-                processor.registerProcess(TaskItem(TradePagerActivity.PostType.DELETE_ORDER_INFO, responseOrder.uuid))
+//                processor.registerProcess(TaskItem(TradePagerActivity.PostType.DELETE_ORDER_INFO, marketId, UUID.fromString(responseOrder.uuid)))
+                listener.onDelete(marketId!!, UUID.fromString(responseOrder.uuid))
                 return postInfo
             }
         }
@@ -123,15 +125,15 @@ class TradeManager(private val listener: TradeChangedListener) {
             return postInfo
         }
 
-        return tacticalToSell(ticker, postInfo, responseOrder, processor)
+        return tacticalToSell(ticker, postInfo, responseOrder)
     }
 
-    private fun tacticalToSell(ticker: List<Ticker>, postInfo: OrderCoinInfo, responseOrder: ResponseOrder?, processor: BackgroundProcessor): OrderCoinInfo {
+    private fun tacticalToSell(ticker: List<Ticker>, postInfo: OrderCoinInfo, responseOrder: ResponseOrder?): OrderCoinInfo {
         val marketId = ticker.first().marketId
         val currentPrice = ticker.first().tradePrice?.toDouble()
         val profitRate = postInfo.getProfitRate()
         var maxProfitRate = postInfo.maxProfitRate
-        val volume = responseOrder?.remainingVolume
+        val volume = responseOrder?.remainingVolume?.toDouble()
 
 
         if (profitRate!! > postInfo.maxProfitRate) {
@@ -142,7 +144,7 @@ class TradeManager(private val listener: TradeChangedListener) {
 
         // Take a profit
         if (maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66) {
-            val sellPrice = (postInfo.maxPrice + currentPrice!!.toDouble()) / 2
+            val sellPrice = (postInfo.maxPrice + currentPrice!!.toDouble()) / 2.0
 
             Log.d(
                 TAG,
@@ -154,17 +156,18 @@ class TradeManager(private val listener: TradeChangedListener) {
                         "volume: ${TradeFragment.Format.nonZeroFormat.format(volume)} "
             )
 
-            processor.registerProcess(
+/*            processor.registerProcess(
                 PostOrderItem(
                     TradePagerActivity.PostType.POST_ORDER_INFO,
                     marketId,
                     "ask",
                     volume.toString(),
-                    sellPrice.toString(),
+                    Utils().convertPrice(sellPrice).toString(),
                     "limit",
                     UUID.randomUUID()
                 )
-            )
+            )*/
+            listener.onPostAsk(marketId!!, postInfo, "limit", Utils().convertPrice(sellPrice), volume!!)
         }
 
         // Stop a loss
@@ -192,12 +195,15 @@ class TradeManager(private val listener: TradeChangedListener) {
             when {
                 //Market
                 !sign && body / length > 0.8 -> {
-                    processor.registerProcess(
+
+/*                    processor.registerProcess(
                         PostOrderItem(
                             TradePagerActivity.PostType.POST_ORDER_INFO, marketId,
                             "ask", volume.toString(), null, "market", UUID.randomUUID()
                         )
-                    )
+                    )*/
+                    listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
+
                 }
 
 
@@ -212,17 +218,19 @@ class TradeManager(private val listener: TradeChangedListener) {
                         )
                     )!!.toDouble()
 
-                    processor.registerProcess(
+/*                    processor.registerProcess(
                         PostOrderItem(
                             TradePagerActivity.PostType.POST_ORDER_INFO,
                             marketId,
                             "ask",
                             volume.toString(),
-                            sellPrice.toString(),
+                            Utils().convertPrice(sellPrice).toString(),
                             "limit",
                             UUID.randomUUID()
                         )
-                    )
+                    )*/
+                    listener.onPostAsk(marketId!!, postInfo, "limit", Utils().convertPrice(sellPrice), volume!!)
+
                 }
 
                 //HCOL
@@ -236,17 +244,19 @@ class TradeManager(private val listener: TradeChangedListener) {
                         )
                     )!!.toDouble()
 
-                    processor.registerProcess(
+/*                    processor.registerProcess(
                         PostOrderItem(
                             TradePagerActivity.PostType.POST_ORDER_INFO,
                             marketId,
                             "ask",
                             volume.toString(),
-                            sellPrice.toString(),
+                            Utils().convertPrice(sellPrice).toString(),
                             "limit",
                             UUID.randomUUID()
                         )
-                    )
+                    )*/
+                    listener.onPostAsk(marketId!!, postInfo, "limit", Utils().convertPrice(sellPrice), volume!!)
+
                 }
             }
         }

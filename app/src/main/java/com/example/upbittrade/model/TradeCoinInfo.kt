@@ -118,7 +118,7 @@ open class TradeCoinInfo {
             return 0.0
         }
         val diff = closePrice!!.toDouble() - openPrice!!.toDouble()
-        return diff / closePrice!!.toDouble()
+        return diff / openPrice!!.toDouble()
     }
 
     fun getPriceRangeRate(): Double {

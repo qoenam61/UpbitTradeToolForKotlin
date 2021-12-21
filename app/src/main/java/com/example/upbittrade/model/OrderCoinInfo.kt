@@ -31,7 +31,6 @@ class OrderCoinInfo: TradeCoinInfo {
                 tradeCoinInfo.askPriceVolume)
 
     var state: State = State.READY
-    var currentPrice: Double? = null
 
     var registerTime: Long? = null
     var tradeBuyTime: Long? = null
@@ -41,6 +40,9 @@ class OrderCoinInfo: TradeCoinInfo {
     var maxProfitRate: Double = 0.0
     var maxPrice: Double = 0.0
 
+
+    var currentPrice: Double? = null
+    var sellPrice: Double? = null
     fun getBidPrice(): Double? {
         val highTail: Double = (highPrice!!.toDouble() - closePrice!!.toDouble()
             .coerceAtLeast(openPrice!!.toDouble()))
