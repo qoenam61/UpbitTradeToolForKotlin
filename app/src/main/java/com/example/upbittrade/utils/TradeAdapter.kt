@@ -10,9 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
 import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.model.OrderCoinInfo
-import com.example.upbittrade.model.OrderInfo
-import com.example.upbittrade.utils.TradeAdapter.Companion.Type.MONITOR_LIST
-import com.example.upbittrade.utils.TradeAdapter.Companion.Type.TRADE_LIST
+import com.example.upbittrade.utils.TradeAdapter.Companion.Type.*
 
 class TradeAdapter(private val context: Context, val type: Type): RecyclerView.Adapter<TradeAdapter.CoinHolder>() {
     companion object {
@@ -20,13 +18,13 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         enum class Type {
             MONITOR_LIST,
             TRADE_LIST,
-            RESULT_LIST
+            REPORT_LIST
         }
     }
 
     var monitorKeyList: List<String>? = null
     var tradeKeyList: List<String>? = null
-    var resultKeyList: List<String>? = null
+    var reportKeyList: List<String>? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CoinHolder {
         var view = when (type) {
@@ -36,7 +34,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
             TRADE_LIST -> {
                 LayoutInflater.from(context).inflate(R.layout.coin_trade_item, parent, false)
             }
-            Type.RESULT_LIST -> {
+            REPORT_LIST -> {
                 LayoutInflater.from(context).inflate(R.layout.coin_result_item, parent, false)
             }
         }
@@ -46,153 +44,13 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
     override fun onBindViewHolder(holder: CoinHolder, position: Int) {
         when (type) {
             MONITOR_LIST -> {
-                val marketId = monitorKeyList?.get(position)
-                val tradeInfo = TradeFragment.tradeMonitorMapInfo[marketId]
-                if (tradeInfo != null) {
-                    holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
-                    holder.tradePrice?.text =
-                        TradeFragment.Format.nonZeroFormat.format(tradeInfo.closePrice!!.toDouble())
-                    holder.tradePriceRate?.text =
-                        TradeFragment.Format.percentFormat.format(tradeInfo.dayChangeRate)
-                    when {
-                        tradeInfo.dayChangeRate!!.compareTo(0.0) > 0 -> {
-                            holder.tradePrice?.setTextColor(Color.RED)
-                            holder.tradePriceRate?.setTextColor(Color.RED)
-                        }
-                        tradeInfo.dayChangeRate!!.compareTo(0.0) < 0 -> {
-                            holder.tradePrice?.setTextColor(Color.BLUE)
-                            holder.tradePriceRate?.setTextColor(Color.BLUE)
-                        }
-                        else -> {
-                            holder.tradePrice?.setTextColor(Color.BLACK)
-                            holder.tradePriceRate?.setTextColor(Color.BLACK)
-                        }
-                    }
-
-                    holder.minPriceRate?.text =
-                            TradeFragment.Format.percentFormat.format(tradeInfo.getPriceRate())
-                    when {
-                        tradeInfo.getPriceRate().compareTo(0.0) > 0 -> {
-                            holder.minPriceRate?.setTextColor(Color.RED)
-                        }
-                        tradeInfo.getPriceRate().compareTo(0.0) < 0 -> {
-                            holder.minPriceRate?.setTextColor(Color.BLUE)
-                        }
-                        else -> {
-                            holder.minPriceRate?.setTextColor(Color.BLACK)
-                        }
-                    }
-
-                    holder.tradeCount?.text =
-                        TradeFragment.Format.nonZeroFormat.format(tradeInfo.tickCount)
-
-                    holder.minPricePerAvgPrice?.text =
-                        TradeFragment.Format.percentFormat.format(tradeInfo.getAvgAccVolumeRate())
-                    when {
-                        tradeInfo.getAvgAccVolumeRate().compareTo(1.0) > 0 -> {
-                            holder.minPricePerAvgPrice?.setTextColor(Color.RED)
-                        }
-                        tradeInfo.getAvgAccVolumeRate().compareTo(1.0) < 0 -> {
-                            holder.minPricePerAvgPrice?.setTextColor(Color.BLUE)
-                        }
-                        else -> {
-                            holder.minPricePerAvgPrice?.setTextColor(Color.BLACK)
-                        }
-                    }
-                    holder.bidAskRate?.text =
-                        TradeFragment.Format.percentFormat.format(tradeInfo.getBidAskRate())
-                    when {
-                        tradeInfo.getBidAskRate().compareTo(0.5) > 0 -> {
-                            holder.bidAskRate?.setTextColor(Color.RED)
-                        }
-                        tradeInfo.getBidAskRate().compareTo(0.5) < 0 -> {
-                            holder.bidAskRate?.setTextColor(Color.BLUE)
-                        }
-                        else -> {
-                            holder.bidAskRate?.setTextColor(Color.BLACK)
-                        }
-                    }
-                    holder.bidAskPriceRate?.text =
-                        TradeFragment.Format.percentFormat.format(tradeInfo.getBidAskPriceRate())
-                    when {
-                        tradeInfo.getBidAskPriceRate().compareTo(0.5) > 0 -> {
-                            holder.bidAskPriceRate?.setTextColor(Color.RED)
-                        }
-                        tradeInfo.getBidAskRate().compareTo(0.5) < 0 -> {
-                            holder.bidAskPriceRate?.setTextColor(Color.BLUE)
-                        }
-                        else -> {
-                            holder.bidAskPriceRate?.setTextColor(Color.BLACK)
-                        }
-                    }
-                }
+                monitorList(holder, position)
             }
             TRADE_LIST -> {
-
-                val marketId = tradeKeyList?.get(position)
-                val tradeInfo = TradeFragment.tradePostMapInfo[marketId]
-                if (tradeInfo != null) {
-                    holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
-                    holder.tradeStatus?.text = tradeInfo.state.name
-
-                    when (tradeInfo.state) {
-                        OrderCoinInfo.State.READY -> {
-                            holder.tradeStatus?.setTextColor(Color.DKGRAY)
-                        }
-                        OrderCoinInfo.State.WAIT -> {
-                            holder.tradeStatus?.setTextColor(Color.BLACK)
-                        }
-                        OrderCoinInfo.State.BUY -> {
-                            holder.tradeStatus?.setTextColor(Color.RED)
-                        }
-                        OrderCoinInfo.State.SELL -> {
-                            holder.tradeStatus?.setTextColor(Color.BLUE)
-                        }
-                    }
-
-                    if (tradeInfo.getProfit() != null) {
-                        holder.tradeProfit?.text =
-                            TradeFragment.Format.nonZeroFormat.format(tradeInfo.getProfit())
-                    }
-
-                    if (tradeInfo.getProfitRate() != null) {
-                        holder.tradeProfitRate?.text =
-                            TradeFragment.Format.percentFormat.format(tradeInfo.getProfitRate())
-
-                        when {
-                            tradeInfo.getProfitRate()!!.compareTo(0.0) > 0 -> {
-                                holder.tradeProfitRate?.setTextColor(Color.RED)
-                            }
-                            tradeInfo.getProfitRate()!!.compareTo(0.0) < 0 -> {
-                                holder.tradeProfitRate?.setTextColor(Color.BLUE)
-                            }
-                            else -> {
-                                holder.tradeProfitRate?.setTextColor(Color.BLACK)
-                            }
-                        }
-                    }
-                    if (tradeInfo.currentPrice != null) {
-                        holder.tradePrice?.text =
-                            TradeFragment.Format.nonZeroFormat.format(tradeInfo.currentPrice)
-                    }
-
-                    if (tradeInfo.getBidPrice() != null) {
-                        holder.tradeBidPrice?.text =
-                            TradeFragment.Format.nonZeroFormat.format(tradeInfo.getBidPrice())
-                    }
-                    if (tradeInfo.tradeBuyTime != null) {
-                        holder.tradeBuyTime?.text =
-                            TradeFragment.Format.timeFormat.format(tradeInfo.tradeBuyTime)
-                    }
-
-                    if (tradeInfo.getBuyDuration() != null) {
-                        holder.tradeBuyDuration?.text =
-                            TradeFragment.Format.timeFormat.format(tradeInfo.getBuyDuration())
-                    }
-                }
+                tradeList(holder, position)
             }
-            Type.RESULT_LIST -> {
-                resultKeyList?.size
+            REPORT_LIST -> {
+                reportList(holder, position)
             }
         }
     }
@@ -214,11 +72,11 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                     tradeKeyList!!.size
                 }
             }
-            Type.RESULT_LIST -> {
-                count = if (resultKeyList == null) {
+            REPORT_LIST -> {
+                count = if (reportKeyList == null) {
                     0
                 } else {
-                    resultKeyList!!.size
+                    reportKeyList!!.size
                 }
             }
         }
@@ -240,8 +98,11 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         var tradeProfit: TextView? = null
         var tradeProfitRate: TextView? = null
         var tradeBidPrice: TextView? = null
-        var tradeBuyTime: TextView? = null
+        var tradeBidTime: TextView? = null
         var tradeBuyDuration: TextView? = null
+
+        var tradeAskPrice: TextView? = null
+        var tradeAskTime: TextView? = null
 
 
         constructor(itemView: View, type: Type) : super(itemView) {
@@ -263,10 +124,235 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                     tradeProfitRate = itemView.findViewById(R.id.trade_profit_rate)
                     tradePrice = itemView.findViewById(R.id.trade_price)
                     tradeBidPrice = itemView.findViewById(R.id.trade_bid_price)
-                    tradeBuyTime = itemView.findViewById(R.id.trade_buy_time)
+                    tradeBidTime = itemView.findViewById(R.id.trade_bid_time)
                     tradeBuyDuration = itemView.findViewById(R.id.trade_buy_duration)
+                }
+                REPORT_LIST -> {
+                    marketId = itemView.findViewById(R.id.market_id)
+                    tradeStatus = itemView.findViewById(R.id.trade_status)
+                    tradeProfit = itemView.findViewById(R.id.trade_profit)
+                    tradeProfitRate = itemView.findViewById(R.id.trade_profit_rate)
+                    tradePrice = itemView.findViewById(R.id.trade_price)
+                    tradeAskPrice = itemView.findViewById(R.id.trade_ask_price)
+                    tradeBidPrice = itemView.findViewById(R.id.trade_bid_price)
+                    tradeAskTime = itemView.findViewById(R.id.trade_ask_time)
+                    tradeBidTime = itemView.findViewById(R.id.trade_bid_time)
                 }
             }
         }
     }
+
+
+    private fun monitorList(holder: CoinHolder, position: Int) {
+        val marketId = monitorKeyList?.get(position)
+        val tradeInfo = TradeFragment.tradeMonitorMapInfo[marketId]
+        if (tradeInfo != null) {
+            holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
+            holder.tradePrice?.text =
+                TradeFragment.Format.nonZeroFormat.format(tradeInfo.closePrice!!.toDouble())
+            holder.tradePriceRate?.text =
+                TradeFragment.Format.percentFormat.format(tradeInfo.dayChangeRate)
+            when {
+                tradeInfo.dayChangeRate!!.compareTo(0.0) > 0 -> {
+                    holder.tradePrice?.setTextColor(Color.RED)
+                    holder.tradePriceRate?.setTextColor(Color.RED)
+                }
+                tradeInfo.dayChangeRate!!.compareTo(0.0) < 0 -> {
+                    holder.tradePrice?.setTextColor(Color.BLUE)
+                    holder.tradePriceRate?.setTextColor(Color.BLUE)
+                }
+                else -> {
+                    holder.tradePrice?.setTextColor(Color.BLACK)
+                    holder.tradePriceRate?.setTextColor(Color.BLACK)
+                }
+            }
+
+            holder.minPriceRate?.text =
+                TradeFragment.Format.percentFormat.format(tradeInfo.getPriceRate())
+            when {
+                tradeInfo.getPriceRate().compareTo(0.0) > 0 -> {
+                    holder.minPriceRate?.setTextColor(Color.RED)
+                }
+                tradeInfo.getPriceRate().compareTo(0.0) < 0 -> {
+                    holder.minPriceRate?.setTextColor(Color.BLUE)
+                }
+                else -> {
+                    holder.minPriceRate?.setTextColor(Color.BLACK)
+                }
+            }
+
+            holder.tradeCount?.text =
+                TradeFragment.Format.nonZeroFormat.format(tradeInfo.tickCount)
+
+            holder.minPricePerAvgPrice?.text =
+                TradeFragment.Format.percentFormat.format(tradeInfo.getAvgAccVolumeRate())
+            when {
+                tradeInfo.getAvgAccVolumeRate().compareTo(1.0) > 0 -> {
+                    holder.minPricePerAvgPrice?.setTextColor(Color.RED)
+                }
+                tradeInfo.getAvgAccVolumeRate().compareTo(1.0) < 0 -> {
+                    holder.minPricePerAvgPrice?.setTextColor(Color.BLUE)
+                }
+                else -> {
+                    holder.minPricePerAvgPrice?.setTextColor(Color.BLACK)
+                }
+            }
+            holder.bidAskRate?.text =
+                TradeFragment.Format.percentFormat.format(tradeInfo.getBidAskRate())
+            when {
+                tradeInfo.getBidAskRate().compareTo(0.5) > 0 -> {
+                    holder.bidAskRate?.setTextColor(Color.RED)
+                }
+                tradeInfo.getBidAskRate().compareTo(0.5) < 0 -> {
+                    holder.bidAskRate?.setTextColor(Color.BLUE)
+                }
+                else -> {
+                    holder.bidAskRate?.setTextColor(Color.BLACK)
+                }
+            }
+            holder.bidAskPriceRate?.text =
+                TradeFragment.Format.percentFormat.format(tradeInfo.getBidAskPriceRate())
+            when {
+                tradeInfo.getBidAskPriceRate().compareTo(0.5) > 0 -> {
+                    holder.bidAskPriceRate?.setTextColor(Color.RED)
+                }
+                tradeInfo.getBidAskRate().compareTo(0.5) < 0 -> {
+                    holder.bidAskPriceRate?.setTextColor(Color.BLUE)
+                }
+                else -> {
+                    holder.bidAskPriceRate?.setTextColor(Color.BLACK)
+                }
+            }
+        }
+    }
+
+    private fun tradeList(holder: CoinHolder, position: Int) {
+        val marketId = tradeKeyList?.get(position)
+        val tradeInfo = TradeFragment.tradePostMapInfo[marketId]
+        if (tradeInfo != null) {
+            holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
+            holder.tradeStatus?.text = tradeInfo.state.name
+
+            when (tradeInfo.state) {
+                OrderCoinInfo.State.READY -> {
+                    holder.tradeStatus?.setTextColor(Color.DKGRAY)
+                }
+                OrderCoinInfo.State.WAIT -> {
+                    holder.tradeStatus?.setTextColor(Color.BLACK)
+                }
+                OrderCoinInfo.State.BUY -> {
+                    holder.tradeStatus?.setTextColor(Color.RED)
+                }
+                OrderCoinInfo.State.SELL -> {
+                    holder.tradeStatus?.setTextColor(Color.BLUE)
+                }
+            }
+
+            if (tradeInfo.getProfit() != null) {
+                holder.tradeProfit?.text =
+                    TradeFragment.Format.nonZeroFormat.format(tradeInfo.getProfit())
+            }
+
+            if (tradeInfo.getProfitRate() != null) {
+                holder.tradeProfitRate?.text =
+                    TradeFragment.Format.percentFormat.format(tradeInfo.getProfitRate())
+
+                when {
+                    tradeInfo.getProfitRate()!!.compareTo(0.0) > 0 -> {
+                        holder.tradeProfitRate?.setTextColor(Color.RED)
+                    }
+                    tradeInfo.getProfitRate()!!.compareTo(0.0) < 0 -> {
+                        holder.tradeProfitRate?.setTextColor(Color.BLUE)
+                    }
+                    else -> {
+                        holder.tradeProfitRate?.setTextColor(Color.BLACK)
+                    }
+                }
+            }
+            if (tradeInfo.currentPrice != null) {
+                holder.tradePrice?.text =
+                    TradeFragment.Format.nonZeroFormat.format(tradeInfo.currentPrice)
+            }
+
+            if (tradeInfo.getBidPrice() != null) {
+                holder.tradeBidPrice?.text =
+                    TradeFragment.Format.nonZeroFormat.format(tradeInfo.getBidPrice())
+            }
+            if (tradeInfo.tradeBuyTime != null) {
+                holder.tradeBidTime?.text =
+                    TradeFragment.Format.timeFormat.format(tradeInfo.tradeBuyTime)
+            }
+
+            if (tradeInfo.getBuyDuration() != null) {
+                holder.tradeBuyDuration?.text =
+                    TradeFragment.Format.timeFormat.format(tradeInfo.getBuyDuration())
+            }
+        }
+    }
+
+    private fun reportList(holder: CoinHolder, position: Int) {
+        val marketId = tradeKeyList?.get(position)
+        val tradeInfo = TradeFragment.tradePostMapInfo[marketId]
+        if (tradeInfo != null) {
+            holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
+            holder.tradeStatus?.text = tradeInfo.state.name
+
+            when (tradeInfo.state) {
+                OrderCoinInfo.State.READY -> {
+                    holder.tradeStatus?.setTextColor(Color.DKGRAY)
+                }
+                OrderCoinInfo.State.WAIT -> {
+                    holder.tradeStatus?.setTextColor(Color.BLACK)
+                }
+                OrderCoinInfo.State.BUY -> {
+                    holder.tradeStatus?.setTextColor(Color.RED)
+                }
+                OrderCoinInfo.State.SELL -> {
+                    holder.tradeStatus?.setTextColor(Color.BLUE)
+                }
+            }
+
+            if (tradeInfo.getProfit() != null) {
+                holder.tradeProfit?.text =
+                    TradeFragment.Format.nonZeroFormat.format(tradeInfo.getProfit())
+            }
+
+            if (tradeInfo.getProfitRate() != null) {
+                holder.tradeProfitRate?.text =
+                    TradeFragment.Format.percentFormat.format(tradeInfo.getProfitRate())
+
+                when {
+                    tradeInfo.getProfitRate()!!.compareTo(0.0) > 0 -> {
+                        holder.tradeProfitRate?.setTextColor(Color.RED)
+                    }
+                    tradeInfo.getProfitRate()!!.compareTo(0.0) < 0 -> {
+                        holder.tradeProfitRate?.setTextColor(Color.BLUE)
+                    }
+                    else -> {
+                        holder.tradeProfitRate?.setTextColor(Color.BLACK)
+                    }
+                }
+            }
+            if (tradeInfo.sellPrice != null) {
+                holder.tradeAskPrice?.text =
+                    TradeFragment.Format.nonZeroFormat.format(tradeInfo.sellPrice)
+            }
+
+            if (tradeInfo.getBidPrice() != null) {
+                holder.tradeBidPrice?.text =
+                    TradeFragment.Format.nonZeroFormat.format(tradeInfo.getBidPrice())
+            }
+
+            if (tradeInfo.tradeSellTime != null) {
+                holder.tradeAskTime?.text =
+                    TradeFragment.Format.timeFormat.format(tradeInfo.tradeSellTime)
+            }
+
+            if (tradeInfo.tradeBuyTime != null) {
+                holder.tradeBidTime?.text =
+                    TradeFragment.Format.timeFormat.format(tradeInfo.tradeBuyTime)
+            }
+        }
+    }
+
 }

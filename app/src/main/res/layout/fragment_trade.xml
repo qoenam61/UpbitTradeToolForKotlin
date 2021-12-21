@@ -23,6 +23,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/default_view_height"
                 layout="@layout/trade_list_layout"/>
+
+            <include
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/default_view_height"
+                layout="@layout/report_list_layout"/>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </LinearLayout>
