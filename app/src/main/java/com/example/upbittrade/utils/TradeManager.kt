@@ -229,7 +229,7 @@ class TradeManager(private val listener: TradeChangedListener) {
                             UUID.randomUUID()
                         )
                     )*/
-                    listener.onPostAsk(marketId!!, postInfo, "limit", Utils().convertPrice(sellPrice), volume!!)
+                    listener.onPostAsk(marketId!!, postInfo, "limit", sellPrice, volume!!)
 
                 }
 
@@ -255,7 +255,7 @@ class TradeManager(private val listener: TradeChangedListener) {
                             UUID.randomUUID()
                         )
                     )*/
-                    listener.onPostAsk(marketId!!, postInfo, "limit", Utils().convertPrice(sellPrice), volume!!)
+                    listener.onPostAsk(marketId!!, postInfo, "limit", sellPrice, volume!!)
 
                 }
             }

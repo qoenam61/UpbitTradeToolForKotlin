@@ -170,7 +170,7 @@ class TradeFragment: Fragment() {
             }
 
             override fun onPostAsk(marketId: String, orderCoinInfo: OrderCoinInfo, orderType: String, sellPrice: Double?, volume: Double) {
-                Log.d(TAG, "[DEBUG] onPostAsk - key: $marketId sellPrice: ${Format.nonZeroFormat.format(sellPrice)} volume: ${Format.zeroFormat.format(volume)}")
+                Log.d(TAG, "[DEBUG] onPostAsk - key: $marketId sellPrice: ${Format.nonZeroFormat.format(sellPrice.toString())} volume: ${Format.zeroFormat.format(volume)}")
                 tradePostMapInfo[marketId] = orderCoinInfo
                 processor?.registerProcess(
                     PostOrderItem(
@@ -302,14 +302,6 @@ class TradeFragment: Fragment() {
             if (responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
                 if (responseOrder.state.equals("wait")) {
                     tradePostInfo.state = OrderCoinInfo.State.WAIT
-                } else if (responseOrder.state.equals("done")
-                    && responseOrder.remainingVolume?.toDouble() == 0.0
-                    && tradePostInfo.tradeBuyTime == null) {
-
-                    tradePostInfo.state = OrderCoinInfo.State.BUY
-                    tradePostInfo.registerTime = null
-                    tradePostInfo.tradeBuyTime = time
-
                     processor?.registerProcess(
                         TaskItem(
                             SEARCH_ORDER_INFO,
@@ -317,6 +309,14 @@ class TradeFragment: Fragment() {
                             UUID.fromString(responseOrder.uuid)
                         )
                     )
+                } else if (responseOrder.state.equals("done")
+                    && responseOrder.remainingVolume?.toDouble() == 0.0
+                    && tradePostInfo.tradeBuyTime == null) {
+
+                    tradePostInfo.state = OrderCoinInfo.State.BUY
+                    tradePostInfo.registerTime = null
+                    tradePostInfo.tradeBuyTime = time
+                    processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
                 }
             }
             if (responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
@@ -373,8 +373,10 @@ class TradeFragment: Fragment() {
 
             if (responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
                 if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0) {
-                    tradePostInfo.tradeBuyTime = time
+
                     tradePostInfo.state = OrderCoinInfo.State.BUY
+                    tradePostInfo.registerTime = null
+                    tradePostInfo.tradeBuyTime = time
                     processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
                 }
             }
@@ -382,9 +384,10 @@ class TradeFragment: Fragment() {
             if (responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
                 if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0) {
                     isInSufficientFunds = false
-                    tradePostInfo.tradeSellTime = time
                     tradePostInfo.state = OrderCoinInfo.State.SELL
                     tradePostInfo.sellPrice = responseOrder.price?.toDouble()
+                    tradePostInfo.registerTime = null
+                    tradePostInfo.tradeSellTime = time
 
                     tradeReportMapInfo[marketId] = tradePostInfo
                     reportAdapter?.reportKeyList = tradeReportMapInfo.keys.toList()
@@ -397,11 +400,13 @@ class TradeFragment: Fragment() {
                         )
                     )
 
+                    processor?.unregisterProcess(TICKER_INFO, marketId)
                     processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
                 }
             }
 
             tradePostMapInfo[marketId] = tradePostInfo
+
             updateView()
         }
 
@@ -573,5 +578,7 @@ class TradeFragment: Fragment() {
         monitorAdapter!!.notifyDataSetChanged()
         tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
         tradeAdapter?.notifyDataSetChanged()
+        reportAdapter?.reportKeyList = tradeReportMapInfo.keys.toList()
+        reportAdapter?.notifyDataSetChanged()
     }
 }
