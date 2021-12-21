@@ -16,8 +16,8 @@ class TradeViewModel: AndroidViewModel {
 
     private var upbitFetcher: TradeFetcher? = null
 
-    constructor(application: Application) : super(application) {
-        upbitFetcher = TradeFetcher()
+    constructor(application: Application, listener: TradeFetcher.PostOrderListener) : super(application) {
+        upbitFetcher = TradeFetcher(listener)
         upbitFetcher?.makeRetrofit(
             TradePagerActivity.ACCESS_KEY.toString(),
             TradePagerActivity.SECRET_KEY.toString())

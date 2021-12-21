@@ -9,6 +9,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
 import com.example.upbittrade.fragment.TradeFragment
+import com.example.upbittrade.model.OrderCoinInfo
+import com.example.upbittrade.model.OrderInfo
 import com.example.upbittrade.utils.TradeAdapter.Companion.Type.MONITOR_LIST
 import com.example.upbittrade.utils.TradeAdapter.Companion.Type.TRADE_LIST
 
@@ -132,6 +134,21 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 if (tradeInfo != null) {
                     holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
                     holder.tradeStatus?.text = tradeInfo.state.name
+
+                    when (tradeInfo.state) {
+                        OrderCoinInfo.State.READY -> {
+                            holder.tradeStatus?.setTextColor(Color.DKGRAY)
+                        }
+                        OrderCoinInfo.State.WAIT -> {
+                            holder.tradeStatus?.setTextColor(Color.BLACK)
+                        }
+                        OrderCoinInfo.State.BUY -> {
+                            holder.tradeStatus?.setTextColor(Color.RED)
+                        }
+                        OrderCoinInfo.State.SELL -> {
+                            holder.tradeStatus?.setTextColor(Color.BLUE)
+                        }
+                    }
 
                     if (tradeInfo.getProfit() != null) {
                         holder.tradeProfit?.text =

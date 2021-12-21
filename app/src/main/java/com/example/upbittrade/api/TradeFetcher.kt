@@ -1,7 +1,6 @@
 package com.example.upbittrade.api
 
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.upbittrade.data.CandleItem
@@ -14,9 +13,13 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.util.*
 
-class TradeFetcher {
+class TradeFetcher(val listener: PostOrderListener) {
     companion object {
         const val TAG = "TradeFetcher"
+    }
+
+    interface PostOrderListener {
+        fun onInSufficientFunds(type: String, uuid:UUID)
     }
 
     var tradeInfoRetrofit: TradeInfoRetrofit? = null
@@ -199,15 +202,14 @@ class TradeFetcher {
                     if (response.code() == 400 && errorObj != null
                         && errorObj["name"] != null
                         && errorObj["name"] == "insufficient_funds_ask") {
-
                         Log.w(TAG, "postOrderInfo: insufficient_funds_ask")
+                        listener.onInSufficientFunds("ask", identifier!!)
 
                     } else if (response.code() == 400 && errorObj != null
                         && errorObj["name"] != null
                         && errorObj["name"] == "insufficient_funds_bid") {
-
                         Log.w(TAG, "postOrderInfo: insufficient_funds_bid")
-
+                        listener.onInSufficientFunds("bid", identifier!!)
                     }
 
                 }

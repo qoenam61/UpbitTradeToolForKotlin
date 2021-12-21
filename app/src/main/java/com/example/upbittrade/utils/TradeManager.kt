@@ -97,7 +97,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         return false
     }
 
-    fun updateTickerInfoToTrade(ticker: List<Ticker>, postInfo: OrderCoinInfo, responseOrder: ResponseOrder, processor: BackgroundProcessor): OrderCoinInfo {
+    fun updateTickerInfoToTrade(ticker: List<Ticker>, postInfo: OrderCoinInfo, responseOrder: ResponseOrder): OrderCoinInfo? {
         val marketId = ticker.first().marketId
         val time: Long = SystemClock.uptimeMillis()
         val currentPrice = ticker.first().tradePrice?.toDouble()
@@ -119,6 +119,7 @@ class TradeManager(private val listener: TradeChangedListener) {
                 listener.onDelete(marketId!!, UUID.fromString(responseOrder.uuid))
                 return postInfo
             }
+            return null
         }
 
         if ((side.equals("ask") || side.equals("ASK")) && responseOrder.state.equals("done")) {
@@ -135,7 +136,6 @@ class TradeManager(private val listener: TradeChangedListener) {
         var maxProfitRate = postInfo.maxProfitRate
         val volume = responseOrder?.remainingVolume?.toDouble()
 
-
         if (profitRate!! > postInfo.maxProfitRate) {
             postInfo.maxPrice = postInfo.currentPrice!!
         }
@@ -148,12 +148,12 @@ class TradeManager(private val listener: TradeChangedListener) {
 
             Log.d(
                 TAG,
-                "[DEBUG] updateTickerInfoToBuyList Take a profit marketId: $marketId " +
+                "[DEBUG] tacticalToSell Take a profit marketId: $marketId " +
                         "currentPrice: ${TradeFragment.Format.nonZeroFormat.format(currentPrice)} " +
                         "sellPrice: ${TradeFragment.Format.nonZeroFormat.format(sellPrice)} " +
                         "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
                         "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} " +
-                        "volume: ${TradeFragment.Format.nonZeroFormat.format(volume)} "
+                        "volume: ${TradeFragment.Format.zeroFormat.format(volume)} "
             )
 
 /*            processor.registerProcess(

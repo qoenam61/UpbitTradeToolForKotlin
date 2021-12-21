@@ -26,7 +26,7 @@ class BackgroundProcessor : Thread {
     companion object {
         const val TAG = "BackgroundProcessor"
         var viewModel: AndroidViewModel? = null
-        val pingDelay: Long = 100
+        const val pingDelay: Long = 100
     }
 
     constructor(model: AndroidViewModel) {
@@ -169,12 +169,10 @@ class BackgroundProcessor : Thread {
     }
 
     fun unregisterProcess(postType: TradePagerActivity.PostType, marketId: String) {
-        val iterator = TaskList.iterator()
-        while (iterator.hasNext()) {
-            val list = iterator.next()
-            if (list.type == postType && list.marketId.equals(marketId)) {
+        TaskList.forEach() {
+            if (it.type == postType && it.marketId.equals(marketId)) {
                 Log.d(TAG, "unregisterProcess type: $postType duplicated id: $marketId")
-                iterator.remove()
+                TaskList.remove(it)
                 return
             }
         }
@@ -187,6 +185,14 @@ class BackgroundProcessor : Thread {
             if (list.type == postType && list.marketId.equals(marketId)) {
                 Log.d(TAG, "unregisterProcess type: $postType duplicated id: $marketId")
                 iterator.remove()
+                return
+            }
+        }
+        TaskList.forEach() {
+            if (it.type == postType && it.marketId.equals(marketId)
+                && it.uuid != null && it.uuid.toString().equals(uuid)) {
+                Log.d(TAG, "unregisterProcess type: $postType duplicated id: $marketId")
+                TaskList.remove(it)
                 return
             }
         }
