@@ -331,7 +331,16 @@ class TradeFragment: Fragment() {
                     tradePostInfo.sellPrice = responseOrder.price?.toDouble()
                     tradePostInfo.registerTime = null
                     tradePostInfo.tradeSellTime = time
+
                     tradeReportMapInfo[marketId] = tradePostInfo
+                    processor?.registerProcess(
+                        TaskItem(
+                            DELETE_ORDER_INFO,
+                            marketId,
+                            UUID.fromString(responseOrder.uuid)
+                        )
+                    )
+
                     processor?.unregisterProcess(TICKER_INFO, marketId)
                     processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
                 }
@@ -369,7 +378,16 @@ class TradeFragment: Fragment() {
                     tradePostInfo.tradeSellTime = time
                     tradePostInfo.state = OrderCoinInfo.State.SELL
                     tradePostInfo.sellPrice = responseOrder.price?.toDouble()
+
                     tradeReportMapInfo[marketId] = tradePostInfo
+                    processor?.registerProcess(
+                        TaskItem(
+                            DELETE_ORDER_INFO,
+                            marketId,
+                            UUID.fromString(responseOrder.uuid)
+                        )
+                    )
+
                     processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
                 }
             }
