@@ -260,13 +260,11 @@ class TradeFragment: Fragment() {
             val currentPrice = tickersInfo.first().tradePrice?.toDouble()
 
             if (tradePostMapInfo[marketId] != null) {
-
                 val postInfo: OrderCoinInfo = tradePostMapInfo[marketId]!!
                 val responseOrder: ResponseOrder? = tradeResponseMapInfo[marketId]
 
                 postInfo.currentPrice = currentPrice
                 postInfo.currentTime = time
-
                 if (responseOrder != null) {
                     val tickerInfo = tradeManager.updateTickerInfoToTrade(
                         tickersInfo,
@@ -391,7 +389,6 @@ class TradeFragment: Fragment() {
                 processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId!!)
             }
             updateView()
-
             Log.d(TAG, "[DEBUG] resultDeleteOrderInfo marketId : $marketId side: ${responseOrder.side}")
         }
     }

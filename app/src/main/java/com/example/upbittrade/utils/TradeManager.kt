@@ -101,7 +101,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         val marketId = ticker.first().marketId
         val time: Long = SystemClock.uptimeMillis()
         val currentPrice = ticker.first().tradePrice?.toDouble()
-        val side = responseOrder.side
+        val side = responseOrder?.side
         val state = postInfo.state
 
         Log.d(TAG, "[DEBUG] updateTickerInfoToBuyList marketId: $marketId  " +
