@@ -11,6 +11,7 @@ import com.example.upbittrade.R
 import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.model.OrderCoinInfo
 import com.example.upbittrade.utils.TradeAdapter.Companion.Type.*
+import java.util.*
 
 class TradeAdapter(private val context: Context, val type: Type): RecyclerView.Adapter<TradeAdapter.CoinHolder>() {
     companion object {
@@ -232,6 +233,8 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         if (tradeInfo != null) {
             holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
             holder.tradeStatus?.text = tradeInfo.state.name
+            val timeZoneFormat = TradeFragment.Format.timeFormat
+            timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
 
             when (tradeInfo.state) {
                 OrderCoinInfo.State.READY -> {
@@ -280,7 +283,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
             }
             if (tradeInfo.tradeBuyTime != null) {
                 holder.tradeBidTime?.text =
-                    TradeFragment.Format.timeFormat.format(tradeInfo.tradeBuyTime)
+                    timeZoneFormat.format(tradeInfo.tradeBuyTime)
             }
 
             if (tradeInfo.getBuyDuration() != null) {
@@ -296,6 +299,9 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         if (tradeInfo != null) {
             holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
             holder.tradeStatus?.text = tradeInfo.state.name
+
+            val timeZoneFormat = TradeFragment.Format.timeFormat
+            timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
 
             when (tradeInfo.state) {
                 OrderCoinInfo.State.READY -> {
@@ -345,12 +351,12 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
 
             if (tradeInfo.tradeSellTime != null) {
                 holder.tradeAskTime?.text =
-                    TradeFragment.Format.timeFormat.format(tradeInfo.tradeSellTime)
+                    timeZoneFormat.format(tradeInfo.tradeSellTime)
             }
 
             if (tradeInfo.tradeBuyTime != null) {
                 holder.tradeBidTime?.text =
-                    TradeFragment.Format.timeFormat.format(tradeInfo.tradeBuyTime)
+                    timeZoneFormat.format(tradeInfo.tradeBuyTime)
             }
         }
     }

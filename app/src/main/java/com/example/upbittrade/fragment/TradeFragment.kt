@@ -59,7 +59,7 @@ class TradeFragment: Fragment() {
         var zeroFormat = DecimalFormat("###,###,###,###.#")
         var percentFormat = DecimalFormat("###.##" + "%")
         var timeFormat = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
-        var durationFormat = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
+        var durationFormat = SimpleDateFormat("HH:mm:ss")
     }
 
     object UserParam {
@@ -113,8 +113,6 @@ class TradeFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        Format.timeFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
-
         val view = inflater.inflate(R.layout.fragment_trade, container, false)
         monitorAdapter = TradeAdapter(requireContext(), MONITOR_LIST)
         monitorListView = view.findViewById(R.id.monitor_list_view)
@@ -294,7 +292,9 @@ class TradeFragment: Fragment() {
 
             tradeResponseMapInfo[marketId!!] = responseOrder
 
-            Log.d(TAG, "[DEBUG] resultPostOrderInfo marketId: $marketId state: ${responseOrder.state} side: ${responseOrder.side} time: ${Format.timeFormat.format(time)}")
+            val timeZoneFormat = Format.timeFormat
+            timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
+            Log.d(TAG, "[DEBUG] resultPostOrderInfo marketId: $marketId state: ${responseOrder.state} side: ${responseOrder.side} time: ${timeZoneFormat.format(time)}")
 
             if (registerTime == null) {
                 tradePostInfo.registerTime = time
@@ -369,7 +369,9 @@ class TradeFragment: Fragment() {
 
             tradeResponseMapInfo[marketId!!] = responseOrder
 
-            Log.d(TAG, "[DEBUG] resultSearchOrderInfo marketId: $marketId state: ${responseOrder.state} side: ${responseOrder.side} time: ${Format.timeFormat.format(time)}")
+            val timeZoneFormat = Format.timeFormat
+            timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
+            Log.d(TAG, "[DEBUG] resultSearchOrderInfo marketId: $marketId state: ${responseOrder.state} side: ${responseOrder.side} time: ${timeZoneFormat.format(time)}")
 
             tradePostInfo.currentTime = time
 
@@ -541,6 +543,8 @@ class TradeFragment: Fragment() {
         if (tradeMonitorMapInfo[marketId] != null && minCandleMapInfo[marketId] != null) {
             val priceVolume = tradeMonitorMapInfo[marketId]!!.accPriceVolume?.div(UNIT_PRICE)
             val rate = tradeMonitorMapInfo[marketId]!!.getAvgAccVolumeRate()
+            val timeZoneFormat = Format.timeFormat
+            timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
             Log.d(
                 TAG, "[DEBUG] makeTradeMapInfo marketId: $marketId " +
                         "count: ${tradeMonitorMapInfo[marketId]!!.tickCount} " +
@@ -557,7 +561,7 @@ class TradeFragment: Fragment() {
                         "askPrice: ${Format.nonZeroFormat.format(askPriceVolume)} " +
                         "bidPrice/askPrice: ${Format.percentFormat.format(tradeMonitorMapInfo[marketId]!!.getBidAskRate())} " +
                         "avg1MinPriceVolume: ${Format.nonZeroFormat.format(avgAccPriceVolume?.div(UNIT_PRICE))} " +
-                        "time: ${Format.timeFormat.format(tradeMonitorMapInfo[marketId]!!.timestamp)} "
+                        "time: ${timeZoneFormat.format(tradeMonitorMapInfo[marketId]!!.timestamp)} "
             )
         }
     }
