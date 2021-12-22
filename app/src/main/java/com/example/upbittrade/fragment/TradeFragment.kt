@@ -170,7 +170,15 @@ class TradeFragment: Fragment() {
             }
 
             override fun onPostAsk(marketId: String, orderCoinInfo: OrderCoinInfo, orderType: String, sellPrice: Double?, volume: Double) {
-                Log.d(TAG, "[DEBUG] onPostAsk - key: $marketId sellPrice: ${Format.nonZeroFormat.format(sellPrice.toString())} volume: ${Format.zeroFormat.format(volume)}")
+                Log.d(TAG, "[DEBUG] onPostAsk - key: $marketId " +
+                        "sellPrice: ${
+                            if (sellPrice == null) 
+                                null 
+                            else 
+                                Format.zeroFormat.format(sellPrice.toDouble())
+                        } volume: ${Format.zeroFormat.format(volume)}"
+                )
+
                 tradePostMapInfo[marketId] = orderCoinInfo
                 processor?.registerProcess(
                     PostOrderItem(
