@@ -29,13 +29,13 @@ class InitPopupDialog: Dialog {
         monitorTimeText.text = TradeFragment.Format.zeroFormat.format(TradeFragment.BASE_TIME / (60 * 1000))
         monitorRateText.text = TradeFragment.Format.percentFormat.format(TradeFragment.THRESHOLD_RATE)
         monitorTickText.text = TradeFragment.Format.nonZeroFormat.format(TradeFragment.THRESHOLD_TICK)
-        avgMinVsAvgDayText.text = TradeFragment.Format.percentFormat.format(TradeFragment.THRESHOLD_AVG_MIN_AVG_DAY_PRICE_VOLUME)
+        avgMinVsAvgDayText.text = TradeFragment.Format.percentFormat.format(TradeFragment.THRESHOLD_ACC_PRICE_VOLUME_RATE)
 
         buyingPriceEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.LIMIT_AMOUNT))
         monitorTimeEditText.setText(TradeFragment.Format.zeroFormat.format(TradeFragment.BASE_TIME /  (60 * 1000)))
         monitorRateEditText.setText((TradeFragment.THRESHOLD_RATE * 100).toString())
         monitorTickEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.THRESHOLD_TICK))
-        avgMinVsAvgDayEditText.setText(TradeFragment.Format.percentFormat.format(TradeFragment.THRESHOLD_AVG_MIN_AVG_DAY_PRICE_VOLUME))
+        avgMinVsAvgDayEditText.setText(TradeFragment.Format.percentFormat.format(TradeFragment.THRESHOLD_ACC_PRICE_VOLUME_RATE))
 
         val applyButton = findViewById<Button>(R.id.trade_input_button)
         applyButton?.setOnClickListener {
@@ -63,7 +63,7 @@ class InitPopupDialog: Dialog {
 
                 TradeFragment.UserParam.thresholdAccPriceVolumeRate =
                     if (avgMinVsAvgDay.isNotBlank()) avgMinVsAvgDay.replace("%", "").toFloat() / 100
-                    else TradeFragment.THRESHOLD_AVG_MIN_AVG_DAY_PRICE_VOLUME
+                    else TradeFragment.THRESHOLD_ACC_PRICE_VOLUME_RATE
 
             } catch (e: NumberFormatException) {
                 Log.e(

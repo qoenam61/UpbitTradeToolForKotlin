@@ -2,7 +2,6 @@ package com.example.upbittrade.fragment
 
 import android.app.Activity
 import android.os.Bundle
-import android.os.SystemClock
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -33,9 +32,11 @@ class TradeFragment: Fragment() {
         const val TAG = "TradeFragment"
         const val LIMIT_AMOUNT = 6000.0
         const val BASE_TIME: Long = 3 * 60 * 1000
-        const val THRESHOLD_RATE = 0.005
-        const val THRESHOLD_TICK = 50
-        const val THRESHOLD_AVG_MIN_AVG_DAY_PRICE_VOLUME = 0.1f
+        const val THRESHOLD_RATE = 0.01
+        const val THRESHOLD_TICK = 100
+        const val THRESHOLD_ACC_PRICE_VOLUME_RATE = 1f
+        const val THRESHOLD_BID_ASK_RATE = 1f
+        const val THRESHOLD_BID_ASK_PRICE_VOLUME_RATE = 1f
 
         private const val UNIT_REPEAT_MARKET_INFO = 30 * 60 * 1000
         private const val UNIT_REPEAT_MARKET_INFO_SHORT = 10 * 60 * 1000
@@ -68,9 +69,9 @@ class TradeFragment: Fragment() {
         var monitorTime: Long = BASE_TIME
         var thresholdRate: Double = THRESHOLD_RATE
         var thresholdTick: Int = UNIT_TRADE_COUNT
-        var thresholdAccPriceVolumeRate: Float = THRESHOLD_AVG_MIN_AVG_DAY_PRICE_VOLUME
-        var thresholdBidAskRate: Float = 0.1f
-        var thresholdBidAskPriceRate: Float = 0.1f
+        var thresholdAccPriceVolumeRate: Float = THRESHOLD_ACC_PRICE_VOLUME_RATE
+        var thresholdBidAskRate: Float = THRESHOLD_BID_ASK_RATE
+        var thresholdBidAskPriceVolumeRate: Float = THRESHOLD_BID_ASK_PRICE_VOLUME_RATE
     }
 
     lateinit var mainActivity: TradePagerActivity
