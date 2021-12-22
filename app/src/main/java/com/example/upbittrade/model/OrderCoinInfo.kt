@@ -56,42 +56,34 @@ class OrderCoinInfo: TradeCoinInfo {
         return when {
             body / length == 1.0 -> {
                 // type0 : HHCO
-                Utils().convertPrice(sqrt(
-                    (highPrice!!.toDouble().pow(2.0) + highPrice!!.toDouble().pow(2.0)
-                        + closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)) / 4)
-                )!!.toDouble()
+                Utils().convertPrice(closePrice!!.toDouble())!!.toDouble()
             }
 
             body / length > 0.9 -> {
-                // type1 : HCO
-                Utils().convertPrice(
-                    sqrt(
-                        (highPrice!!.toDouble().pow(2.0) + closePrice!!.toDouble().pow(2.0)
-                        + openPrice!!.toDouble().pow(2.0)) / 3)
+                // type1 : HHCO
+                Utils().convertPrice(sqrt(
+                    (highPrice!!.toDouble().pow(2.0) + highPrice!!.toDouble().pow(2.0)
+                            + closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)) / 4)
                 )!!.toDouble()
+
             }
 
             body / length > 0.8 -> {
-                // type2 : HCOL
-                Utils().convertPrice(sqrt(
-                    (highPrice!!.toDouble().pow(2.0) + closePrice!!.toDouble().pow(2.0)
-                        + openPrice!!.toDouble().pow(2.0) + lowPrice!!.toDouble().pow(2.0)) / 4)
-                )!!.toDouble()
-            }
+                // type2 : HCO
 
-            (body + lowTail) / length == 1.0 -> {
-                // type3 : COL
-                Utils().convertPrice(sqrt(
-                    (closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)
-                        + lowPrice!!.toDouble().pow(2.0)) / 3)
+                Utils().convertPrice(
+                    sqrt(
+                        (highPrice!!.toDouble().pow(2.0) + closePrice!!.toDouble().pow(2.0)
+                                + openPrice!!.toDouble().pow(2.0)) / 3)
                 )!!.toDouble()
             }
 
             (body + lowTail) / length > 0.8 -> {
-                // type4 : COLL
-                Utils().convertPrice(sqrt(
-                    (closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)
-                        + lowPrice!!.toDouble().pow(2.0) + lowPrice!!.toDouble().pow(2.0)) / 4)
+                // type3 : HCO
+                Utils().convertPrice(
+                    sqrt(
+                        (highPrice!!.toDouble().pow(2.0) + closePrice!!.toDouble().pow(2.0)
+                                + openPrice!!.toDouble().pow(2.0)) / 3)
                 )!!.toDouble()
             }
 
