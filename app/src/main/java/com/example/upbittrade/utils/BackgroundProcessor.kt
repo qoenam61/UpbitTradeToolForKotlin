@@ -52,7 +52,7 @@ class BackgroundProcessor : Thread {
             try {
 //                Log.i(
 //                    TAG,
-//                    "[DEBUG] run: " + SystemClock.uptimeMillis() + " size: " + taskList?.size
+//                    "[DEBUG] run: " + System.currentTimeMillis() + " size: " + taskList?.size
 //                )
                 sleep(pingDelay * (taskList?.size?.toLong() ?: 10) + 1)
             } catch (e: InterruptedException) {

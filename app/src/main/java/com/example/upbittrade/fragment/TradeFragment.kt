@@ -261,7 +261,7 @@ class TradeFragment: Fragment() {
                 tickersInfo ->
 
             val marketId = tickersInfo.first().marketId
-            val time: Long = SystemClock.uptimeMillis()
+            val time: Long = System.currentTimeMillis()
             val currentPrice = tickersInfo.first().tradePrice?.toDouble()
 
             if (tradePostMapInfo[marketId] != null) {
@@ -286,7 +286,7 @@ class TradeFragment: Fragment() {
         viewModel?.resultPostOrderInfo?.observe(viewCycleOwner) {
             responseOrder ->
             val marketId = responseOrder.marketId
-            val time: Long = SystemClock.uptimeMillis()
+            val time: Long = System.currentTimeMillis()
             val tradePostInfo = tradePostMapInfo[marketId]!!
             val registerTime: Long? = tradePostInfo.registerTime
 
@@ -364,7 +364,7 @@ class TradeFragment: Fragment() {
             responseOrder ->
 
             val marketId = responseOrder.marketId
-            val time: Long = SystemClock.uptimeMillis()
+            val time: Long = System.currentTimeMillis()
             val tradePostInfo = tradePostMapInfo[marketId]!!
 
             tradeResponseMapInfo[marketId!!] = responseOrder

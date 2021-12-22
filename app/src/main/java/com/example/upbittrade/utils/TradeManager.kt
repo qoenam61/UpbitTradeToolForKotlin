@@ -99,14 +99,14 @@ class TradeManager(private val listener: TradeChangedListener) {
 
     fun updateTickerInfoToTrade(ticker: List<Ticker>, postInfo: OrderCoinInfo, responseOrder: ResponseOrder): OrderCoinInfo? {
         val marketId = ticker.first().marketId
-        val time: Long = SystemClock.uptimeMillis()
+        val time: Long = System.currentTimeMillis()
         val currentPrice = ticker.first().tradePrice?.toDouble()
         val side = responseOrder?.side
         val state = postInfo.state
         val timeZoneFormat = TradeFragment.Format.timeFormat
         timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
 
-        Log.d(TAG, "[DEBUG] updateTickerInfoToBuyList marketId: $marketId  " +
+        Log.i(TAG, "[DEBUG] updateTickerInfoToBuyList marketId: $marketId  " +
                 "currentPrice: $currentPrice " +
                 "side: $side " +
                 "state: $state " +
