@@ -35,8 +35,8 @@ class TradeFragment: Fragment() {
         const val THRESHOLD_RATE = 0.01
         const val THRESHOLD_TICK = 100
         const val THRESHOLD_ACC_PRICE_VOLUME_RATE = 1f
-        const val THRESHOLD_BID_ASK_RATE = 1f
-        const val THRESHOLD_BID_ASK_PRICE_VOLUME_RATE = 1f
+        const val THRESHOLD_BID_ASK_RATE = 0.5f
+        const val THRESHOLD_BID_ASK_PRICE_VOLUME_RATE = 0.5f
 
         private const val UNIT_REPEAT_MARKET_INFO = 30 * 60 * 1000
         private const val UNIT_REPEAT_MARKET_INFO_SHORT = 10 * 60 * 1000
