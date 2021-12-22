@@ -38,6 +38,7 @@ class TradeFragment: Fragment() {
         const val THRESHOLD_AVG_MIN_AVG_DAY_PRICE_VOLUME = 0.1f
 
         private const val UNIT_REPEAT_MARKET_INFO = 30 * 60 * 1000
+        private const val UNIT_REPEAT_MARKET_INFO_SHORT = 10 * 60 * 1000
         private const val UNIT_MIN_CANDLE = 60
         private const val UNIT_MIN_CANDLE_COUNT = 24
         private const val UNIT_MONITOR_TIME: Long = 60 * 1000
@@ -58,6 +59,7 @@ class TradeFragment: Fragment() {
         var zeroFormat = DecimalFormat("###,###,###,###.#")
         var percentFormat = DecimalFormat("###.##" + "%")
         var timeFormat = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
+        var durationFormat = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
     }
 
     object UserParam {
@@ -431,6 +433,11 @@ class TradeFragment: Fragment() {
         val repeatThread = object : Thread() {
             override fun run() {
                 while (isRunning) {
+                    if (!tradePostMapInfo.isNullOrEmpty()) {
+                        sleep(UNIT_REPEAT_MARKET_INFO_SHORT.toLong())
+                        Log.i(TAG, "delay resetBackgroundProcessor")
+                        continue
+                    }
                     Log.i(TAG, "resetBackgroundProcessor")
                     processor?.release()
                     if (processor == null || processor?.isRunning == false) {

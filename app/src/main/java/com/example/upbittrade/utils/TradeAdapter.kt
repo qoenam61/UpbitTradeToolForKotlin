@@ -285,7 +285,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
 
             if (tradeInfo.getBuyDuration() != null) {
                 holder.tradeBuyDuration?.text =
-                    TradeFragment.Format.timeFormat.format(tradeInfo.getBuyDuration())
+                    TradeFragment.Format.durationFormat.format(tradeInfo.getBuyDuration())
             }
         }
     }
