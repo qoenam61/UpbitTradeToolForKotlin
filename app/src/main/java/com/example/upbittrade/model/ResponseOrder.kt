@@ -25,7 +25,7 @@ class ResponseOrder {
     var marketId: String? = null
 
     @SerializedName("created_at")
-    var created_at: String? = null
+    var createdAt: String? = null
 
     @SerializedName("volume")
     var volume: Number? = null
@@ -40,7 +40,7 @@ class ResponseOrder {
     var remainingFee: Number? = null
 
     @SerializedName("paid_fee")
-    var paid_fee: Number? = null
+    var paidFee: Number? = null
 
     @SerializedName("locked")
     var locked: Number? = null

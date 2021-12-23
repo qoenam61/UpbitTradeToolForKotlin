@@ -434,11 +434,12 @@ class TradeFragment: Fragment() {
             val marketId = responseOrder.marketId
             Log.d(TAG, "[DEBUG] resultDeleteOrderInfo marketId : $marketId side: ${responseOrder.side} state: ${responseOrder.state.equals("done")}")
 
-            tradePostMapInfo.remove(marketId)
-            tradeResponseMapInfo.remove(marketId)
-            processor?.unregisterProcess(TICKER_INFO, marketId!!)
-            processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId!!)
-
+            if (responseOrder.state.equals("bid") || responseOrder.state.equals("BID")) {
+                tradePostMapInfo.remove(marketId)
+                tradeResponseMapInfo.remove(marketId)
+                processor?.unregisterProcess(TICKER_INFO, marketId!!)
+                processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId!!)
+            }
             updateView()
         }
     }

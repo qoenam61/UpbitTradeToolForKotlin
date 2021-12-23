@@ -104,7 +104,7 @@ class TradeManager(private val listener: TradeChangedListener) {
             if (postInfo.getRegisterDuration() != null && postInfo.getRegisterDuration()!! > TradeFragment.UserParam.monitorTime) {
                 Log.d(TAG, "[DEBUG] updateTickerInfoToTrade: DELETE_ORDER_INFO")
                 postInfo.registerTime = null
-                postInfo.state = OrderCoinInfo.State.READY
+                responseOrder.side = "bid"
                 listener.onDelete(marketId!!, UUID.fromString(responseOrder.uuid))
                 return postInfo
             }
@@ -117,10 +117,9 @@ class TradeManager(private val listener: TradeChangedListener) {
                 "state: $state " +
                 "time: ${timeZoneFormat.format(time)}")
 
-        if ((side.equals("ask") || side.equals("ASK"))) {
-            return postInfo
+        if ((responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) && responseOrder.state.equals("done")) {
+            return null
         }
-
         return tacticalToSell(ticker, postInfo, responseOrder)
     }
 
