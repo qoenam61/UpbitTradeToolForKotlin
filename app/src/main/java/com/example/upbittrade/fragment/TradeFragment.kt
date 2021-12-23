@@ -72,6 +72,7 @@ class TradeFragment: Fragment() {
         var thresholdAccPriceVolumeRate: Float = THRESHOLD_ACC_PRICE_VOLUME_RATE
         var thresholdBidAskRate: Float = THRESHOLD_BID_ASK_RATE
         var thresholdBidAskPriceVolumeRate: Float = THRESHOLD_BID_ASK_PRICE_VOLUME_RATE
+        var thresholdAskTickGap: Double = 7.0
     }
 
     lateinit var mainActivity: TradePagerActivity

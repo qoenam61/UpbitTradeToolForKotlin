@@ -142,7 +142,6 @@ open class TradeCoinInfo {
         }
         return (bidPriceVolume!!.toDouble() / (bidPriceVolume!!.toDouble() + askPriceVolume!!.toDouble()))
     }
-/*
 
     var tickPrice: Double = when {
         closePrice!!.toDouble() < 10 -> {
@@ -180,5 +179,4 @@ open class TradeCoinInfo {
         }
         else -> 0.0
     }
-*/
 }

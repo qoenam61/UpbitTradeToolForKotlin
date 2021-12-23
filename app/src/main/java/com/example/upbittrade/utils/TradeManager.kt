@@ -29,8 +29,6 @@ class TradeManager(private val listener: TradeChangedListener) {
         POST_ASK
     }
 
-    private val postBid = HashMap<String, OrderCoinInfo>()
-
     private var type: Type? = null
     private var marketIdList: List<String>? = null
 
@@ -129,6 +127,8 @@ class TradeManager(private val listener: TradeChangedListener) {
     private fun tacticalToSell(ticker: List<Ticker>, postInfo: OrderCoinInfo, responseOrder: ResponseOrder?): OrderCoinInfo {
         val marketId = ticker.first().marketId
         val currentPrice = ticker.first().tradePrice?.toDouble()
+        val bidPrice = postInfo.getBidPrice()
+        val tickGap = (bidPrice!! - currentPrice!!) / postInfo.tickPrice
         val profitRate = postInfo.getProfitRate()
         var maxProfitRate = postInfo.maxProfitRate
         val volume = responseOrder?.volume?.toDouble()
@@ -137,8 +137,9 @@ class TradeManager(private val listener: TradeChangedListener) {
         postInfo.maxProfitRate = maxProfitRate
 
         // Take a profit
-        if (maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66) {
-            val askPrice = (postInfo.highPrice!!.toDouble() + currentPrice!!.toDouble()) / 2.0
+        if (maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
+            && tickGap >  TradeFragment.UserParam.thresholdAskTickGap) {
+            val askPrice = (postInfo.highPrice!!.toDouble() + currentPrice.toDouble()) / 2.0
 
             Log.d(
                 TAG,
@@ -147,7 +148,8 @@ class TradeManager(private val listener: TradeChangedListener) {
                         "askPrice: ${TradeFragment.Format.zeroFormat.format(askPrice)} " +
                         "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
                         "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
-                        "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} "
+                        "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} " +
+                        "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} "
             )
 
             listener.onPostAsk(marketId!!, postInfo, "limit", Utils().convertPrice(askPrice), volume!!)
@@ -208,7 +210,8 @@ class TradeManager(private val listener: TradeChangedListener) {
                         "sellPrice: ${TradeFragment.Format.zeroFormat.format(askPrice)} " +
                         "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
                         "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
-                        "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} "
+                        "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} " +
+                        "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} "
             )
         }
 
