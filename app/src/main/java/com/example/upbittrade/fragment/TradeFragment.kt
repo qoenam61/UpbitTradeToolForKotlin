@@ -431,15 +431,23 @@ class TradeFragment: Fragment() {
         viewModel?.resultDeleteOrderInfo?.observe(viewCycleOwner) {
             responseOrder ->
             val marketId = responseOrder.marketId
+            Log.d(TAG, "[DEBUG] resultDeleteOrderInfo marketId : $marketId side: ${responseOrder.side} state: ${responseOrder.state.equals("done")}")
 
-            if (responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
+            if ((responseOrder.side.equals("bid") || responseOrder.side.equals("BID"))
+                && responseOrder.state.equals("done")) {
+                tradePostMapInfo.remove(marketId)
+                tradeResponseMapInfo.remove(marketId)
+                processor?.unregisterProcess(TICKER_INFO, marketId!!)
+                processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId!!)
+            }
+            if ((responseOrder.side.equals("ask") || responseOrder.side.equals("ASK"))
+                && responseOrder.state.equals("done")) {
                 tradePostMapInfo.remove(marketId)
                 tradeResponseMapInfo.remove(marketId)
                 processor?.unregisterProcess(TICKER_INFO, marketId!!)
                 processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId!!)
             }
             updateView()
-            Log.d(TAG, "[DEBUG] resultDeleteOrderInfo marketId : $marketId side: ${responseOrder.side}")
         }
     }
 
