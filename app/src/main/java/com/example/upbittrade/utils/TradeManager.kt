@@ -113,7 +113,6 @@ class TradeManager(private val listener: TradeChangedListener) {
                 Log.d(TAG, "[DEBUG] updateTickerInfoToTrade: DELETE_ORDER_INFO")
                 postInfo.registerTime = null
                 postInfo.state = OrderCoinInfo.State.READY
-//                processor.registerProcess(TaskItem(TradePagerActivity.PostType.DELETE_ORDER_INFO, marketId, UUID.fromString(responseOrder.uuid)))
                 listener.onDelete(marketId!!, UUID.fromString(responseOrder.uuid))
                 return postInfo
             }
@@ -132,7 +131,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         val currentPrice = ticker.first().tradePrice?.toDouble()
         val profitRate = postInfo.getProfitRate()
         var maxProfitRate = postInfo.maxProfitRate
-        val volume = responseOrder?.remainingVolume?.toDouble()
+        val volume = responseOrder?.volume?.toDouble()
 
         if (profitRate!! > postInfo.maxProfitRate) {
             postInfo.maxPrice = postInfo.currentPrice!!
