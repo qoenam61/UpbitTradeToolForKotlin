@@ -117,7 +117,7 @@ class TradeManager(private val listener: TradeChangedListener) {
                 "state: $state " +
                 "time: ${timeZoneFormat.format(time)}")
 
-        if ((side.equals("ask") || side.equals("ASK")) && responseOrder.state.equals("done")) {
+        if ((side.equals("ask") || side.equals("ASK"))) {
             return postInfo
         }
 
@@ -128,7 +128,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         val marketId = ticker.first().marketId
         val currentPrice = ticker.first().tradePrice?.toDouble()
         val bidPrice = postInfo.getBidPrice()
-        val tickGap = (bidPrice!! - currentPrice!!) / postInfo.tickPrice
+        val tickGap = (bidPrice!! - currentPrice!!) / postInfo.getTickPrice()!!
         val profitRate = postInfo.getProfitRate()
         var maxProfitRate = postInfo.maxProfitRate
         val volume = responseOrder?.volume?.toDouble()
