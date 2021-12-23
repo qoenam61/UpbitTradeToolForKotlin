@@ -45,15 +45,15 @@ class TradeFetcher(val listener: PostOrderListener) {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as List<MarketInfo>
                 } else {
-                    val jObjError = JSONObject(
-                        response.errorBody()!!.string()
-                    )
+//                    val jObjError = JSONObject(
+//                        response.errorBody()!!.string()
+//                    )
                     Log.w(TAG, "getMarketInfo"
                                 + " call: " + call.request()
                                 + " code: " + response.code()
                                 + " headers: " + response.headers()
                                 + " raw: " + response.raw()
-                                + " jObjError: " + (jObjError ?: "NULL")
+//                                + " jObjError: " + (jObjError ?: "NULL")
                     )
                 }
             }
@@ -83,15 +83,15 @@ class TradeFetcher(val listener: PostOrderListener) {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as List<Candle>
                 } else {
-                    val jObjError = JSONObject(
-                        response.errorBody()!!.string()
-                    )
+//                    val jObjError = JSONObject(
+//                        response.errorBody()!!.string()
+//                    )
                     Log.w(TAG, "getMinCandleInfo"
                             + " call: " + call.request()
                             + " code: " + response.code()
                             + " headers: " + response.headers()
                             + " raw: " + response.raw()
-                            + " jObjError: " + (jObjError ?: "NULL")
+//                            + " jObjError: " + (jObjError ?: "NULL")
                     )
                 }
             }
@@ -120,15 +120,15 @@ class TradeFetcher(val listener: PostOrderListener) {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as List<DayCandle>
                 } else {
-                    val jObjError = JSONObject(
-                        response.errorBody()!!.string()
-                    )
+//                    val jObjError = JSONObject(
+//                        response.errorBody()!!.string()
+//                    )
                     Log.w(TAG, "getDayCandleInfo"
                             + " call: " + call.request()
                             + " code: " + response.code()
                             + " headers: " + response.headers()
                             + " raw: " + response.raw()
-                            + " jObjError: " + (jObjError ?: "NULL")
+//                            + " jObjError: " + (jObjError ?: "NULL")
                     )
                 }
             }
@@ -155,15 +155,15 @@ class TradeFetcher(val listener: PostOrderListener) {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as List<TradeInfo>
                 } else {
-                    val jObjError = JSONObject(
-                        response.errorBody()!!.string()
-                    )
+//                    val jObjError = JSONObject(
+//                        response.errorBody()!!.string()
+//                    )
                     Log.w(TAG, "getTradeInfo"
                             + " call: " + call.request()
                             + " code: " + response.code()
                             + " headers: " + response.headers()
                             + " raw: " + response.raw()
-                            + " jObjError: " + (jObjError ?: "NULL")
+//                            + " jObjError: " + (jObjError ?: "NULL")
                     )
                 }
             }
@@ -187,15 +187,15 @@ class TradeFetcher(val listener: PostOrderListener) {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as List<Ticker>
                 } else {
-                    val jObjError = JSONObject(
-                        response.errorBody()!!.string()
-                    )
+//                    val jObjError = JSONObject(
+//                        response.errorBody()!!.string()
+//                    )
                     Log.w(TAG, "getTickerInfo"
                             + " call: " + call.request()
                             + " code: " + response.code()
                             + " headers: " + response.headers()
                             + " raw: " + response.raw()
-                            + " jObjError: " + (jObjError ?: "NULL")
+//                            + " jObjError: " + (jObjError ?: "NULL")
                     )
                 }
             }
