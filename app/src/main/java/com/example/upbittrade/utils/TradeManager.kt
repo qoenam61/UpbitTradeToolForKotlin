@@ -102,12 +102,6 @@ class TradeManager(private val listener: TradeChangedListener) {
         val timeZoneFormat = TradeFragment.Format.timeFormat
         timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
 
-        Log.i(TAG, "[DEBUG] updateTickerInfoToBuyList marketId: $marketId  " +
-                "currentPrice: $currentPrice " +
-                "side: $side " +
-                "state: $state " +
-                "time: ${timeZoneFormat.format(time)}")
-
         if (postInfo.state == OrderCoinInfo.State.WAIT && responseOrder != null) {
             if (postInfo.getRegisterDuration() != null && postInfo.getRegisterDuration()!! > TradeFragment.UserParam.monitorTime) {
                 Log.d(TAG, "[DEBUG] updateTickerInfoToTrade: DELETE_ORDER_INFO")
@@ -118,6 +112,12 @@ class TradeManager(private val listener: TradeChangedListener) {
             }
             return null
         }
+
+        Log.i(TAG, "updateTickerInfoToBuyList marketId: $marketId  " +
+                "currentPrice: $currentPrice " +
+                "side: $side " +
+                "state: $state " +
+                "time: ${timeZoneFormat.format(time)}")
 
         if ((side.equals("ask") || side.equals("ASK")) && responseOrder.state.equals("done")) {
             return postInfo
@@ -133,27 +133,24 @@ class TradeManager(private val listener: TradeChangedListener) {
         var maxProfitRate = postInfo.maxProfitRate
         val volume = responseOrder?.volume?.toDouble()
 
-        if (profitRate!! > postInfo.maxProfitRate) {
-            postInfo.maxPrice = postInfo.currentPrice!!
-        }
-        maxProfitRate = max(profitRate, maxProfitRate)
+        maxProfitRate = max(profitRate!!, maxProfitRate)
         postInfo.maxProfitRate = maxProfitRate
 
         // Take a profit
         if (maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66) {
-            val sellPrice = (postInfo.maxPrice + currentPrice!!.toDouble()) / 2.0
+            val askPrice = (postInfo.highPrice!!.toDouble() + currentPrice!!.toDouble()) / 2.0
 
             Log.d(
                 TAG,
-                "[DEBUG] tacticalToSell Take a profit marketId: $marketId " +
-                        "currentPrice: ${TradeFragment.Format.nonZeroFormat.format(currentPrice)} " +
-                        "sellPrice: ${TradeFragment.Format.nonZeroFormat.format(sellPrice)} " +
+                "[DEBUG] tacticalToSell - Take a profit marketId: $marketId " +
+                        "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
+                        "askPrice: ${TradeFragment.Format.zeroFormat.format(askPrice)} " +
+                        "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
                         "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
-                        "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} " +
-                        "volume: ${TradeFragment.Format.zeroFormat.format(volume)} "
+                        "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} "
             )
 
-            listener.onPostAsk(marketId!!, postInfo, "limit", Utils().convertPrice(sellPrice), volume!!)
+            listener.onPostAsk(marketId!!, postInfo, "limit", Utils().convertPrice(askPrice), volume!!)
         }
 
         // Stop a loss
@@ -174,7 +171,7 @@ class TradeManager(private val listener: TradeChangedListener) {
             val body: Double = abs(closePrice.toDouble() - openPrice.toDouble())
 
             val length: Double = highTail + lowTail + body
-
+            var askPrice: Double = 0.0
 
             when {
                 //Market
@@ -184,26 +181,35 @@ class TradeManager(private val listener: TradeChangedListener) {
 
                 // HHCO
                 !sign && lowTail / length > 0.5 -> {
-                    val sellPrice = Utils().convertPrice(
+                    askPrice = Utils().convertPrice(
                         sqrt(
                             (highPrice.toDouble().pow(2.0) + highPrice.toDouble().pow(2.0)
                                     + closePrice.toDouble().pow(2.0) + openPrice.toDouble().pow(2.0)) / 4
                         )
                     )!!.toDouble()
-                    listener.onPostAsk(marketId!!, postInfo, "limit", sellPrice, volume!!)
+                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
                 }
 
                 else -> {
                     //HCO
-                    val sellPrice = Utils().convertPrice(
+                    askPrice = Utils().convertPrice(
                         sqrt(
                             (highPrice.toDouble().pow(2.0) + closePrice.toDouble().pow(2.0)
                                     + openPrice.toDouble().pow(2.0)) / 3
                         )
                     )!!.toDouble()
-                    listener.onPostAsk(marketId!!, postInfo, "limit", sellPrice, volume!!)
+                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
                 }
             }
+            Log.d(
+                TAG,
+                "[DEBUG] tacticalToSell Stop a loss - marketId: $marketId " +
+                        "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
+                        "sellPrice: ${TradeFragment.Format.zeroFormat.format(askPrice)} " +
+                        "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
+                        "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
+                        "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} "
+            )
         }
 
         return postInfo

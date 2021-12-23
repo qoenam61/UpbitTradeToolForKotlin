@@ -155,12 +155,12 @@ class BackgroundProcessor : Thread {
         while (iterator.hasNext()) {
             val list = iterator.next()
             if (list.type == item.type && list.marketId.equals(item.marketId)) {
-                Log.d(TAG, "registerProcess type: ${item.type} duplicated id: ${item.marketId}")
+                Log.i(TAG, "registerProcess type: ${item.type} duplicated id: ${item.marketId}")
                 return
             }
         }
 
-        Log.d(TAG, "registerProcess type: ${item.type} offer id: " + item.marketId)
+        Log.i(TAG, "registerProcess type: ${item.type} offer id: " + item.marketId)
         TaskList.offer(item)
     }
 
@@ -171,7 +171,7 @@ class BackgroundProcessor : Thread {
     fun unregisterProcess(postType: TradePagerActivity.PostType, marketId: String) {
         TaskList.forEach() {
             if (it.type == postType && it.marketId.equals(marketId)) {
-                Log.d(TAG, "unregisterProcess type: $postType duplicated id: $marketId")
+                Log.i(TAG, "unregisterProcess type: $postType duplicated id: $marketId")
                 TaskList.remove(it)
                 return
             }
@@ -182,7 +182,7 @@ class BackgroundProcessor : Thread {
         TaskList.forEach() {
             if (it.type == postType && it.marketId.equals(marketId)
                 && it.uuid != null && it.uuid.toString().equals(uuid)) {
-                Log.d(TAG, "unregisterProcess type: $postType duplicated id: $marketId")
+                Log.i(TAG, "unregisterProcess type: $postType duplicated id: $marketId")
                 TaskList.remove(it)
                 return
             }

@@ -38,8 +38,6 @@ class OrderCoinInfo: TradeCoinInfo {
     var currentTime: Long? = null
 
     var maxProfitRate: Double = 0.0
-    var maxPrice: Double = 0.0
-
 
     var currentPrice: Double? = null
     var sellPrice: Double? = null

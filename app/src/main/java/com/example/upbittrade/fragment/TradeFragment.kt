@@ -103,7 +103,7 @@ class TradeFragment: Fragment() {
         mainActivity = activity as TradePagerActivity
         viewModel = TradeViewModel(application = activity.application, object : TradeFetcher.PostOrderListener {
             override fun onInSufficientFunds(type: String, uuid: UUID) {
-                Log.d(TAG, "[DEBUG] onInSufficientFunds type: $type uuid: $uuid")
+                Log.i(TAG, "onInSufficientFunds type: $type uuid: $uuid")
                 isInSufficientFunds = true
             }
         })
@@ -144,11 +144,11 @@ class TradeFragment: Fragment() {
                     return
                 }
 
-                Log.d(TAG, "[DEBUG] onPostBid - key: $marketId")
                 tradePostMapInfo[marketId] = orderCoinInfo
 
                 val bidPrice = orderCoinInfo.getBidPrice()
                 val volume = (UserParam.priceToBuy / bidPrice!!).toString()
+                Log.d(TAG, "[DEBUG] onPostBid - key: $marketId bidPrice: $bidPrice volume: $volume")
 
                 processor?.registerProcess(
                     PostOrderItem(
@@ -221,7 +221,7 @@ class TradeFragment: Fragment() {
 
     override fun onStart() {
         super.onStart()
-        Log.d(TAG, "[DEBUG] onStart: ")
+        Log.i(TAG, "onStart: ")
         val viewCycleOwner = viewLifecycleOwner
         viewModel?.resultMarketsInfo?.observe(viewCycleOwner) {
             marketsInfo ->
@@ -235,7 +235,7 @@ class TradeFragment: Fragment() {
                 if (marketId?.contains("KRW-") == true
                     && marketInfo.marketWarning?.contains("CAUTION") == false) {
                     marketMapInfo[marketId] = marketInfo
-                    Log.d(TAG, "[DEBUG] resultMarketsInfo - marketId: $marketId")
+                    Log.i(TAG, "resultMarketsInfo - marketId: $marketId")
                     extTaskItemList.add(ExtendCandleItem(MIN_CANDLE_INFO, UNIT_MIN_CANDLE.toString(), marketId, UNIT_MIN_CANDLE_COUNT))
                     taskItemList.add(CandleItem(TRADE_INFO, marketId, UNIT_TRADE_COUNT))
                 }
@@ -246,8 +246,6 @@ class TradeFragment: Fragment() {
 
         viewModel?.resultMinCandleInfo?.observe(viewCycleOwner) {
             minCandlesInfo ->
-            val iterator = minCandlesInfo.reversed().iterator()
-
             var marketId: String = minCandlesInfo.first().marketId.toString()
             var accPriceVolume = minCandlesInfo.fold(0.0) {
                 acc: Double, minCandleInfo: Candle -> acc + minCandleInfo.candleAccTradePrice!!.toDouble()
@@ -303,7 +301,10 @@ class TradeFragment: Fragment() {
 
             val timeZoneFormat = Format.timeFormat
             timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
-            Log.d(TAG, "[DEBUG] resultPostOrderInfo marketId: $marketId state: ${responseOrder.state} side: ${responseOrder.side} time: ${timeZoneFormat.format(time)}")
+            Log.d(TAG, "[DEBUG] resultPostOrderInfo marketId: $marketId state: ${responseOrder.state} " +
+                    "side: ${responseOrder.side} price: ${Format.zeroFormat.format(responseOrder.price)} " +
+                    "time: ${timeZoneFormat.format(time)}"
+            )
 
             if (registerTime == null) {
                 tradePostInfo.registerTime = time
@@ -380,7 +381,11 @@ class TradeFragment: Fragment() {
 
             val timeZoneFormat = Format.timeFormat
             timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
-            Log.d(TAG, "[DEBUG] resultSearchOrderInfo marketId: $marketId state: ${responseOrder.state} side: ${responseOrder.side} time: ${timeZoneFormat.format(time)}")
+            Log.d(TAG, "[DEBUG] resultSearchOrderInfo marketId: $marketId state: ${responseOrder.state} " +
+                    "side: ${responseOrder.side} price: ${Format.zeroFormat.format(responseOrder.price)} " +
+                    "time: ${timeZoneFormat.format(time)}"
+            )
+
 
             tradePostInfo.currentTime = time
 
@@ -465,14 +470,14 @@ class TradeFragment: Fragment() {
 
     override fun onPause() {
         super.onPause()
-        Log.d(TAG, "[DEBUG] onPause: ")
+        Log.i(TAG, "onPause: ")
         processor?.release()
         isRunning = false
     }
 
     override fun onStop() {
         super.onStop()
-        Log.d(TAG, "[DEBUG] onStop: ")
+        Log.i(TAG, "onStop: ")
     }
 
     private fun makeTradeMapInfo(tradesInfoList: List<TradeInfo>) {
@@ -554,8 +559,8 @@ class TradeFragment: Fragment() {
             val rate = tradeMonitorMapInfo[marketId]!!.getAvgAccVolumeRate()
             val timeZoneFormat = Format.timeFormat
             timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
-            Log.d(
-                TAG, "[DEBUG] makeTradeMapInfo marketId: $marketId " +
+            Log.i(
+                TAG, "makeTradeMapInfo marketId: $marketId " +
                         "count: ${tradeMonitorMapInfo[marketId]!!.tickCount} " +
                         "rate: ${Format.percentFormat.format(rate)} " +
                         "highPrice: ${Format.nonZeroFormat.format(tradeMonitorMapInfo[marketId]!!.highPrice)} " +

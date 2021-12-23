@@ -65,7 +65,7 @@ class LoginFragment: Fragment() {
     override fun onStart() {
         super.onStart()
         viewModel?.resultAccountsInfo?.observe(viewLifecycleOwner) {
-            Log.d(TAG, "onStart: ")
+            Log.i(TAG, "onStart: ")
         }
     }
 
@@ -75,7 +75,7 @@ class LoginFragment: Fragment() {
 
         ACCESS_KEY = accessKey.text.toString()
         SECRET_KEY = secretKey.text.toString()
-        Log.d(TAG,
+        Log.i(TAG,
             "onLoginButton - accessKey: $ACCESS_KEY secretKey: $SECRET_KEY"
         )
 

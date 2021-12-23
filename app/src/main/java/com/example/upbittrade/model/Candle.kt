@@ -64,12 +64,6 @@ open class Candle: Serializable, Comparable<Candle> {
         result -= candleAccTradePrice!!.toDouble() * (upper / total)
         result += candleAccTradePrice!!.toDouble() * ((tradePrice!!.toDouble() - openingPrice!!.toDouble()) / total)
 
-        Log.d("TAG",
-            "getTradeVolumePrice - highPrice: $highPrice lowPrice: $lowPrice tradePrice: $tradePrice openingPrice: $openingPrice"
-        )
-        Log.d("TAG",
-            "getTradeVolumePrice - total: $total upper: $upper lower: $lower result: $result"
-        )
         return result
     }
 
