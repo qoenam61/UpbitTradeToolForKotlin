@@ -198,6 +198,7 @@ class TradeFragment: Fragment() {
                 activity?.runOnUiThread {
                     tradeAdapter?.notifyDataSetChanged()
                 }
+                processor?.registerProcess(TaskItem(TICKER_INFO, marketId))
             }
 
             override fun onDelete(marketId: String, uuid: UUID) {
@@ -285,6 +286,8 @@ class TradeFragment: Fragment() {
                         responseOrder)
                     if (tickerInfo != null) {
                         tradePostMapInfo[marketId!!] = tickerInfo
+                    } else {
+                        Log.i(TAG, "[DEBUG] updateTickerInfoToTrade - marketId: $marketId Not Sell ")
                     }
                 }
                 updateView()
@@ -374,11 +377,13 @@ class TradeFragment: Fragment() {
         viewModel?.resultSearchOrderInfo?.observe(viewCycleOwner) {
             responseOrder ->
 
-            val marketId = responseOrder.marketId
+            val marketId: String = responseOrder.marketId!!
             val time: Long = System.currentTimeMillis()
             val tradePostInfo = tradePostMapInfo[marketId]!!
 
-            tradeResponseMapInfo[marketId!!] = responseOrder
+            if (!responseOrder.state.equals("cancel")) {
+                tradeResponseMapInfo[marketId] = responseOrder
+            }
 
             val timeZoneFormat = Format.timeFormat
             timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
@@ -432,12 +437,16 @@ class TradeFragment: Fragment() {
         viewModel?.resultDeleteOrderInfo?.observe(viewCycleOwner) {
             responseOrder ->
             val marketId = responseOrder.marketId
-            Log.d(TAG, "[DEBUG] resultDeleteOrderInfo marketId : $marketId side: ${responseOrder.side} state: ${responseOrder.state.equals("done")}")
+            Log.d(TAG, "[DEBUG] resultDeleteOrderInfo marketId : $marketId side: ${responseOrder.side} state: ${responseOrder.state}")
 
             if (responseOrder.state.equals("bid") || responseOrder.state.equals("BID")) {
                 tradePostMapInfo.remove(marketId)
                 tradeResponseMapInfo.remove(marketId)
                 processor?.unregisterProcess(TICKER_INFO, marketId!!)
+                processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId!!)
+            }
+
+            if (responseOrder.state.equals("ask") || responseOrder.state.equals("ASK")) {
                 processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId!!)
             }
             updateView()

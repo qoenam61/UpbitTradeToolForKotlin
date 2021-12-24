@@ -100,30 +100,31 @@ class TradeManager(private val listener: TradeChangedListener) {
         val timeZoneFormat = TradeFragment.Format.timeFormat
         timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
 
-        if (postInfo.state == OrderCoinInfo.State.WAIT && responseOrder != null) {
-            if (postInfo.getRegisterDuration() != null && postInfo.getRegisterDuration()!! > TradeFragment.UserParam.monitorTime) {
-                Log.d(TAG, "[DEBUG] updateTickerInfoToTrade: DELETE_ORDER_INFO")
-                postInfo.registerTime = null
-                responseOrder.side = "bid"
-                listener.onDelete(marketId!!, UUID.fromString(responseOrder.uuid))
-                return postInfo
-            }
-            return null
-        }
-
         Log.i(TAG, "updateTickerInfoToBuyList marketId: $marketId  " +
                 "currentPrice: $currentPrice " +
                 "side: $side " +
                 "state: $state " +
                 "time: ${timeZoneFormat.format(time)}")
 
-        if ((responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) && responseOrder.state.equals("done")) {
+        if (postInfo.state == OrderCoinInfo.State.WAIT && responseOrder != null) {
+            if (postInfo.getRegisterDuration() != null
+                && postInfo.getRegisterDuration()!! > TradeFragment.UserParam.monitorTime) {
+                Log.d(TAG, "[DEBUG] updateTickerInfoToTrade: DELETE_ORDER_INFO")
+                postInfo.registerTime = null
+                listener.onDelete(marketId!!, UUID.fromString(responseOrder.uuid))
+                return postInfo
+            }
+            return null
+        }
+
+        if ((responseOrder.side.equals("ask") || responseOrder.side.equals("ASK"))
+            && responseOrder.state.equals("done")) {
             return null
         }
         return tacticalToSell(ticker, postInfo, responseOrder)
     }
 
-    private fun tacticalToSell(ticker: List<Ticker>, postInfo: OrderCoinInfo, responseOrder: ResponseOrder?): OrderCoinInfo {
+    private fun tacticalToSell(ticker: List<Ticker>, postInfo: OrderCoinInfo, responseOrder: ResponseOrder?): OrderCoinInfo? {
         val marketId = ticker.first().marketId
         val currentPrice = ticker.first().tradePrice?.toDouble()
         val bidPrice = postInfo.getBidPrice()
@@ -140,9 +141,7 @@ class TradeManager(private val listener: TradeChangedListener) {
             && tickGap >  TradeFragment.UserParam.thresholdAskTickGap) {
             val askPrice = (postInfo.highPrice!!.toDouble() + currentPrice.toDouble()) / 2.0
 
-            Log.d(
-                TAG,
-                "[DEBUG] tacticalToSell - Take a profit marketId: $marketId " +
+            Log.d(TAG, "[DEBUG] tacticalToSell - Take a profit marketId: $marketId " +
                         "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
                         "askPrice: ${TradeFragment.Format.zeroFormat.format(askPrice)} " +
                         "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
@@ -152,6 +151,7 @@ class TradeManager(private val listener: TradeChangedListener) {
             )
 
             listener.onPostAsk(marketId!!, postInfo, "limit", Utils().convertPrice(askPrice), volume!!)
+            return postInfo
         }
 
         // Stop a loss
@@ -202,9 +202,7 @@ class TradeManager(private val listener: TradeChangedListener) {
                     listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
                 }
             }
-            Log.d(
-                TAG,
-                "[DEBUG] tacticalToSell Stop a loss - marketId: $marketId " +
+            Log.d(TAG, "[DEBUG] tacticalToSell Stop a loss - marketId: $marketId " +
                         "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
                         "sellPrice: ${TradeFragment.Format.zeroFormat.format(askPrice)} " +
                         "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
@@ -212,8 +210,9 @@ class TradeManager(private val listener: TradeChangedListener) {
                         "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} " +
                         "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} "
             )
+            return postInfo
         }
 
-        return postInfo
+        return null
     }
 }
