@@ -128,7 +128,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         val marketId = ticker.first().marketId
         val currentPrice = ticker.first().tradePrice?.toDouble()
         val bidPrice = postInfo.getBidPrice()
-        val tickGap = (bidPrice!! - currentPrice!!) / postInfo.getTickPrice()!!
+        val tickGap = abs(bidPrice!! - currentPrice!!) / postInfo.getTickPrice()!!
         val profitRate = postInfo.getProfitRate()
         var maxProfitRate = postInfo.maxProfitRate
         val volume = responseOrder?.volume?.toDouble()
@@ -138,7 +138,7 @@ class TradeManager(private val listener: TradeChangedListener) {
 
         // Take a profit
         if (maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
-            && tickGap >  TradeFragment.UserParam.thresholdAskTickGap) {
+            && tickGap >=  TradeFragment.UserParam.thresholdBidTickGap) {
             val askPrice = (postInfo.highPrice!!.toDouble() + currentPrice.toDouble()) / 2.0
 
             Log.d(TAG, "[DEBUG] tacticalToSell - Take a profit marketId: $marketId " +
@@ -161,7 +161,8 @@ class TradeManager(private val listener: TradeChangedListener) {
         val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice
         val sign: Boolean = closePrice!!.toDouble() - openPrice!!.toDouble() >= 0.0
 
-        if (profitRate < TradeFragment.UserParam.thresholdRate * -0.66) {
+        if (profitRate < TradeFragment.UserParam.thresholdRate * -0.66
+            && tickGap >=  TradeFragment.UserParam.thresholdAskTickGap) {
 
             val highTail: Double = (highPrice!!.toDouble() - closePrice.toDouble()
                 .coerceAtLeast(openPrice.toDouble()))

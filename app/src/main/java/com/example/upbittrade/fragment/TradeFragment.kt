@@ -73,6 +73,7 @@ class TradeFragment: Fragment() {
         var thresholdAccPriceVolumeRate: Float = THRESHOLD_ACC_PRICE_VOLUME_RATE
         var thresholdBidAskRate: Float = THRESHOLD_BID_ASK_RATE
         var thresholdBidAskPriceVolumeRate: Float = THRESHOLD_BID_ASK_PRICE_VOLUME_RATE
+        var thresholdBidTickGap: Double = 7.0
         var thresholdAskTickGap: Double = 7.0
     }
 
@@ -420,6 +421,11 @@ class TradeFragment: Fragment() {
                     tradePostInfo.registerTime = null
                     tradePostInfo.tradeBuyTime = time
                     processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+                } else if (responseOrder.state.equals("cancel")) {
+                    tradePostMapInfo.remove(marketId)
+                    tradeResponseMapInfo.remove(marketId)
+                    processor?.unregisterProcess(TICKER_INFO, marketId!!)
+                    processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId!!)
                 }
             }
 
@@ -455,6 +461,8 @@ class TradeFragment: Fragment() {
                     )
 
                     processor?.unregisterProcess(TICKER_INFO, marketId)
+                    processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+                } else if (responseOrder.state.equals("cancel")) {
                     processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
                 }
             }
