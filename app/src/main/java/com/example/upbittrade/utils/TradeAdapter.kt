@@ -25,7 +25,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
 
     var monitorKeyList: List<String>? = null
     var tradeKeyList: List<String>? = null
-    var reportKeyList: List<String>? = null
+    var reportList: List<OrderCoinInfo>? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CoinHolder {
         var view = when (type) {
@@ -74,10 +74,10 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 }
             }
             REPORT_LIST -> {
-                count = if (reportKeyList == null) {
+                count = if (reportList == null) {
                     0
                 } else {
-                    reportKeyList!!.size
+                    reportList!!.size
                 }
             }
         }
@@ -294,8 +294,9 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
     }
 
     private fun reportList(holder: CoinHolder, position: Int) {
-        val marketId = reportKeyList?.get(position)
-        val tradeInfo = TradeFragment.tradeReportMapInfo[marketId]
+        val tradeInfo = reportList?.get(position)
+        val marketId = tradeInfo?.marketId
+
         if (tradeInfo != null) {
             holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
             holder.tradeStatus?.text = tradeInfo.state.name

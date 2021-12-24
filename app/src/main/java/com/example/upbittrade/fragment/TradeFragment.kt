@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -50,7 +51,7 @@ class TradeFragment: Fragment() {
 
         val tradeMonitorMapInfo = HashMap<String, TradeCoinInfo>()
         var tradePostMapInfo = HashMap<String, OrderCoinInfo>()
-        var tradeReportMapInfo = HashMap<String, OrderCoinInfo>()
+        var tradeReportListInfo = ArrayList<OrderCoinInfo>()
 
         var tradeResponseMapInfo = HashMap<String, ResponseOrder>()
     }
@@ -94,6 +95,8 @@ class TradeFragment: Fragment() {
     private var tradeListView: RecyclerView? = null
     private var reportListView: RecyclerView? = null
 
+    private var profitPrice: TextView? = null
+    private var profitPriceRate: TextView? = null
 
     var isRunning = false
 
@@ -130,6 +133,9 @@ class TradeFragment: Fragment() {
         reportListView = view.findViewById(R.id.trade_report_list)
         reportListView!!.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         reportListView!!.adapter = reportAdapter
+
+        profitPriceRate = view?.findViewById(R.id.profit_price_rate)
+        profitPrice = view?.findViewById(R.id.profit_price)
 
         val initDialog = InitPopupDialog(requireContext())
         initDialog.show()
@@ -350,11 +356,23 @@ class TradeFragment: Fragment() {
                     isInSufficientFunds = false
                     tradePostInfo.state = OrderCoinInfo.State.SELL
                     tradePostInfo.sellPrice = responseOrder.price?.toDouble()
+                    tradePostInfo.volume = responseOrder.volume?.toDouble()
                     tradePostInfo.registerTime = null
                     tradePostInfo.tradeSellTime = time
 
-                    tradeReportMapInfo[marketId] = tradePostInfo
-                    reportAdapter?.reportKeyList = tradeReportMapInfo.keys.toList()
+                    // Total Result
+                    tradeReportListInfo.add(tradePostInfo)
+
+                    var askPriceAmount = 0.0
+                    var bidPriceAmount = 0.0
+                    tradeReportListInfo.forEach() {
+                        askPriceAmount += it.sellPrice!! * it.volume!!
+                        bidPriceAmount += it.getBidPrice()!! * it.volume!!
+                    }
+
+                    profitPrice!!.text = (askPriceAmount - bidPriceAmount).toString()
+                    profitPriceRate!!.text = ((askPriceAmount - bidPriceAmount) / bidPriceAmount).toString()
+                    reportAdapter?.reportList = tradeReportListInfo.toList()
 
                     processor?.registerProcess(
                         TaskItem(
@@ -413,8 +431,20 @@ class TradeFragment: Fragment() {
                     tradePostInfo.registerTime = null
                     tradePostInfo.tradeSellTime = time
 
-                    tradeReportMapInfo[marketId] = tradePostInfo
-                    reportAdapter?.reportKeyList = tradeReportMapInfo.keys.toList()
+                    // Total Result
+                    tradeReportListInfo.add(tradePostInfo)
+
+                    var askPriceAmount = 0.0
+                    var bidPriceAmount = 0.0
+                    tradeReportListInfo.forEach() {
+                        askPriceAmount += it.sellPrice!! * it.volume!!
+                        bidPriceAmount += it.getBidPrice()!! * it.volume!!
+                    }
+
+                    profitPrice!!.text = (askPriceAmount - bidPriceAmount).toString()
+                    profitPriceRate!!.text = ((askPriceAmount - bidPriceAmount) / bidPriceAmount).toString()
+                    reportAdapter?.reportList = tradeReportListInfo.toList()
+
 
                     processor?.registerProcess(
                         TaskItem(
@@ -613,7 +643,7 @@ class TradeFragment: Fragment() {
         monitorAdapter!!.notifyDataSetChanged()
         tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
         tradeAdapter?.notifyDataSetChanged()
-        reportAdapter?.reportKeyList = tradeReportMapInfo.keys.toList()
+        reportAdapter?.reportList = tradeReportListInfo
         reportAdapter?.notifyDataSetChanged()
     }
 }

@@ -15,6 +15,11 @@
             android:textStyle="bold"
             android:textSize="@dimen/large_text_size"
             android:text="결과 리포트"/>
+        <include
+            android:layout_width="@dimen/result_width"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/largest_margin"
+            layout="@layout/result_layout"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"

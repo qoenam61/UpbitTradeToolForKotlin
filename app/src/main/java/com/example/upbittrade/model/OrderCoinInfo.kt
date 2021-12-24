@@ -39,6 +39,8 @@ class OrderCoinInfo: TradeCoinInfo {
 
     var maxProfitRate: Double = 0.0
 
+    var volume: Double? = null
+
     var currentPrice: Double? = null
     var sellPrice: Double? = null
     fun getBidPrice(): Double? {
