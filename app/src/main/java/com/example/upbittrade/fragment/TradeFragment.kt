@@ -251,6 +251,7 @@ class TradeFragment: Fragment() {
             }
             processor?.registerProcess(extTaskItemList)
             processor?.registerProcess(taskItemList)
+            makeMarketMapInfo(marketsInfo)
         }
 
         viewModel?.resultMinCandleInfo?.observe(viewCycleOwner) {
@@ -388,8 +389,9 @@ class TradeFragment: Fragment() {
                 }
             }
 
-            tradePostMapInfo[marketId] = tradePostInfo
-
+            if (!responseOrder.state.equals("cancel")) {
+                tradePostMapInfo[marketId] = tradePostInfo
+            }
             updateView()
         }
 
@@ -424,8 +426,8 @@ class TradeFragment: Fragment() {
                 } else if (responseOrder.state.equals("cancel")) {
                     tradePostMapInfo.remove(marketId)
                     tradeResponseMapInfo.remove(marketId)
-                    processor?.unregisterProcess(TICKER_INFO, marketId!!)
-                    processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId!!)
+                    processor?.unregisterProcess(TICKER_INFO, marketId)
+                    processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
                 }
             }
 
@@ -467,8 +469,9 @@ class TradeFragment: Fragment() {
                 }
             }
 
-            tradePostMapInfo[marketId] = tradePostInfo
-
+            if (!responseOrder.state.equals("cancel")) {
+                tradePostMapInfo[marketId] = tradePostInfo
+            }
             updateView()
         }
 
@@ -489,6 +492,10 @@ class TradeFragment: Fragment() {
             }
             updateView()
         }
+    }
+
+    private fun makeMarketMapInfo(marketsInfo: List<MarketInfo>?) {
+        TODO("Not yet implemented")
     }
 
     override fun onResume() {
