@@ -26,7 +26,7 @@ class BackgroundProcessor : Thread {
     companion object {
         const val TAG = "BackgroundProcessor"
         var viewModel: AndroidViewModel? = null
-        const val pingDelay: Long = 100
+        const val pingDelay: Long = 103
     }
 
     constructor(model: AndroidViewModel) {

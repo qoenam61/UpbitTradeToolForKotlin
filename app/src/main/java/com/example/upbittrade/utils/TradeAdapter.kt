@@ -149,8 +149,15 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         val tradeInfo = TradeFragment.tradeMonitorMapInfo[marketId]
         if (tradeInfo != null) {
             holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
-            holder.tradePrice?.text =
-                TradeFragment.Format.nonZeroFormat.format(tradeInfo.closePrice!!.toDouble())
+
+            if (tradeInfo.closePrice!!.toDouble() < 100.0) {
+                holder.tradePrice?.text =
+                    TradeFragment.Format.zeroFormat.format(tradeInfo.closePrice!!.toDouble())
+            } else {
+                holder.tradePrice?.text =
+                    TradeFragment.Format.nonZeroFormat.format(tradeInfo.closePrice!!.toDouble())
+            }
+
             holder.tradePriceRate?.text =
                 TradeFragment.Format.percentFormat.format(tradeInfo.dayChangeRate)
             when {
