@@ -2,10 +2,12 @@ package com.example.upbittrade.utils
 
 import android.app.Dialog
 import android.content.Context
+import android.graphics.Color
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
+import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.model.OrderCoinInfo
 
 
@@ -38,8 +40,33 @@ class TotalResultDialog: Dialog {
             }
         }
 
-        profitPrice!!.text = (askPriceAmount - bidPriceAmount).toString()
-        profitPriceRate!!.text = ((askPriceAmount - bidPriceAmount) / bidPriceAmount).toString()
+        val profit = (askPriceAmount - bidPriceAmount)
+        profitPrice?.text = TradeFragment.Format.nonZeroFormat.format(profit)
+        when {
+            profit > 0 -> {
+                profitPrice?.setTextColor(Color.RED)
+            }
+            profit < 0 -> {
+                profitPrice?.setTextColor(Color.BLUE)
+            }
+            else -> {
+                profitPrice?.setTextColor(Color.BLACK)
+            }
+        }
+
+        val priceRate = profit / bidPriceAmount
+        profitPriceRate!!.text = TradeFragment.Format.percentFormat.format(priceRate)
+        when {
+            priceRate > 0 -> {
+                profitPriceRate?.setTextColor(Color.RED)
+            }
+            priceRate < 0 -> {
+                profitPriceRate?.setTextColor(Color.BLUE)
+            }
+            else -> {
+                profitPriceRate?.setTextColor(Color.BLACK)
+            }
+        }
 
         reportAdapter?.reportList = list
         reportAdapter?.notifyDataSetChanged()

@@ -95,7 +95,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         val time: Long = System.currentTimeMillis()
         val currentPrice = ticker.first().tradePrice?.toDouble()
         val side = responseOrder.side
-        val state = postInfo.state
+        val state = responseOrder.state
         val timeZoneFormat = TradeFragment.Format.timeFormat
         timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
 
@@ -105,8 +105,7 @@ class TradeManager(private val listener: TradeChangedListener) {
                 "state: $state " +
                 "time: ${timeZoneFormat.format(time)}")
 
-        if ((responseOrder.side.equals("ask") || responseOrder.side.equals("ASK"))
-            && responseOrder.state.equals("done")) {
+        if (responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
             return null
         }
         return tacticalToSell(ticker, postInfo, responseOrder)
