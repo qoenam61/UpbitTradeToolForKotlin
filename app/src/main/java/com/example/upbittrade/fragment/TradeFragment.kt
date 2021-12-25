@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -77,8 +76,8 @@ class TradeFragment: Fragment() {
         var thresholdAskTickGap: Double = 7.0
     }
 
-    lateinit var mainActivity: TradePagerActivity
-    lateinit var tradeManager: TradeManager
+    private lateinit var mainActivity: TradePagerActivity
+    private lateinit var tradeManager: TradeManager
 
     private var viewModel: TradeViewModel? = null
     private var processor: BackgroundProcessor? = null
@@ -89,15 +88,12 @@ class TradeFragment: Fragment() {
     private var monitorKeyList: List<String>? = null
     private var monitorAdapter: TradeAdapter? = null
     private var tradeAdapter: TradeAdapter? = null
-    private var reportAdapter: TradeAdapter? = null
-
+    private var reportPopup: TotalResultDialog? = null
 
     private var monitorListView: RecyclerView? = null
     private var tradeListView: RecyclerView? = null
-    private var reportListView: RecyclerView? = null
 
-    private var profitPrice: TextView? = null
-    private var profitPriceRate: TextView? = null
+
 
     var isRunning = false
 
@@ -130,20 +126,18 @@ class TradeFragment: Fragment() {
         tradeListView!!.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         tradeListView!!.adapter = tradeAdapter
 
-        reportAdapter = TradeAdapter(requireContext(), REPORT_LIST)
-        reportListView = view.findViewById(R.id.trade_report_list)
-        reportListView!!.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-        reportListView!!.adapter = reportAdapter
-
-        profitPriceRate = view?.findViewById(R.id.profit_price_rate)
-        profitPrice = view?.findViewById(R.id.profit_price)
-
         val initDialog = InitPopupDialog(requireContext())
         initDialog.show()
 
         val changeParamButton = view.findViewById<Button>(R.id.change_parameter)
         changeParamButton.setOnClickListener {
             initDialog.show()
+        }
+
+        reportPopup = TotalResultDialog(requireContext())
+        val totalResultButton = view.findViewById<Button>(R.id.total_result)
+        totalResultButton.setOnClickListener {
+            reportPopup?.show()
         }
 
         tradeManager = TradeManager(object : TradeManager.TradeChangedListener {
@@ -544,23 +538,6 @@ class TradeFragment: Fragment() {
         updateView()
     }
 
-    private fun makeTotalResult(tradePostInfo: OrderCoinInfo) {
-        tradeReportListInfo.add(tradePostInfo)
-
-        var askPriceAmount = 0.0
-        var bidPriceAmount = 0.0
-        tradeReportListInfo.forEach {
-            if (it.sellPrice != null && it.volume != null) {
-                askPriceAmount += it.sellPrice!! * it.volume!!
-                bidPriceAmount += it.getBidPrice()!! * it.volume!!
-            }
-        }
-
-        profitPrice!!.text = (askPriceAmount - bidPriceAmount).toString()
-        profitPriceRate!!.text = ((askPriceAmount - bidPriceAmount) / bidPriceAmount).toString()
-        reportAdapter?.reportList = tradeReportListInfo.toList()
-    }
-
     private fun postOrderBidWait(marketId: String, time: Long, tradePostInfo: OrderCoinInfo, responseOrder: ResponseOrder) {
         tradePostInfo.state = OrderCoinInfo.State.BUYING
         processor?.registerProcess(
@@ -606,6 +583,11 @@ class TradeFragment: Fragment() {
         tradeResponseMapInfo.remove(marketId)
         processor?.unregisterProcess(TICKER_INFO, marketId)
         processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+    }
+
+    private fun makeTotalResult(tradePostInfo: OrderCoinInfo) {
+        tradeReportListInfo.add(tradePostInfo)
+        reportPopup?.setList(tradeReportListInfo.toList())
     }
 
     override fun onResume() {
@@ -668,7 +650,5 @@ class TradeFragment: Fragment() {
         monitorAdapter!!.notifyDataSetChanged()
         tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
         tradeAdapter?.notifyDataSetChanged()
-        reportAdapter?.reportList = tradeReportListInfo
-        reportAdapter?.notifyDataSetChanged()
     }
 }
