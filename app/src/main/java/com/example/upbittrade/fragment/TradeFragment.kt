@@ -1,12 +1,14 @@
 package com.example.upbittrade.fragment
 
 import android.app.Activity
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -92,6 +94,7 @@ class TradeFragment: Fragment() {
 
     private var monitorListView: RecyclerView? = null
     private var tradeListView: RecyclerView? = null
+    private var totalResultCount: TextView? = null
 
 
 
@@ -139,6 +142,7 @@ class TradeFragment: Fragment() {
         totalResultButton.setOnClickListener {
             reportPopup?.show()
         }
+        totalResultCount = view.findViewById(R.id.total_result_count)
 
         tradeManager = TradeManager(object : TradeManager.TradeChangedListener {
             override fun onPostBid(marketId: String, orderCoinInfo: OrderCoinInfo) {
@@ -588,6 +592,13 @@ class TradeFragment: Fragment() {
     private fun makeTotalResult(tradePostInfo: OrderCoinInfo) {
         tradeReportListInfo.add(tradePostInfo)
         reportPopup?.setList(tradeReportListInfo.toList())
+        val size = tradeReportListInfo.size
+        totalResultCount?.text = size.toString()
+        if (size > 0) {
+            totalResultCount?.setTextColor(Color.RED)
+        } else {
+            totalResultCount?.setTextColor(Color.BLACK)
+        }
     }
 
     override fun onResume() {

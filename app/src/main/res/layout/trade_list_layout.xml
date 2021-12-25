@@ -22,6 +22,15 @@
             android:layout_gravity="center"
             android:layout_marginStart="@dimen/large_margin"
             android:text="결과리포트"/>
+        <TextView
+            android:id="@+id/total_result_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:layout_marginStart="@dimen/default_margin"
+            android:textStyle="bold"
+            android:textSize="@dimen/default_text_size"
+            android:text="0"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
