@@ -19,7 +19,7 @@ class TradeFetcher(val listener: PostOrderListener) {
     }
 
     interface PostOrderListener {
-        fun onInSufficientFunds(type: String, uuid:UUID)
+        fun onInSufficientFunds(marketId: String, ordType: String, uuid:UUID)
     }
 
     var tradeInfoRetrofit: TradeInfoRetrofit? = null
@@ -256,13 +256,13 @@ class TradeFetcher(val listener: PostOrderListener) {
                         && errorObj["name"] != null
                         && errorObj["name"] == "insufficient_funds_ask") {
                         Log.w(TAG, "postOrderInfo: insufficient_funds_ask")
-                        listener.onInSufficientFunds("ask", identifier!!)
+                        listener.onInSufficientFunds(marketId, "ask",  identifier!!)
 
                     } else if (response.code() == 400 && errorObj != null
                         && errorObj["name"] != null
                         && errorObj["name"] == "insufficient_funds_bid") {
                         Log.w(TAG, "postOrderInfo: insufficient_funds_bid")
-                        listener.onInSufficientFunds("bid", identifier!!)
+                        listener.onInSufficientFunds(marketId,"bid", identifier!!)
                     }
                 }
             }

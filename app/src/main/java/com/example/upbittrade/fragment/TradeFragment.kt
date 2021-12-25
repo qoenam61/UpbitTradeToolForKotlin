@@ -32,10 +32,10 @@ import kotlin.collections.HashMap
 class TradeFragment: Fragment() {
     companion object {
         const val TAG = "TradeFragment"
-        const val LIMIT_AMOUNT = 6000.0
+        const val LIMIT_AMOUNT = 7000.0
         const val BASE_TIME: Long = 3 * 60 * 1000
-        const val THRESHOLD_RATE = 0.01
-        const val THRESHOLD_TICK = 100
+        const val THRESHOLD_RATE = 0.02
+        const val THRESHOLD_TICK = 300
         const val THRESHOLD_ACC_PRICE_VOLUME_RATE = 1f
         const val THRESHOLD_BID_ASK_RATE = 0.5f
         const val THRESHOLD_BID_ASK_PRICE_VOLUME_RATE = 0.5f
@@ -106,9 +106,18 @@ class TradeFragment: Fragment() {
         super.onAttach(activity)
         mainActivity = activity as TradePagerActivity
         viewModel = TradeViewModel(application = activity.application, object : TradeFetcher.PostOrderListener {
-            override fun onInSufficientFunds(type: String, uuid: UUID) {
-                Log.i(TAG, "onInSufficientFunds type: $type uuid: $uuid")
+            override fun onInSufficientFunds(marketId: String, ordType: String, uuid: UUID) {
+                Log.i(TAG, "onInSufficientFunds marketId: $marketId ordType: $ordType uuid: $uuid")
                 isInSufficientFunds = true
+
+                if (ordType == "ask") {
+                    val time: Long = System.currentTimeMillis()
+                    val tradePostInfo = tradePostMapInfo[marketId]
+                    val responseOrder = tradeResponseMapInfo[marketId]
+                    if (tradePostInfo != null && responseOrder != null) {
+                        postOrderAskDone(marketId, time, tradePostInfo, responseOrder)
+                    }
+                }
             }
         })
     }
@@ -172,8 +181,6 @@ class TradeFragment: Fragment() {
                 activity?.runOnUiThread {
                     tradeAdapter?.notifyDataSetChanged()
                 }
-
-                processor?.registerProcess(TaskItem(TICKER_INFO, marketId))
             }
 
             override fun onPostAsk(marketId: String, orderCoinInfo: OrderCoinInfo, orderType: String, sellPrice: Double?, volume: Double) {
@@ -196,23 +203,6 @@ class TradeFragment: Fragment() {
                         sellPrice.toString(),
                         orderType,
                         UUID.randomUUID()
-                    )
-                )
-
-                tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
-                activity?.runOnUiThread {
-                    tradeAdapter?.notifyDataSetChanged()
-                }
-                processor?.registerProcess(TaskItem(TICKER_INFO, marketId))
-            }
-
-            override fun onDelete(marketId: String, uuid: UUID) {
-                Log.d(TAG, "[DEBUG] onDelete - key: $marketId uuid: $uuid")
-                processor?.registerProcess(
-                    TaskItem(
-                        DELETE_ORDER_INFO,
-                        marketId,
-                        uuid
                     )
                 )
 
@@ -448,10 +438,16 @@ class TradeFragment: Fragment() {
         }
         tradePostInfo.currentTime = time
 
+        if (responseOrder.state.equals("wait")) {
+            if (postOrderDeleteWait(marketId, tradePostInfo, responseOrder)) {
+                return
+            }
+        }
+
         if (responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
             if (responseOrder.state.equals("wait")) {
 
-                postOrderBidWait(marketId, time, tradePostInfo, responseOrder)
+                postOrderBidWait(marketId, tradePostInfo, responseOrder)
 
             } else if (responseOrder.state.equals("done")
                 && responseOrder.remainingVolume?.toDouble() == 0.0
@@ -460,10 +456,11 @@ class TradeFragment: Fragment() {
                 postOrderBidDone(marketId, time, tradePostInfo)
             }
         }
+
         if (responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
             if (responseOrder.state.equals("wait")) {
 
-                postOrderAskWait(marketId, time, tradePostInfo, responseOrder)
+                postOrderAskWait(marketId, tradePostInfo, responseOrder)
 
             } else if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0) {
 
@@ -542,7 +539,30 @@ class TradeFragment: Fragment() {
         updateView()
     }
 
-    private fun postOrderBidWait(marketId: String, time: Long, tradePostInfo: OrderCoinInfo, responseOrder: ResponseOrder) {
+    private fun postOrderDeleteWait(marketId: String, tradePostInfo: OrderCoinInfo, responseOrder: ResponseOrder): Boolean {
+        if (tradePostInfo.getRegisterDuration() != null
+            && tradePostInfo.getRegisterDuration()!! > UserParam.monitorTime) {
+            Log.d(TAG, "[DEBUG] postOrderDeleteWait - DELETE_ORDER_INFO marketId: $marketId uuid: ${responseOrder.uuid}")
+            processor?.registerProcess(
+                TaskItem(
+                    DELETE_ORDER_INFO,
+                    marketId,
+                    UUID.fromString(responseOrder.uuid)
+                )
+            )
+
+            tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
+            activity?.runOnUiThread {
+                tradeAdapter?.notifyDataSetChanged()
+            }
+            tradePostMapInfo[marketId] = tradePostInfo
+            return true
+        }
+        return false
+    }
+
+
+    private fun postOrderBidWait(marketId: String, tradePostInfo: OrderCoinInfo, responseOrder: ResponseOrder) {
         tradePostInfo.state = OrderCoinInfo.State.BUYING
         processor?.registerProcess(
             TaskItem(
@@ -551,9 +571,10 @@ class TradeFragment: Fragment() {
                 UUID.fromString(responseOrder.uuid)
             )
         )
+        processor?.registerProcess(TaskItem(TICKER_INFO, marketId))
     }
 
-    private fun postOrderAskWait(marketId: String, time: Long, tradePostInfo: OrderCoinInfo, responseOrder: ResponseOrder) {
+    private fun postOrderAskWait(marketId: String, tradePostInfo: OrderCoinInfo, responseOrder: ResponseOrder) {
         tradePostInfo.state = OrderCoinInfo.State.SELLING
         tradePostInfo.sellPrice = responseOrder.price?.toDouble()
         processor?.registerProcess(
@@ -570,6 +591,7 @@ class TradeFragment: Fragment() {
         tradePostInfo.registerTime = null
         tradePostInfo.tradeBuyTime = time
         processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+        processor?.registerProcess(TaskItem(TICKER_INFO, marketId))
     }
 
     private fun postOrderAskDone(marketId: String, time: Long, tradePostInfo: OrderCoinInfo, responseOrder: ResponseOrder) {
@@ -585,8 +607,8 @@ class TradeFragment: Fragment() {
 
         tradePostMapInfo.remove(marketId)
         tradeResponseMapInfo.remove(marketId)
-        processor?.unregisterProcess(TICKER_INFO, marketId)
         processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+        processor?.unregisterProcess(TICKER_INFO, marketId)
     }
 
     private fun makeTotalResult(tradePostInfo: OrderCoinInfo) {

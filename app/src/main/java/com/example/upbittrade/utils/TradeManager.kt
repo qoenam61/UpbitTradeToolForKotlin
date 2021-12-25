@@ -21,7 +21,6 @@ class TradeManager(private val listener: TradeChangedListener) {
     interface TradeChangedListener {
         fun onPostBid(marketId: String, orderCoinInfo: OrderCoinInfo)
         fun onPostAsk(marketId: String, orderCoinInfo: OrderCoinInfo, orderType: String, sellPrice: Double?, volume: Double)
-        fun onDelete(marketId: String, uuid: UUID)
     }
 
     enum class Type {
@@ -95,7 +94,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         val marketId = ticker.first().marketId
         val time: Long = System.currentTimeMillis()
         val currentPrice = ticker.first().tradePrice?.toDouble()
-        val side = responseOrder?.side
+        val side = responseOrder.side
         val state = postInfo.state
         val timeZoneFormat = TradeFragment.Format.timeFormat
         timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
@@ -105,16 +104,6 @@ class TradeManager(private val listener: TradeChangedListener) {
                 "side: $side " +
                 "state: $state " +
                 "time: ${timeZoneFormat.format(time)}")
-
-        if ((postInfo.state == OrderCoinInfo.State.BUYING || postInfo.state == OrderCoinInfo.State.SELLING) && responseOrder != null) {
-            if (postInfo.getRegisterDuration() != null
-                && postInfo.getRegisterDuration()!! > TradeFragment.UserParam.monitorTime) {
-                Log.d(TAG, "[DEBUG] updateTickerInfoToTrade: DELETE_ORDER_INFO")
-                listener.onDelete(marketId!!, UUID.fromString(responseOrder.uuid))
-                return postInfo
-            }
-            return null
-        }
 
         if ((responseOrder.side.equals("ask") || responseOrder.side.equals("ASK"))
             && responseOrder.state.equals("done")) {
