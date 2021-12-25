@@ -240,7 +240,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 OrderCoinInfo.State.READY -> {
                     holder.tradeStatus?.setTextColor(Color.DKGRAY)
                 }
-                OrderCoinInfo.State.WAIT -> {
+                OrderCoinInfo.State.SELLING, OrderCoinInfo.State.BUYING -> {
                     holder.tradeStatus?.setTextColor(Color.BLACK)
                 }
                 OrderCoinInfo.State.BUY -> {
@@ -308,7 +308,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 OrderCoinInfo.State.READY -> {
                     holder.tradeStatus?.setTextColor(Color.DKGRAY)
                 }
-                OrderCoinInfo.State.WAIT -> {
+                OrderCoinInfo.State.SELLING, OrderCoinInfo.State.BUYING -> {
                     holder.tradeStatus?.setTextColor(Color.BLACK)
                 }
                 OrderCoinInfo.State.BUY -> {

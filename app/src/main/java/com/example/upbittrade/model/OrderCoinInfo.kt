@@ -8,8 +8,9 @@ import kotlin.math.sqrt
 class OrderCoinInfo: TradeCoinInfo {
     enum class State {
         READY,
-        WAIT,
+        BUYING,
         BUY,
+        SELLING,
         SELL
     }
 

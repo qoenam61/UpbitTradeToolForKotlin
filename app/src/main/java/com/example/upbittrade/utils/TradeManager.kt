@@ -106,11 +106,10 @@ class TradeManager(private val listener: TradeChangedListener) {
                 "state: $state " +
                 "time: ${timeZoneFormat.format(time)}")
 
-        if (postInfo.state == OrderCoinInfo.State.WAIT && responseOrder != null) {
+        if ((postInfo.state == OrderCoinInfo.State.BUYING || postInfo.state == OrderCoinInfo.State.SELLING) && responseOrder != null) {
             if (postInfo.getRegisterDuration() != null
                 && postInfo.getRegisterDuration()!! > TradeFragment.UserParam.monitorTime) {
                 Log.d(TAG, "[DEBUG] updateTickerInfoToTrade: DELETE_ORDER_INFO")
-                postInfo.registerTime = null
                 listener.onDelete(marketId!!, UUID.fromString(responseOrder.uuid))
                 return postInfo
             }

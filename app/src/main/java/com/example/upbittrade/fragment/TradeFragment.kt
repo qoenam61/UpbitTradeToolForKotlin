@@ -249,7 +249,7 @@ class TradeFragment: Fragment() {
 
         viewModel?.resultTickerInfo?.observe(viewCycleOwner) {
                 tickersInfo ->
-            makeTradePostMapInfo(tickersInfo)
+            monitorTickerInfo(tickersInfo)
         }
 
         viewModel?.resultPostOrderInfo?.observe(viewCycleOwner) {
@@ -402,7 +402,7 @@ class TradeFragment: Fragment() {
         }
     }
 
-    private fun makeTradePostMapInfo(tickersInfo: List<Ticker>) {
+    private fun monitorTickerInfo(tickersInfo: List<Ticker>) {
         val marketId = tickersInfo.first().marketId
         val time: Long = System.currentTimeMillis()
         val currentPrice = tickersInfo.first().tradePrice?.toDouble()
@@ -421,7 +421,7 @@ class TradeFragment: Fragment() {
                 if (tickerInfo != null) {
                     tradePostMapInfo[marketId!!] = tickerInfo
                 } else {
-                    Log.i(TAG, "[DEBUG] updateTickerInfoToTrade - marketId: $marketId Not Sell ")
+                    Log.i(TAG, "updateTickerInfoToTrade - marketId: $marketId Not Sell ")
                 }
             }
             updateView()
@@ -452,67 +452,25 @@ class TradeFragment: Fragment() {
 
         if (responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
             if (responseOrder.state.equals("wait")) {
-                tradePostInfo.state = OrderCoinInfo.State.WAIT
-                processor?.registerProcess(
-                    TaskItem(
-                        SEARCH_ORDER_INFO,
-                        marketId,
-                        UUID.fromString(responseOrder.uuid)
-                    )
-                )
+
+                postOrderBidWait(marketId, time, tradePostInfo, responseOrder)
+
             } else if (responseOrder.state.equals("done")
                 && responseOrder.remainingVolume?.toDouble() == 0.0
                 && tradePostInfo.tradeBuyTime == null) {
 
-                tradePostInfo.state = OrderCoinInfo.State.BUY
-                tradePostInfo.registerTime = null
-                tradePostInfo.tradeBuyTime = time
-                processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+                postOrderBidDone(marketId, time, tradePostInfo)
             }
         }
         if (responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
             if (responseOrder.state.equals("wait")) {
-                tradePostInfo.state = OrderCoinInfo.State.WAIT
-                tradePostInfo.sellPrice = responseOrder.price?.toDouble()
-                processor?.registerProcess(
-                    TaskItem(
-                        SEARCH_ORDER_INFO,
-                        marketId,
-                        UUID.fromString(responseOrder.uuid)
-                    )
-                )
+
+                postOrderAskWait(marketId, time, tradePostInfo, responseOrder)
+
             } else if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0) {
-                isInSufficientFunds = false
-                tradePostInfo.state = OrderCoinInfo.State.SELL
-                tradePostInfo.sellPrice = responseOrder.price?.toDouble()
-                tradePostInfo.volume = responseOrder.volume?.toDouble()
-                tradePostInfo.registerTime = null
-                tradePostInfo.tradeSellTime = time
 
-                // Total Result
-                tradeReportListInfo.add(tradePostInfo)
+                postOrderAskDone(marketId, time, tradePostInfo, responseOrder)
 
-                var askPriceAmount = 0.0
-                var bidPriceAmount = 0.0
-                tradeReportListInfo.forEach {
-                    askPriceAmount += it.sellPrice!! * it.volume!!
-                    bidPriceAmount += it.getBidPrice()!! * it.volume!!
-                }
-
-                profitPrice!!.text = (askPriceAmount - bidPriceAmount).toString()
-                profitPriceRate!!.text = ((askPriceAmount - bidPriceAmount) / bidPriceAmount).toString()
-                reportAdapter?.reportList = tradeReportListInfo.toList()
-
-                processor?.registerProcess(
-                    TaskItem(
-                        DELETE_ORDER_INFO,
-                        marketId,
-                        UUID.fromString(responseOrder.uuid)
-                    )
-                )
-
-                processor?.unregisterProcess(TICKER_INFO, marketId)
-                processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
             }
         }
 
@@ -544,10 +502,9 @@ class TradeFragment: Fragment() {
 
         if (responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
             if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0) {
-                tradePostInfo.state = OrderCoinInfo.State.BUY
-                tradePostInfo.registerTime = null
-                tradePostInfo.tradeBuyTime = time
-                processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+
+                postOrderBidDone(marketId, time, tradePostInfo)
+
             } else if (responseOrder.state.equals("cancel")) {
                 tradePostMapInfo.remove(marketId)
                 tradeResponseMapInfo.remove(marketId)
@@ -558,39 +515,7 @@ class TradeFragment: Fragment() {
 
         if (responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
             if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0) {
-                isInSufficientFunds = false
-                tradePostInfo.state = OrderCoinInfo.State.SELL
-                tradePostInfo.sellPrice = responseOrder.price?.toDouble()
-                tradePostInfo.volume = responseOrder.volume?.toDouble()
-                tradePostInfo.registerTime = null
-                tradePostInfo.tradeSellTime = time
-
-                // Total Result
-                tradeReportListInfo.add(tradePostInfo)
-
-                var askPriceAmount = 0.0
-                var bidPriceAmount = 0.0
-                tradeReportListInfo.forEach {
-                    if (it.sellPrice != null && it.volume != null) {
-                        askPriceAmount += it.sellPrice!! * it.volume!!
-                        bidPriceAmount += it.getBidPrice()!! * it.volume!!
-                    }
-                }
-
-                profitPrice!!.text = (askPriceAmount - bidPriceAmount).toString()
-                profitPriceRate!!.text = ((askPriceAmount - bidPriceAmount) / bidPriceAmount).toString()
-                reportAdapter?.reportList = tradeReportListInfo.toList()
-
-                processor?.registerProcess(
-                    TaskItem(
-                        DELETE_ORDER_INFO,
-                        marketId,
-                        UUID.fromString(responseOrder.uuid)
-                    )
-                )
-
-                processor?.unregisterProcess(TICKER_INFO, marketId)
-                processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+                postOrderAskDone(marketId, time, tradePostInfo, responseOrder)
             } else if (responseOrder.state.equals("cancel")) {
                 processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
             }
@@ -617,6 +542,70 @@ class TradeFragment: Fragment() {
             processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId!!)
         }
         updateView()
+    }
+
+    private fun makeTotalResult(tradePostInfo: OrderCoinInfo) {
+        tradeReportListInfo.add(tradePostInfo)
+
+        var askPriceAmount = 0.0
+        var bidPriceAmount = 0.0
+        tradeReportListInfo.forEach {
+            if (it.sellPrice != null && it.volume != null) {
+                askPriceAmount += it.sellPrice!! * it.volume!!
+                bidPriceAmount += it.getBidPrice()!! * it.volume!!
+            }
+        }
+
+        profitPrice!!.text = (askPriceAmount - bidPriceAmount).toString()
+        profitPriceRate!!.text = ((askPriceAmount - bidPriceAmount) / bidPriceAmount).toString()
+        reportAdapter?.reportList = tradeReportListInfo.toList()
+    }
+
+    private fun postOrderBidWait(marketId: String, time: Long, tradePostInfo: OrderCoinInfo, responseOrder: ResponseOrder) {
+        tradePostInfo.state = OrderCoinInfo.State.BUYING
+        processor?.registerProcess(
+            TaskItem(
+                SEARCH_ORDER_INFO,
+                marketId,
+                UUID.fromString(responseOrder.uuid)
+            )
+        )
+    }
+
+    private fun postOrderAskWait(marketId: String, time: Long, tradePostInfo: OrderCoinInfo, responseOrder: ResponseOrder) {
+        tradePostInfo.state = OrderCoinInfo.State.SELLING
+        tradePostInfo.sellPrice = responseOrder.price?.toDouble()
+        processor?.registerProcess(
+            TaskItem(
+                SEARCH_ORDER_INFO,
+                marketId,
+                UUID.fromString(responseOrder.uuid)
+            )
+        )
+    }
+
+    private fun postOrderBidDone(marketId: String, time: Long, tradePostInfo: OrderCoinInfo) {
+        tradePostInfo.state = OrderCoinInfo.State.BUY
+        tradePostInfo.registerTime = null
+        tradePostInfo.tradeBuyTime = time
+        processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+    }
+
+    private fun postOrderAskDone(marketId: String, time: Long, tradePostInfo: OrderCoinInfo, responseOrder: ResponseOrder) {
+        isInSufficientFunds = false
+        tradePostInfo.state = OrderCoinInfo.State.SELL
+        tradePostInfo.sellPrice = responseOrder.price?.toDouble()
+        tradePostInfo.volume = responseOrder.volume?.toDouble()
+        tradePostInfo.registerTime = null
+        tradePostInfo.tradeSellTime = time
+
+        // Total Result
+        makeTotalResult(tradePostInfo)
+
+        tradePostMapInfo.remove(marketId)
+        tradeResponseMapInfo.remove(marketId)
+        processor?.unregisterProcess(TICKER_INFO, marketId)
+        processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
     }
 
     override fun onResume() {
