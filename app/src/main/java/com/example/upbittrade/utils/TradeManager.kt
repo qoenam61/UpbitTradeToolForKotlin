@@ -8,7 +8,6 @@ import com.example.upbittrade.model.Ticker
 import com.example.upbittrade.model.TradeCoinInfo
 import java.lang.Double.max
 import java.util.*
-import kotlin.collections.HashMap
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -94,7 +93,6 @@ class TradeManager(private val listener: TradeChangedListener) {
         val marketId = ticker.first().marketId
         val time: Long = System.currentTimeMillis()
         val currentPrice = ticker.first().tradePrice?.toDouble()
-        val volume = responseOrder.volume
         val side = responseOrder.side
         val state = responseOrder.state
         val timeZoneFormat = TradeFragment.Format.timeFormat
@@ -126,7 +124,7 @@ class TradeManager(private val listener: TradeChangedListener) {
 
         // Take a profit
         if (profitRate > 0 && maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
-            && tickGap >=  TradeFragment.UserParam.thresholdBidTickGap) {
+            && tickGap >  getTickThreshold(currentPrice)) {
             val askPrice = (postInfo.highPrice!!.toDouble() + currentPrice.toDouble()) / 2.0
 
             Log.d(TAG, "[DEBUG] tacticalToSell - Take a profit marketId: $marketId " +
@@ -150,7 +148,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         val sign: Boolean = closePrice!!.toDouble() - openPrice!!.toDouble() >= 0.0
 
         if (profitRate < TradeFragment.UserParam.thresholdRate * -0.66
-            && tickGap >=  TradeFragment.UserParam.thresholdAskTickGap) {
+            && tickGap >  getTickThreshold(currentPrice)) {
 
             val highTail: Double = (highPrice!!.toDouble() - closePrice.toDouble()
                 .coerceAtLeast(openPrice.toDouble()))
@@ -203,5 +201,39 @@ class TradeManager(private val listener: TradeChangedListener) {
         }
 
         return null
+    }
+
+    private fun getTickThreshold(price: Double): Double {
+        val baseTick = TradeFragment.UserParam.thresholdTickGap
+        return when {
+            price  < 1000 -> {
+                baseTick
+            }
+            price  < 10000 -> {
+                // 5
+                baseTick * 1.5
+            }
+            price  < 100000 -> {
+                // 10
+                baseTick * 2
+            }
+            price  < 1000000 -> {
+                // 50, 100
+                if (price  < 500000) {
+                    baseTick * 2.5
+                } else {
+                    baseTick * 3
+                }
+            }
+            price  < 10000000 -> {
+                // 1000
+                baseTick * 4
+            }
+            price  < 100000000 -> {
+                // 1000
+                baseTick * 5
+            }
+            else -> TradeFragment.UserParam.thresholdTickGap
+        }
     }
 }
