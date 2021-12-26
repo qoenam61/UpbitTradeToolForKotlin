@@ -22,6 +22,12 @@
             android:layout_gravity="center"
             android:layout_marginStart="@dimen/large_margin"
             android:text="조건"/>
+        <com.dinuscxj.progressbar.CircleProgressBar
+            android:id="@+id/circle_bar"
+            android:layout_width="@dimen/larger_margin"
+            android:layout_height="@dimen/larger_margin"
+            android:layout_gravity="center"
+            android:layout_marginStart="@dimen/progress_circle_bar_margin"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"

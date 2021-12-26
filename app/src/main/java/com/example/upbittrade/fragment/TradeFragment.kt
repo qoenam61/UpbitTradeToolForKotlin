@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.dinuscxj.progressbar.CircleProgressBar
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
 import com.example.upbittrade.activity.TradePagerActivity.PostType.*
@@ -95,7 +96,7 @@ class TradeFragment: Fragment() {
     private var monitorListView: RecyclerView? = null
     private var tradeListView: RecyclerView? = null
     private var totalResultCount: TextView? = null
-
+    private var circleBar: CircleProgressBar? = null
 
 
     var isRunning = false
@@ -145,6 +146,9 @@ class TradeFragment: Fragment() {
         changeParamButton.setOnClickListener {
             initDialog.show()
         }
+
+        circleBar = view.findViewById(R.id.circle_bar)
+        circleBar?.progress = 0
 
         reportPopup = TotalResultDialog(requireContext())
         val totalResultButton = view.findViewById<Button>(R.id.total_result)
@@ -272,6 +276,9 @@ class TradeFragment: Fragment() {
                 taskItemList.add(CandleItem(TRADE_INFO, marketId, UNIT_TRADE_COUNT))
             }
         }
+
+        circleBar?.max = marketMapInfo.size
+        circleBar?.progress = 0
         processor?.registerProcess(extTaskItemList)
         processor?.registerProcess(taskItemList)
     }
@@ -352,6 +359,10 @@ class TradeFragment: Fragment() {
             bidPriceVolume,
             askPriceVolume
         )
+
+        var progress = circleBar?.progress
+        progress = progress!! + 1
+        circleBar?.progress = progress % circleBar!!.max
 
         // thresholdTick , thresholdAccPriceVolumeRate
         monitorKeyList = (tradeMonitorMapInfo.filter {
