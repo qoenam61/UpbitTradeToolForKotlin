@@ -16,7 +16,7 @@
     <dimen name="evaluation_coin_list_height">80dp</dimen>
     <dimen name="evaluation_coin_list_column_height">20dp</dimen>
     <dimen name="coin_list_item_margin">3dp</dimen>
-    <dimen name="default_view_height">350dp</dimen>
+    <dimen name="default_view_height">330dp</dimen>
     <dimen name="large_view_height">450dp</dimen>
     <dimen name="result_width">150dp</dimen>
 
