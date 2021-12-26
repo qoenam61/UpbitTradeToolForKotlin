@@ -623,12 +623,14 @@ class TradeFragment: Fragment() {
         tradePostInfo.volume = responseOrder.volume?.toDouble()
         tradePostInfo.registerTime = null
         tradePostInfo.tradeSellTime = time
+
+
+        // Total Result
+        makeTotalResult(OrderCoinInfo(tradePostInfo))
+
         tradePostMapInfo.remove(marketId)
         tradeResponseMapInfo.remove(marketId)
         updateView()
-
-        // Total Result
-        makeTotalResult(tradePostInfo)
     }
 
     private fun makeTotalResult(tradePostInfo: OrderCoinInfo) {

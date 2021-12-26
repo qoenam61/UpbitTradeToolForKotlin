@@ -31,6 +31,18 @@ class OrderCoinInfo: TradeCoinInfo {
                 tradeCoinInfo.bidPriceVolume,
                 tradeCoinInfo.askPriceVolume)
 
+    constructor(orderCoinInfo: OrderCoinInfo): this(orderCoinInfo as TradeCoinInfo) {
+        this.state = orderCoinInfo.state
+        this.registerTime = orderCoinInfo.registerTime
+        this.tradeBuyTime = orderCoinInfo.tradeBuyTime
+        this.tradeSellTime = orderCoinInfo.tradeSellTime
+        this.currentTime = orderCoinInfo.currentTime
+        this.maxProfitRate = orderCoinInfo.maxProfitRate
+        this.volume = orderCoinInfo.volume
+        this.currentPrice = orderCoinInfo.currentPrice
+        this.askPrice = orderCoinInfo.askPrice
+    }
+
     var state: State = State.READY
 
     var registerTime: Long? = null
@@ -44,6 +56,7 @@ class OrderCoinInfo: TradeCoinInfo {
 
     var currentPrice: Double? = null
     var askPrice: Double? = null
+
     fun getBidPrice(): Double? {
         val highTail: Double = (highPrice!!.toDouble() - closePrice!!.toDouble()
             .coerceAtLeast(openPrice!!.toDouble()))
@@ -121,9 +134,5 @@ class OrderCoinInfo: TradeCoinInfo {
             return null
         }
         return currentTime!!.minus(tradeBuyTime!!)
-    }
-
-    fun getAskPrice(): Double {
-        return 0.0
     }
 }

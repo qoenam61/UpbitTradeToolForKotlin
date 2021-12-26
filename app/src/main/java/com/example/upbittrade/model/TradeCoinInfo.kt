@@ -20,8 +20,6 @@ open class TradeCoinInfo {
     var bidPriceVolume: Double? = 0.0
     var askPriceVolume: Double? = 0.0
 
-    constructor()
-
     constructor(
         marketId: String?,
         tickCount: Int?,
