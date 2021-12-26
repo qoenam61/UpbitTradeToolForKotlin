@@ -135,7 +135,7 @@
                         android:textSize="@dimen/coin_list_text_size"
                         android:textStyle="bold"
                         android:background="@drawable/borderline_bold"
-                        android:text="보유시간"/>
+                        android:text="대기시간"/>
                 </LinearLayout>
             </LinearLayout>
             <androidx.recyclerview.widget.RecyclerView

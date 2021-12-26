@@ -401,15 +401,17 @@ class TradeFragment: Fragment() {
 
             postInfo.currentPrice = currentPrice
             postInfo.currentTime = time
+            tradePostMapInfo[marketId!!] = postInfo
+
             if (responseOrder != null) {
-                val tickerInfo = tradeManager.updateTickerInfoToTrade(
+                val updatePostInfo = tradeManager.monitorTickerInfo(
                     tickersInfo,
                     postInfo,
                     responseOrder)
-                if (tickerInfo != null) {
-                    tradePostMapInfo[marketId!!] = tickerInfo
+                if (updatePostInfo != null) {
+                    tradePostMapInfo[marketId] = updatePostInfo
                 } else {
-                    Log.i(TAG, "updateTickerInfoToTrade - marketId: $marketId Not Sell ")
+                    Log.i(TAG, "monitorTickerInfo - marketId: $marketId Not Sell ")
                 }
             }
             updateView()
@@ -417,25 +419,19 @@ class TradeFragment: Fragment() {
     }
 
     private fun makeResponseMapInfo(responseOrder: ResponseOrder) {
-        val marketId = responseOrder.marketId
+        val marketId = responseOrder.marketId!!
         val time: Long = System.currentTimeMillis()
         val tradePostInfo = tradePostMapInfo[marketId]!!
-        val registerTime: Long? = tradePostInfo.registerTime
-
-        tradeResponseMapInfo[marketId!!] = responseOrder
 
         val timeZoneFormat = Format.timeFormat
         timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
-        Log.d(TAG, "[DEBUG] makeResponseMapInfo marketId: $marketId state: ${responseOrder.state} " +
+        Log.i(TAG, "makeResponseMapInfo marketId: $marketId state: ${responseOrder.state} " +
                 "side: ${responseOrder.side} " +
                 "price: ${Format.zeroFormat.format(responseOrder.price)} " +
                 "volume: ${Format.zeroFormat.format(responseOrder.volume)} " +
                 "time: ${timeZoneFormat.format(time)}"
         )
 
-        if (registerTime == null) {
-            tradePostInfo.registerTime = time
-        }
         tradePostInfo.currentTime = time
 
         if (responseOrder.state.equals("wait")) {
@@ -447,7 +443,7 @@ class TradeFragment: Fragment() {
         if (responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
             if (responseOrder.state.equals("wait")) {
 
-                postOrderBidWait(marketId, tradePostInfo, responseOrder)
+                postOrderBidWait(marketId, time, tradePostInfo, responseOrder)
 
             } else if (responseOrder.state.equals("done")
                 && responseOrder.remainingVolume?.toDouble() == 0.0
@@ -460,7 +456,7 @@ class TradeFragment: Fragment() {
         if (responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
             if (responseOrder.state.equals("wait")) {
 
-                postOrderAskWait(marketId, tradePostInfo, responseOrder)
+                postOrderAskWait(marketId, time, tradePostInfo, responseOrder)
 
             } else if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0) {
 
@@ -469,8 +465,9 @@ class TradeFragment: Fragment() {
             }
         }
 
+        tradePostMapInfo[marketId] = tradePostInfo
         if (!responseOrder.state.equals("cancel")) {
-            tradePostMapInfo[marketId] = tradePostInfo
+            tradeResponseMapInfo[marketId] = responseOrder
         }
         updateView()
     }
@@ -479,21 +476,21 @@ class TradeFragment: Fragment() {
         val marketId: String = responseOrder.marketId!!
         val time: Long = System.currentTimeMillis()
         val tradePostInfo = tradePostMapInfo[marketId]!!
+        val registerTime: Long? = tradePostInfo.registerTime
 
-        if (!responseOrder.state.equals("cancel")) {
-            tradeResponseMapInfo[marketId] = responseOrder
+        if (registerTime == null) {
+            tradePostInfo.registerTime = time
         }
+        tradePostInfo.currentTime = time
 
         val timeZoneFormat = Format.timeFormat
         timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
-        Log.d(TAG, "[DEBUG] updateResponseMapInfo marketId: $marketId state: ${responseOrder.state} " +
+        Log.i(TAG, "updateResponseMapInfo marketId: $marketId state: ${responseOrder.state} " +
                 "side: ${responseOrder.side} " +
                 "price: ${Format.zeroFormat.format(responseOrder.price)} " +
                 "volume: ${Format.zeroFormat.format(responseOrder.volume)} " +
                 "time: ${timeZoneFormat.format(time)}"
         )
-
-        tradePostInfo.currentTime = time
 
         if (responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
             if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0) {
@@ -516,8 +513,9 @@ class TradeFragment: Fragment() {
             }
         }
 
+        tradePostMapInfo[marketId] = tradePostInfo
         if (!responseOrder.state.equals("cancel")) {
-            tradePostMapInfo[marketId] = tradePostInfo
+            tradeResponseMapInfo[marketId] = responseOrder
         }
         updateView()
     }
@@ -565,9 +563,15 @@ class TradeFragment: Fragment() {
         return false
     }
 
-    private fun postOrderBidWait(marketId: String, tradePostInfo: OrderCoinInfo, responseOrder: ResponseOrder) {
+    private fun postOrderBidWait(marketId: String, time: Long, tradePostInfo: OrderCoinInfo, responseOrder: ResponseOrder) {
         Log.i(TAG, "postOrderBidWait marketId: $marketId state: ${tradePostInfo.state} -> BUYING uuid: responseOrder.uuid")
+        val registerTime: Long? = tradePostInfo.registerTime
+        if (registerTime == null) {
+            tradePostInfo.registerTime = time
+        }
         tradePostInfo.state = OrderCoinInfo.State.BUYING
+        tradePostMapInfo[marketId] = tradePostInfo
+
         processor?.registerProcess(
             TaskItem(
                 SEARCH_ORDER_INFO,
@@ -578,10 +582,16 @@ class TradeFragment: Fragment() {
         processor?.registerProcess(TaskItem(TICKER_INFO, marketId))
     }
 
-    private fun postOrderAskWait(marketId: String, tradePostInfo: OrderCoinInfo, responseOrder: ResponseOrder) {
+    private fun postOrderAskWait(marketId: String, time: Long, tradePostInfo: OrderCoinInfo, responseOrder: ResponseOrder) {
         Log.i(TAG, "postOrderAskWait marketId: $marketId state: ${tradePostInfo.state} -> SELLING uuid: ${responseOrder.uuid}")
+        val registerTime: Long? = tradePostInfo.registerTime
+        if (registerTime == null) {
+            tradePostInfo.registerTime = time
+        }
         tradePostInfo.state = OrderCoinInfo.State.SELLING
-        tradePostInfo.sellPrice = responseOrder.price?.toDouble()
+        tradePostInfo.askPrice = responseOrder.price?.toDouble()
+        tradePostMapInfo[marketId] = tradePostInfo
+
         processor?.registerProcess(
             TaskItem(
                 SEARCH_ORDER_INFO,
@@ -593,33 +603,36 @@ class TradeFragment: Fragment() {
 
     private fun postOrderBidDone(marketId: String, time: Long, tradePostInfo: OrderCoinInfo, responseOrder: ResponseOrder) {
         Log.d(TAG, "[DEBUG] postOrderBidDone marketId: $marketId state: ${tradePostInfo.state} -> BUY uuid: ${responseOrder.uuid}")
+        processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+        processor?.registerProcess(TaskItem(TICKER_INFO, marketId))
+
         tradePostInfo.state = OrderCoinInfo.State.BUY
         tradePostInfo.registerTime = null
         tradePostInfo.tradeBuyTime = time
-        processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
-        processor?.registerProcess(TaskItem(TICKER_INFO, marketId))
+        tradePostMapInfo[marketId] = tradePostInfo
     }
 
     private fun postOrderAskDone(marketId: String, time: Long, tradePostInfo: OrderCoinInfo, responseOrder: ResponseOrder) {
         Log.d(TAG, "[DEBUG] postOrderAskDone marketId: $marketId state: ${tradePostInfo.state} -> SELL uuid: ${responseOrder.uuid}")
+        processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+        processor?.unregisterProcess(TICKER_INFO, marketId)
+
         isInSufficientFunds = false
         tradePostInfo.state = OrderCoinInfo.State.SELL
-        tradePostInfo.sellPrice = responseOrder.price?.toDouble()
+        tradePostInfo.askPrice = responseOrder.price?.toDouble()
         tradePostInfo.volume = responseOrder.volume?.toDouble()
         tradePostInfo.registerTime = null
         tradePostInfo.tradeSellTime = time
+        tradePostMapInfo.remove(marketId)
+        tradeResponseMapInfo.remove(marketId)
+        updateView()
 
         // Total Result
         makeTotalResult(tradePostInfo)
-
-        tradePostMapInfo.remove(marketId)
-        tradeResponseMapInfo.remove(marketId)
-        processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
-        processor?.unregisterProcess(TICKER_INFO, marketId)
     }
 
     private fun makeTotalResult(tradePostInfo: OrderCoinInfo) {
-        Log.i(TAG, "makeTotalResult marketId: ${tradePostInfo.marketId} state: ${tradePostInfo.state} bidPrice: ${tradePostInfo.getBidPrice()} askPrice: ${tradePostInfo.sellPrice}")
+        Log.i(TAG, "makeTotalResult marketId: ${tradePostInfo.marketId} state: ${tradePostInfo.state} bidPrice: ${tradePostInfo.getBidPrice()} askPrice: ${tradePostInfo.askPrice}")
         tradeReportListInfo.add(tradePostInfo)
         reportPopup?.setList(tradeReportListInfo.toList())
         val size = tradeReportListInfo.size

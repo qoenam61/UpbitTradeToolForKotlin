@@ -43,7 +43,7 @@ class OrderCoinInfo: TradeCoinInfo {
     var volume: Double? = null
 
     var currentPrice: Double? = null
-    var sellPrice: Double? = null
+    var askPrice: Double? = null
     fun getBidPrice(): Double? {
         val highTail: Double = (highPrice!!.toDouble() - closePrice!!.toDouble()
             .coerceAtLeast(openPrice!!.toDouble()))

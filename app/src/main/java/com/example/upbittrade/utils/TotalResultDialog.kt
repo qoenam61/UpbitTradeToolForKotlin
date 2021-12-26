@@ -34,8 +34,8 @@ class TotalResultDialog: Dialog {
         var askPriceAmount = 0.0
         var bidPriceAmount = 0.0
         list.forEach {
-            if (it.sellPrice != null && it.volume != null) {
-                askPriceAmount += it.sellPrice!! * it.volume!!
+            if (it.askPrice != null && it.volume != null) {
+                askPriceAmount += it.askPrice!! * it.volume!!
                 bidPriceAmount += it.getBidPrice()!! * it.volume!!
             }
         }

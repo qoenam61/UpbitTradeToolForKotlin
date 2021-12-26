@@ -133,7 +133,6 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                     tradeStatus = itemView.findViewById(R.id.trade_status)
                     tradeProfit = itemView.findViewById(R.id.trade_profit)
                     tradeProfitRate = itemView.findViewById(R.id.trade_profit_rate)
-                    tradePrice = itemView.findViewById(R.id.trade_price)
                     tradeAskPrice = itemView.findViewById(R.id.trade_ask_price)
                     tradeBidPrice = itemView.findViewById(R.id.trade_bid_price)
                     tradeAskTime = itemView.findViewById(R.id.trade_ask_time)
@@ -247,8 +246,11 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 OrderCoinInfo.State.READY -> {
                     holder.tradeStatus?.setTextColor(Color.DKGRAY)
                 }
-                OrderCoinInfo.State.SELLING, OrderCoinInfo.State.BUYING -> {
-                    holder.tradeStatus?.setTextColor(Color.BLACK)
+                OrderCoinInfo.State.BUYING -> {
+                    holder.tradeStatus?.setTextColor(Color.GREEN)
+                }
+                OrderCoinInfo.State.SELLING -> {
+                    holder.tradeStatus?.setTextColor(Color.YELLOW)
                 }
                 OrderCoinInfo.State.BUY -> {
                     holder.tradeStatus?.setTextColor(Color.RED)
@@ -347,9 +349,9 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                     }
                 }
             }
-            if (tradeInfo.sellPrice != null) {
+            if (tradeInfo.askPrice != null) {
                 holder.tradeAskPrice?.text =
-                    TradeFragment.Format.nonZeroFormat.format(tradeInfo.sellPrice)
+                    TradeFragment.Format.nonZeroFormat.format(tradeInfo.askPrice)
             }
 
             if (tradeInfo.getBidPrice() != null) {
