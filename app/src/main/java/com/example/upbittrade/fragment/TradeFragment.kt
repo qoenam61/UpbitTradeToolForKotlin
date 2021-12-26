@@ -419,10 +419,9 @@ class TradeFragment: Fragment() {
                     tickersInfo,
                     postInfo,
                     responseOrder)
+
                 if (updatePostInfo != null) {
                     tradePostMapInfo[marketId] = updatePostInfo
-                } else {
-                    Log.i(TAG, "monitorTickerInfo - marketId: $marketId Not Sell ")
                 }
             }
             updateView()

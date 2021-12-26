@@ -94,6 +94,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         val marketId = ticker.first().marketId
         val time: Long = System.currentTimeMillis()
         val currentPrice = ticker.first().tradePrice?.toDouble()
+        val volume = responseOrder.volume
         val side = responseOrder.side
         val state = responseOrder.state
         val timeZoneFormat = TradeFragment.Format.timeFormat
