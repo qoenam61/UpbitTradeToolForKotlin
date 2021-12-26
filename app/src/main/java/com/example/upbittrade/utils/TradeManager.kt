@@ -124,7 +124,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         postInfo.maxProfitRate = maxProfitRate
 
         // Take a profit
-        if (maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
+        if (profitRate > 0 && maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
             && tickGap >=  TradeFragment.UserParam.thresholdBidTickGap) {
             val askPrice = (postInfo.highPrice!!.toDouble() + currentPrice.toDouble()) / 2.0
 
