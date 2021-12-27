@@ -177,19 +177,21 @@ class TradeFragment: Fragment() {
 
                 val bidPrice = orderCoinInfo.getBidPrice()
                 val volume = (UserParam.priceToBuy / bidPrice!!).toString()
-                Log.d(TAG, "[DEBUG] onPostBid - key: $marketId bidPrice: $bidPrice volume: $volume")
+                Log.d(TAG, "[DEBUG] onPostBid - key: $marketId bidPrice: $bidPrice volume: $volume PostState: ${orderCoinInfo.state}")
 
-                processor?.registerProcess(
-                    PostOrderItem(
-                        POST_ORDER_INFO,
-                        marketId,
-                        "bid",
-                        volume,
-                        bidPrice.toString(),
-                        "limit",
-                        UUID.randomUUID()
+                if (orderCoinInfo.state == OrderCoinInfo.State.READY) {
+                    processor?.registerProcess(
+                        PostOrderItem(
+                            POST_ORDER_INFO,
+                            marketId,
+                            "bid",
+                            volume,
+                            bidPrice.toString(),
+                            "limit",
+                            UUID.randomUUID()
+                        )
                     )
-                )
+                }
 
                 tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
                 activity?.runOnUiThread {
@@ -204,22 +206,26 @@ class TradeFragment: Fragment() {
                                 null 
                             else 
                                 Format.zeroFormat.format(sellPrice.toDouble())
-                        } volume: ${Format.zeroFormat.format(volume)}"
+                        } " +
+                        "volume: ${Format.zeroFormat.format(volume)} " +
+                        "PostState: ${orderCoinInfo.state} "
                 )
 
                 tradePostMapInfo[marketId] = orderCoinInfo
-                processor?.registerProcess(
-                    PostOrderItem(
-                        POST_ORDER_INFO,
-                        marketId,
-                        "ask",
-                        volume.toString(),
-                        sellPrice.toString(),
-                        orderType,
-                        UUID.randomUUID()
-                    )
-                )
 
+                if (orderCoinInfo.state == OrderCoinInfo.State.BUY) {
+                    processor?.registerProcess(
+                        PostOrderItem(
+                            POST_ORDER_INFO,
+                            marketId,
+                            "ask",
+                            volume.toString(),
+                            sellPrice.toString(),
+                            orderType,
+                            UUID.randomUUID()
+                        )
+                    )
+                }
                 tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
                 activity?.runOnUiThread {
                     tradeAdapter?.notifyDataSetChanged()
