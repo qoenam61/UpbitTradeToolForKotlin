@@ -108,7 +108,7 @@ class TradeFragment: Fragment() {
         mainActivity = activity as TradePagerActivity
         viewModel = TradeViewModel(application = activity.application, object : TradeFetcher.PostOrderListener {
             override fun onInSufficientFunds(marketId: String, side: String, errorCode:Int, uuid: UUID) {
-                Log.i(TAG, "onInSufficientFunds marketId: $marketId side: $side errorCode: $errorCode uuid: $uuid")
+                Log.d(TAG, "[DEBUG] onInSufficientFunds marketId: $marketId side: $side errorCode: $errorCode uuid: $uuid")
                 isInSufficientFunds = true
 
                 if (side == "ask" && errorCode == 400) {
@@ -388,7 +388,7 @@ class TradeFragment: Fragment() {
             val rate = tradeMonitorMapInfo[marketId]!!.getAvgAccVolumeRate()
             val timeZoneFormat = Format.timeFormat
             timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
-            Log.i(
+            /*Log.i(
                 TAG, "makeTradeMapInfo marketId: $marketId " +
                         "count: ${tradeMonitorMapInfo[marketId]!!.tickCount} " +
                         "rate: ${Format.percentFormat.format(rate)} " +
@@ -405,7 +405,7 @@ class TradeFragment: Fragment() {
                         "bidPrice/askPrice: ${Format.percentFormat.format(tradeMonitorMapInfo[marketId]!!.getBidAskRate())} " +
                         "avg1MinPriceVolume: ${Format.nonZeroFormat.format(avgAccPriceVolume?.div(UNIT_PRICE))} " +
                         "time: ${timeZoneFormat.format(tradeMonitorMapInfo[marketId]!!.timestamp)} "
-            )
+            )*/
         }
     }
 

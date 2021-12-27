@@ -73,7 +73,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         }
 
         // tick count > thresholdTick
-        // getTradeInfoPriceRate() > thresholdRate
+        // getTradeInfoPriceRate() > thresholdRate or getTradeInfoPriceRangeRate() > thresholdRangeRate
         // getPriceVolumeRate() > thresholdAvgMinPerAvgDayPriceVolumeRate
         // getBidAskRate() > thresholdBidAskRate
         // getBidAskPriceRate() > thresholdBidAskPriceRate
