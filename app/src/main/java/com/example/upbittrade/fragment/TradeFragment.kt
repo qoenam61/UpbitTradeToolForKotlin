@@ -35,7 +35,7 @@ class TradeFragment: Fragment() {
         const val TAG = "TradeFragment"
         const val LIMIT_AMOUNT = 7000.0
         const val BASE_TIME: Long = 3 * 60 * 1000
-        const val THRESHOLD_RATE = 0.02
+        const val THRESHOLD_RATE = 0.015
         const val THRESHOLD_TICK = 300
         const val THRESHOLD_ACC_PRICE_VOLUME_RATE = 1f
         const val THRESHOLD_BID_ASK_RATE = 0.5f
@@ -536,19 +536,20 @@ class TradeFragment: Fragment() {
 
     private fun resultDeleteOrderInfo(responseOrder: ResponseOrder) {
         val marketId = responseOrder.marketId
-        Log.d(TAG, "[DEBUG] deletePostOrderInfo marketId : $marketId side: ${responseOrder.side} state: ${responseOrder.state}")
+        Log.d(TAG, "[DEBUG] resultDeleteOrderInfo marketId : $marketId side: ${responseOrder.side} state: ${responseOrder.state}")
         if (!responseOrder.state.equals("wait")) {
             return
         }
-        if (responseOrder.state.equals("bid") || responseOrder.state.equals("BID")) {
+        if (responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
             tradePostMapInfo.remove(marketId)
             tradeResponseMapInfo.remove(marketId)
             processor?.unregisterProcess(TICKER_INFO, marketId!!)
             processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId!!)
         }
 
-        if (responseOrder.state.equals("ask") || responseOrder.state.equals("ASK")) {
+        if (responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
             processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId!!)
+            tradePostMapInfo[marketId]?.state = OrderCoinInfo.State.BUY
             tradeResponseMapInfo[marketId]?.side = "bid"
             tradeResponseMapInfo[marketId]?.state = "done"
         }
