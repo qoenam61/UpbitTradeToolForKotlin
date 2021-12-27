@@ -35,7 +35,7 @@ class OrderCoinInfo: TradeCoinInfo {
         this.state = orderCoinInfo.state
         this.registerTime = orderCoinInfo.registerTime
         this.tradeBidTime = orderCoinInfo.tradeBidTime
-        this.tradeSellTime = orderCoinInfo.tradeSellTime
+        this.tradeAskTime = orderCoinInfo.tradeAskTime
         this.currentTime = orderCoinInfo.currentTime
         this.maxProfitRate = orderCoinInfo.maxProfitRate
         this.volume = orderCoinInfo.volume
@@ -47,7 +47,7 @@ class OrderCoinInfo: TradeCoinInfo {
 
     var registerTime: Long? = null
     var tradeBidTime: Long? = null
-    var tradeSellTime: Long? = null
+    var tradeAskTime: Long? = null
     var currentTime: Long? = null
 
     var maxProfitRate: Double = 0.0
