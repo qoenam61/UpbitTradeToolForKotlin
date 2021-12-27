@@ -71,6 +71,7 @@ class TradeFragment: Fragment() {
         var priceToBuy: Double = LIMIT_AMOUNT
         var monitorTime: Long = BASE_TIME
         var thresholdRate: Double = THRESHOLD_RATE
+        var thresholdRangeRate: Double = thresholdRate * 1.5
         var thresholdTick: Int = UNIT_TRADE_COUNT
         var thresholdAccPriceVolumeRate: Float = THRESHOLD_ACC_PRICE_VOLUME_RATE
         var thresholdBidAskRate: Float = THRESHOLD_BID_ASK_RATE

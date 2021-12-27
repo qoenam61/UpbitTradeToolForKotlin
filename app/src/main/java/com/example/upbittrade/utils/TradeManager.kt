@@ -78,8 +78,8 @@ class TradeManager(private val listener: TradeChangedListener) {
         // getBidAskRate() > thresholdBidAskRate
         // getBidAskPriceRate() > thresholdBidAskPriceRate
         if (tradeCoinInfo.tickCount!! > TradeFragment.UserParam.thresholdTick
-            && tradeCoinInfo.getPriceRate() >= 0
-            && tradeCoinInfo.getPriceRangeRate() > TradeFragment.UserParam.thresholdRate
+            && (tradeCoinInfo.getPriceRate() > TradeFragment.UserParam.thresholdRate
+                    || tradeCoinInfo.getPriceRangeRate() > TradeFragment.UserParam.thresholdRangeRate)
             && tradeCoinInfo.getAvgAccVolumeRate() > TradeFragment.UserParam.thresholdAccPriceVolumeRate
             && tradeCoinInfo.getBidAskRate() > TradeFragment.UserParam.thresholdBidAskRate
             && tradeCoinInfo.getBidAskPriceRate() > TradeFragment.UserParam.thresholdBidAskPriceVolumeRate
@@ -123,7 +123,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         postInfo.maxProfitRate = maxProfitRate
 
         // Take a profit
-        if (profitRate > 0 && maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
+        if (profitRate >= 0 && maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
             && tickGap >  getTickThreshold(currentPrice)) {
             val askPrice = (postInfo.highPrice!!.toDouble() + currentPrice.toDouble()) / 2.0
 
