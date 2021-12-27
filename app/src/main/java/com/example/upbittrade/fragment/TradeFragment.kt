@@ -534,6 +534,23 @@ class TradeFragment: Fragment() {
         updateView()
     }
 
+    private fun postOrderDeleteWait(marketId: String, responseOrder: ResponseOrder): Boolean {
+        val tradePostInfo: OrderCoinInfo = tradePostMapInfo[marketId]!!
+        if (tradePostInfo.getRegisterDuration() != null
+            && tradePostInfo.getRegisterDuration()!! > UserParam.monitorTime) {
+            Log.d(TAG, "[DEBUG] postOrderDeleteWait - DELETE_ORDER_INFO marketId: $marketId uuid: ${responseOrder.uuid}")
+            processor?.registerProcess(
+                TaskItem(
+                    DELETE_ORDER_INFO,
+                    marketId,
+                    UUID.fromString(responseOrder.uuid)
+                )
+            )
+            return true
+        }
+        return false
+    }
+
     private fun resultDeleteOrderInfo(responseOrder: ResponseOrder) {
         val marketId = responseOrder.marketId
         Log.d(TAG, "[DEBUG] resultDeleteOrderInfo marketId : $marketId side: ${responseOrder.side} state: ${responseOrder.state}")
@@ -556,29 +573,6 @@ class TradeFragment: Fragment() {
         updateView()
     }
 
-    private fun postOrderDeleteWait(marketId: String, responseOrder: ResponseOrder): Boolean {
-        val tradePostInfo: OrderCoinInfo = tradePostMapInfo[marketId]!!
-        if (tradePostInfo.getRegisterDuration() != null
-            && tradePostInfo.getRegisterDuration()!! > UserParam.monitorTime) {
-            Log.d(TAG, "[DEBUG] postOrderDeleteWait - DELETE_ORDER_INFO marketId: $marketId uuid: ${responseOrder.uuid}")
-            processor?.registerProcess(
-                TaskItem(
-                    DELETE_ORDER_INFO,
-                    marketId,
-                    UUID.fromString(responseOrder.uuid)
-                )
-            )
-
-            tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
-            activity?.runOnUiThread {
-                tradeAdapter?.notifyDataSetChanged()
-            }
-            tradePostMapInfo[marketId] = tradePostInfo
-            return true
-        }
-        return false
-    }
-
     private fun postOrderBidWait(marketId: String, time: Long, responseOrder: ResponseOrder) {
         val tradePostInfo: OrderCoinInfo = tradePostMapInfo[marketId]!!
         if (tradePostInfo.state == OrderCoinInfo.State.READY) {
@@ -597,7 +591,6 @@ class TradeFragment: Fragment() {
                     UUID.fromString(responseOrder.uuid)
                 )
             )
-            processor?.registerProcess(TaskItem(TICKER_INFO, marketId))
         } else {
             Log.i(TAG, "postOrderBidWait marketId: $marketId state: ${tradePostInfo.state} -> BUYING uuid: ${responseOrder.uuid}")
         }

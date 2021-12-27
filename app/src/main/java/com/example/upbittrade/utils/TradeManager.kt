@@ -104,10 +104,11 @@ class TradeManager(private val listener: TradeChangedListener) {
                 "state: $state " +
                 "time: ${timeZoneFormat.format(time)}")
 
-        if (responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
-            return null
+        if ((responseOrder.side.equals("bid") || responseOrder.side.equals("Bid"))
+            && responseOrder.state.equals("done")) {
+            return tacticalToSell(ticker, postInfo, responseOrder)
         }
-        return tacticalToSell(ticker, postInfo, responseOrder)
+        return null
     }
 
     private fun tacticalToSell(ticker: List<Ticker>, postInfo: OrderCoinInfo, responseOrder: ResponseOrder?): OrderCoinInfo? {
