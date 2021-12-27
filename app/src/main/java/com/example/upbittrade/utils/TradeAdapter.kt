@@ -36,7 +36,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 LayoutInflater.from(context).inflate(R.layout.coin_trade_item, parent, false)
             }
             REPORT_LIST -> {
-                LayoutInflater.from(context).inflate(R.layout.coin_result_item, parent, false)
+                LayoutInflater.from(context).inflate(R.layout.coin_report_item, parent, false)
             }
         }
         return CoinHolder(view, type)
