@@ -106,16 +106,24 @@ class TradeFragment: Fragment() {
         super.onAttach(activity)
         mainActivity = activity as TradePagerActivity
         viewModel = TradeViewModel(application = activity.application, object : TradeFetcher.PostOrderListener {
-            override fun onInSufficientFunds(marketId: String, ordType: String, uuid: UUID) {
-                Log.i(TAG, "onInSufficientFunds marketId: $marketId ordType: $ordType uuid: $uuid")
+            override fun onInSufficientFunds(marketId: String, side: String, errorCode:Int, uuid: UUID) {
+                Log.i(TAG, "onInSufficientFunds marketId: $marketId side: $side errorCode: $errorCode uuid: $uuid")
                 isInSufficientFunds = true
 
-                if (ordType == "ask") {
+                if (side == "ask" && errorCode == 400) {
                     val time: Long = System.currentTimeMillis()
                     val tradePostInfo = tradePostMapInfo[marketId]
                     val responseOrder = tradeResponseMapInfo[marketId]
                     if (tradePostInfo != null && responseOrder != null) {
                         postOrderAskDone(marketId, time, responseOrder)
+                    }
+                }
+
+                if (side == "bid" && errorCode == 400) {
+                    tradePostMapInfo.remove(marketId)
+                    activity.runOnUiThread {
+                        tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
+                        tradeAdapter?.notifyDataSetChanged()
                     }
                 }
             }
