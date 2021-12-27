@@ -30,6 +30,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.math.abs
+import kotlin.math.max
 
 class TradeFragment: Fragment() {
     companion object {
@@ -110,7 +111,6 @@ class TradeFragment: Fragment() {
         viewModel = TradeViewModel(application = activity.application, object : TradeFetcher.PostOrderListener {
             override fun onInSufficientFunds(marketId: String, side: String, errorCode:Int, uuid: UUID) {
                 Log.d(TAG, "[DEBUG] onInSufficientFunds marketId: $marketId side: $side errorCode: $errorCode uuid: $uuid")
-                isInSufficientFunds = true
 
                 /*if (side == "ask" && errorCode == 400) {
                     val time: Long = System.currentTimeMillis()
@@ -119,15 +119,16 @@ class TradeFragment: Fragment() {
                     if (tradePostInfo != null && responseOrder != null) {
                         postOrderAskDone(marketId, time, responseOrder)
                     }
-                }
+                }*/
 
                 if (side == "bid" && errorCode == 400) {
-                    tradePostMapInfo.remove(marketId)
+                    isInSufficientFunds = true
+                    /*tradePostMapInfo.remove(marketId)
                     activity.runOnUiThread {
                         tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
                         tradeAdapter?.notifyDataSetChanged()
-                    }
-                }*/
+                    }*/
+                }
             }
         })
     }
@@ -414,15 +415,20 @@ class TradeFragment: Fragment() {
         val marketId = tickersInfo.first().marketId
         val postInfo: OrderCoinInfo? = tradePostMapInfo[marketId]
         if (postInfo != null) {
+           Format.timeFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
+            val responseOrder: ResponseOrder? = tradeResponseMapInfo[marketId]
             val time: Long = System.currentTimeMillis()
             val currentPrice = tickersInfo.first().tradePrice?.toDouble()
-            Format.timeFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
-            val responseOrder: ResponseOrder? = tradeResponseMapInfo[marketId]
+            postInfo.currentTime = time
+            postInfo.currentPrice = currentPrice
+
+            val profitRate = postInfo.getProfitRate()!!
+            var maxProfitRate = postInfo.maxProfitRate
             val bidPrice = postInfo.getBidPrice()
             val tickGap = abs(bidPrice!! - currentPrice!!) / postInfo.getTickPrice()!!
 
-            postInfo.currentPrice = currentPrice
-            postInfo.currentTime = time
+            maxProfitRate = max(profitRate, maxProfitRate)
+            postInfo.maxProfitRate = maxProfitRate
             tradePostMapInfo[marketId!!] = postInfo
 
             if (responseOrder != null) {
@@ -432,20 +438,17 @@ class TradeFragment: Fragment() {
                         "PostState: ${postInfo.state} " +
                         "side: ${responseOrder.side} " +
                         "state: ${responseOrder.state} " +
-                        "profitRate: ${Format.percentFormat.format(postInfo.getProfitRate())} " +
-                        "maxProfitRate: ${Format.percentFormat.format(postInfo.maxProfitRate)} " +
+                        "profitRate: ${Format.percentFormat.format(profitRate)} " +
+                        "maxProfitRate: ${Format.percentFormat.format(maxProfitRate)} " +
                         "tickGap: $tickGap " +
                         "time: ${Format.timeFormat.format(time)}")
 
                 if ((responseOrder.side.equals("bid") || responseOrder.side.equals("Bid"))
                     && responseOrder.state.equals("done")) {
 
-                    val updatePostInfo = tradeManager.tacticalToSell(postInfo, responseOrder)
-                    if (updatePostInfo != null) {
-                        tradePostMapInfo[marketId] = updatePostInfo
-                    }
-                }
+                    tradePostMapInfo[marketId] = tradeManager.tacticalToSell(postInfo, responseOrder)
 
+                }
             }
             updateView()
         }

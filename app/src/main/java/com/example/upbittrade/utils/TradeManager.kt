@@ -89,17 +89,14 @@ class TradeManager(private val listener: TradeChangedListener) {
         return false
     }
 
-    fun tacticalToSell(postInfo: OrderCoinInfo, responseOrder: ResponseOrder): OrderCoinInfo? {
+    fun tacticalToSell(postInfo: OrderCoinInfo, responseOrder: ResponseOrder): OrderCoinInfo {
         val marketId = postInfo.marketId
         val currentPrice = postInfo.currentPrice
         val bidPrice = postInfo.getBidPrice()
+        val profitRate = postInfo.getProfitRate()!!
+        val maxProfitRate = postInfo.maxProfitRate
         val tickGap = abs(bidPrice!! - currentPrice!!) / postInfo.getTickPrice()!!
-        val profitRate = postInfo.getProfitRate()
-        var maxProfitRate = postInfo.maxProfitRate
         val volume = responseOrder.volume?.toDouble()
-
-        maxProfitRate = max(profitRate!!, maxProfitRate)
-        postInfo.maxProfitRate = maxProfitRate
 
         // Take a profit
         if (profitRate >= 0 && maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
@@ -116,69 +113,72 @@ class TradeManager(private val listener: TradeChangedListener) {
             )
 
             listener.onPostAsk(marketId!!, postInfo, "limit", Utils().convertPrice(askPrice), volume!!)
-            return postInfo
-        }
+        } else {
+            // Stop a loss
+            val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice
+            val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice
+            val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice
+            val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice
+            val sign: Boolean = closePrice!!.toDouble() - openPrice!!.toDouble() >= 0.0
 
-        // Stop a loss
-        val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice
-        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice
-        val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice
-        val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice
-        val sign: Boolean = closePrice!!.toDouble() - openPrice!!.toDouble() >= 0.0
+            if (profitRate < TradeFragment.UserParam.thresholdRate * -0.66
+                && tickGap > getTickThreshold(currentPrice)
+            ) {
 
-        if (profitRate < TradeFragment.UserParam.thresholdRate * -0.66
-            && tickGap >  getTickThreshold(currentPrice)) {
+                val highTail: Double = (highPrice!!.toDouble() - closePrice.toDouble()
+                    .coerceAtLeast(openPrice.toDouble()))
 
-            val highTail: Double = (highPrice!!.toDouble() - closePrice.toDouble()
-                .coerceAtLeast(openPrice.toDouble()))
+                val lowTail: Double = (openPrice.toDouble()
+                    .coerceAtMost(closePrice.toDouble()) - lowPrice!!.toDouble())
 
-            val lowTail: Double = (openPrice.toDouble()
-                .coerceAtMost(closePrice.toDouble()) - lowPrice!!.toDouble())
+                val body: Double = abs(closePrice.toDouble() - openPrice.toDouble())
 
-            val body: Double = abs(closePrice.toDouble() - openPrice.toDouble())
+                val length: Double = highTail + lowTail + body
+                var askPrice = 0.0
 
-            val length: Double = highTail + lowTail + body
-            var askPrice: Double = 0.0
+                when {
+                    //Market
+                    !sign && (body + highTail) / length > 0.8 -> {
+                        listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
+                    }
 
-            when {
-                //Market
-                !sign && (body + highTail) / length > 0.8 -> {
-                    listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
+                    // HHCO
+                    !sign && lowTail / length > 0.5 -> {
+                        askPrice = Utils().convertPrice(
+                            sqrt(
+                                (highPrice.toDouble().pow(2.0) + highPrice.toDouble().pow(2.0)
+                                        + closePrice.toDouble().pow(2.0) + openPrice.toDouble()
+                                    .pow(2.0)) / 4
+                            )
+                        )!!.toDouble()
+                        listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
+                    }
+
+                    else -> {
+                        //HCO
+                        askPrice = Utils().convertPrice(
+                            sqrt(
+                                (highPrice.toDouble().pow(2.0) + closePrice.toDouble().pow(2.0)
+                                        + openPrice.toDouble().pow(2.0)) / 3
+                            )
+                        )!!.toDouble()
+                        listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
+                    }
                 }
-
-                // HHCO
-                !sign && lowTail / length > 0.5 -> {
-                    askPrice = Utils().convertPrice(
-                        sqrt(
-                            (highPrice.toDouble().pow(2.0) + highPrice.toDouble().pow(2.0)
-                                    + closePrice.toDouble().pow(2.0) + openPrice.toDouble().pow(2.0)) / 4
-                        )
-                    )!!.toDouble()
-                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
-                }
-
-                else -> {
-                    //HCO
-                    askPrice = Utils().convertPrice(
-                        sqrt(
-                            (highPrice.toDouble().pow(2.0) + closePrice.toDouble().pow(2.0)
-                                    + openPrice.toDouble().pow(2.0)) / 3
-                        )
-                    )!!.toDouble()
-                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
-                }
+                Log.d(TAG, "[DEBUG] tacticalToSell Stop a loss - marketId: $marketId " +
+                            "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
+                            "sellPrice: ${TradeFragment.Format.zeroFormat.format(askPrice)} " +
+                            "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
+                            "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
+                            "maxProfitRate: ${
+                                TradeFragment.Format.percentFormat.format(
+                                    maxProfitRate
+                                )
+                            } " +
+                            "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} ")
             }
-            Log.d(TAG, "[DEBUG] tacticalToSell Stop a loss - marketId: $marketId " +
-                    "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
-                    "sellPrice: ${TradeFragment.Format.zeroFormat.format(askPrice)} " +
-                    "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
-                    "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
-                    "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} " +
-                    "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} "
-            )
-            return postInfo
         }
-        return null
+        return postInfo
     }
 
     private fun getTickThreshold(price: Double): Double {
