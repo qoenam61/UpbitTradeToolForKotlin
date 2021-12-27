@@ -29,6 +29,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import kotlin.math.abs
 
 class TradeFragment: Fragment() {
     companion object {
@@ -413,24 +414,39 @@ class TradeFragment: Fragment() {
         val marketId = tickersInfo.first().marketId
         val time: Long = System.currentTimeMillis()
         val currentPrice = tickersInfo.first().tradePrice?.toDouble()
+        Format.timeFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
 
         if (tradePostMapInfo[marketId] != null) {
             val postInfo: OrderCoinInfo = tradePostMapInfo[marketId]!!
             val responseOrder: ResponseOrder? = tradeResponseMapInfo[marketId]
+            val bidPrice = postInfo.getBidPrice()
+            val tickGap = abs(bidPrice!! - currentPrice!!) / postInfo.getTickPrice()!!
 
             postInfo.currentPrice = currentPrice
             postInfo.currentTime = time
             tradePostMapInfo[marketId!!] = postInfo
 
             if (responseOrder != null) {
-                val updatePostInfo = tradeManager.monitorTickerInfo(
-                    tickersInfo,
-                    postInfo,
-                    responseOrder)
+                Log.i(TAG, "monitorTickerInfo marketId: $marketId  " +
+                        "currentPrice: ${Format.zeroFormat.format(currentPrice)} " +
+                        "volume: ${Format.zeroFormat.format(responseOrder.volume)} " +
+                        "PostState: ${postInfo.state} " +
+                        "side: ${responseOrder.side} " +
+                        "state: ${responseOrder.state} " +
+                        "profitRate: ${Format.percentFormat.format(postInfo.getProfitRate())} " +
+                        "maxProfitRate: ${Format.percentFormat.format(postInfo.maxProfitRate)} " +
+                        "tickGap: $tickGap " +
+                        "time: ${Format.timeFormat.format(time)}")
 
-                if (updatePostInfo != null) {
-                    tradePostMapInfo[marketId] = updatePostInfo
+                if ((responseOrder.side.equals("bid") || responseOrder.side.equals("Bid"))
+                    && responseOrder.state.equals("done")) {
+
+                    val updatePostInfo = tradeManager.tacticalToSell(postInfo, responseOrder)
+                    if (updatePostInfo != null) {
+                        tradePostMapInfo[marketId] = updatePostInfo
+                    }
                 }
+
             }
             updateView()
         }

@@ -89,36 +89,14 @@ class TradeManager(private val listener: TradeChangedListener) {
         return false
     }
 
-    fun monitorTickerInfo(ticker: List<Ticker>, postInfo: OrderCoinInfo, responseOrder: ResponseOrder): OrderCoinInfo? {
-        val marketId = ticker.first().marketId
-        val time: Long = System.currentTimeMillis()
-        val currentPrice = ticker.first().tradePrice?.toDouble()
-        val side = responseOrder.side
-        val state = responseOrder.state
-        val timeZoneFormat = TradeFragment.Format.timeFormat
-        timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
-
-        Log.i(TAG, "monitorTickerInfo marketId: $marketId  " +
-                "currentPrice: $currentPrice " +
-                "side: $side " +
-                "state: $state " +
-                "time: ${timeZoneFormat.format(time)}")
-
-        if ((responseOrder.side.equals("bid") || responseOrder.side.equals("Bid"))
-            && responseOrder.state.equals("done")) {
-            return tacticalToSell(ticker, postInfo, responseOrder)
-        }
-        return null
-    }
-
-    private fun tacticalToSell(ticker: List<Ticker>, postInfo: OrderCoinInfo, responseOrder: ResponseOrder?): OrderCoinInfo? {
-        val marketId = ticker.first().marketId
-        val currentPrice = ticker.first().tradePrice?.toDouble()
+    fun tacticalToSell(postInfo: OrderCoinInfo, responseOrder: ResponseOrder): OrderCoinInfo? {
+        val marketId = postInfo.marketId
+        val currentPrice = postInfo.currentPrice
         val bidPrice = postInfo.getBidPrice()
         val tickGap = abs(bidPrice!! - currentPrice!!) / postInfo.getTickPrice()!!
         val profitRate = postInfo.getProfitRate()
         var maxProfitRate = postInfo.maxProfitRate
-        val volume = responseOrder?.volume?.toDouble()
+        val volume = responseOrder.volume?.toDouble()
 
         maxProfitRate = max(profitRate!!, maxProfitRate)
         postInfo.maxProfitRate = maxProfitRate
@@ -129,12 +107,12 @@ class TradeManager(private val listener: TradeChangedListener) {
             val askPrice = (postInfo.highPrice!!.toDouble() + currentPrice.toDouble()) / 2.0
 
             Log.d(TAG, "[DEBUG] tacticalToSell - Take a profit marketId: $marketId " +
-                        "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
-                        "askPrice: ${TradeFragment.Format.zeroFormat.format(askPrice)} " +
-                        "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
-                        "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
-                        "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} " +
-                        "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} "
+                    "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
+                    "askPrice: ${TradeFragment.Format.zeroFormat.format(askPrice)} " +
+                    "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
+                    "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
+                    "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} " +
+                    "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} "
             )
 
             listener.onPostAsk(marketId!!, postInfo, "limit", Utils().convertPrice(askPrice), volume!!)
@@ -191,16 +169,15 @@ class TradeManager(private val listener: TradeChangedListener) {
                 }
             }
             Log.d(TAG, "[DEBUG] tacticalToSell Stop a loss - marketId: $marketId " +
-                        "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
-                        "sellPrice: ${TradeFragment.Format.zeroFormat.format(askPrice)} " +
-                        "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
-                        "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
-                        "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} " +
-                        "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} "
+                    "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
+                    "sellPrice: ${TradeFragment.Format.zeroFormat.format(askPrice)} " +
+                    "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
+                    "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
+                    "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} " +
+                    "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} "
             )
             return postInfo
         }
-
         return null
     }
 
