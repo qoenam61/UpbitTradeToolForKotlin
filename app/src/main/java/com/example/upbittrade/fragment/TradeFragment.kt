@@ -412,12 +412,11 @@ class TradeFragment: Fragment() {
 
     private fun monitorTickerInfo(tickersInfo: List<Ticker>) {
         val marketId = tickersInfo.first().marketId
-        val time: Long = System.currentTimeMillis()
-        val currentPrice = tickersInfo.first().tradePrice?.toDouble()
-        Format.timeFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
-
-        if (tradePostMapInfo[marketId] != null) {
-            val postInfo: OrderCoinInfo = tradePostMapInfo[marketId]!!
+        val postInfo: OrderCoinInfo? = tradePostMapInfo[marketId]
+        if (postInfo != null) {
+            val time: Long = System.currentTimeMillis()
+            val currentPrice = tickersInfo.first().tradePrice?.toDouble()
+            Format.timeFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
             val responseOrder: ResponseOrder? = tradeResponseMapInfo[marketId]
             val bidPrice = postInfo.getBidPrice()
             val tickGap = abs(bidPrice!! - currentPrice!!) / postInfo.getTickPrice()!!
