@@ -112,7 +112,7 @@ class TradeFragment: Fragment() {
                 Log.d(TAG, "[DEBUG] onInSufficientFunds marketId: $marketId side: $side errorCode: $errorCode uuid: $uuid")
                 isInSufficientFunds = true
 
-                if (side == "ask" && errorCode == 400) {
+                /*if (side == "ask" && errorCode == 400) {
                     val time: Long = System.currentTimeMillis()
                     val tradePostInfo = tradePostMapInfo[marketId]
                     val responseOrder = tradeResponseMapInfo[marketId]
@@ -127,7 +127,7 @@ class TradeFragment: Fragment() {
                         tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
                         tradeAdapter?.notifyDataSetChanged()
                     }
-                }
+                }*/
             }
         })
     }
