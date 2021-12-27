@@ -290,9 +290,9 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 holder.tradeBidPrice?.text =
                     TradeFragment.Format.nonZeroFormat.format(tradeInfo.getBidPrice())
             }
-            if (tradeInfo.tradeBuyTime != null) {
+            if (tradeInfo.tradeBidTime != null) {
                 holder.tradeBidTime?.text =
-                    timeZoneFormat.format(tradeInfo.tradeBuyTime)
+                    timeZoneFormat.format(tradeInfo.tradeBidTime)
             }
 
             if (tradeInfo.getBuyDuration() != null) {
@@ -364,9 +364,9 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                     timeZoneFormat.format(tradeInfo.tradeSellTime)
             }
 
-            if (tradeInfo.tradeBuyTime != null) {
+            if (tradeInfo.tradeBidTime != null) {
                 holder.tradeBidTime?.text =
-                    timeZoneFormat.format(tradeInfo.tradeBuyTime)
+                    timeZoneFormat.format(tradeInfo.tradeBidTime)
             }
         }
     }

@@ -34,7 +34,7 @@ class OrderCoinInfo: TradeCoinInfo {
     constructor(orderCoinInfo: OrderCoinInfo): this(orderCoinInfo as TradeCoinInfo) {
         this.state = orderCoinInfo.state
         this.registerTime = orderCoinInfo.registerTime
-        this.tradeBuyTime = orderCoinInfo.tradeBuyTime
+        this.tradeBidTime = orderCoinInfo.tradeBidTime
         this.tradeSellTime = orderCoinInfo.tradeSellTime
         this.currentTime = orderCoinInfo.currentTime
         this.maxProfitRate = orderCoinInfo.maxProfitRate
@@ -46,7 +46,7 @@ class OrderCoinInfo: TradeCoinInfo {
     var state: State = State.READY
 
     var registerTime: Long? = null
-    var tradeBuyTime: Long? = null
+    var tradeBidTime: Long? = null
     var tradeSellTime: Long? = null
     var currentTime: Long? = null
 
@@ -130,9 +130,9 @@ class OrderCoinInfo: TradeCoinInfo {
     }
 
     fun getBuyDuration(): Long? {
-        if (tradeBuyTime == null || currentTime == null) {
+        if (tradeBidTime == null || currentTime == null) {
             return null
         }
-        return currentTime!!.minus(tradeBuyTime!!)
+        return currentTime!!.minus(tradeBidTime!!)
     }
 }

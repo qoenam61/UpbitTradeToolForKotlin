@@ -460,8 +460,7 @@ class TradeFragment: Fragment() {
                 postOrderBidWait(marketId, time, responseOrder)
 
             } else if (responseOrder.state.equals("done")
-                && responseOrder.remainingVolume?.toDouble() == 0.0
-                && tradePostMapInfo[marketId]!!.tradeBuyTime == null) {
+                && responseOrder.remainingVolume?.toDouble() == 0.0) {
 
                 postOrderBidDone(marketId, time, responseOrder)
             }
@@ -472,7 +471,8 @@ class TradeFragment: Fragment() {
 
                 postOrderAskWait(marketId, time, responseOrder)
 
-            } else if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0) {
+            } else if (responseOrder.state.equals("done")
+                && responseOrder.remainingVolume?.toDouble() == 0.0) {
 
                 postOrderAskDone(marketId, time, responseOrder)
 
@@ -498,8 +498,15 @@ class TradeFragment: Fragment() {
                 "time: ${timeZoneFormat.format(time)}"
         )
 
+        if (responseOrder.state.equals("wait")) {
+            if (postOrderDeleteWait(marketId, responseOrder)) {
+                return
+            }
+        }
+
         if (responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
-            if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0) {
+            if (responseOrder.state.equals("done")
+                && responseOrder.remainingVolume?.toDouble() == 0.0) {
 
                 postOrderBidDone(marketId, time, responseOrder)
 
@@ -512,7 +519,8 @@ class TradeFragment: Fragment() {
         }
 
         if (responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
-            if (responseOrder.state.equals("done") && responseOrder.remainingVolume?.toDouble() == 0.0) {
+            if (responseOrder.state.equals("done")
+                && responseOrder.remainingVolume?.toDouble() == 0.0) {
                 postOrderAskDone(marketId, time, responseOrder)
             } else if (responseOrder.state.equals("cancel")) {
                 processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
@@ -600,7 +608,7 @@ class TradeFragment: Fragment() {
 
             tradePostInfo.state = OrderCoinInfo.State.BUY
             tradePostInfo.registerTime = null
-            tradePostInfo.tradeBuyTime = time
+            tradePostInfo.tradeBidTime = time
             tradePostMapInfo[marketId] = tradePostInfo
         }
     }
