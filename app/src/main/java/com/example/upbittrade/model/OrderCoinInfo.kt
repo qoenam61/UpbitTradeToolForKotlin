@@ -56,12 +56,14 @@ class OrderCoinInfo: TradeCoinInfo {
 
     var currentPrice: Double? = null
     var askPrice: Double? = null
+    var type: Int? = null
 
     fun getBidPrice(): Double? {
         val highTail: Double = (highPrice!!.toDouble() - closePrice!!.toDouble()
             .coerceAtLeast(openPrice!!.toDouble()))
 
-        val lowTail: Double = (openPrice!!.toDouble().coerceAtMost(closePrice!!.toDouble()) - lowPrice!!.toDouble())
+        val lowTail: Double =
+            (openPrice!!.toDouble().coerceAtMost(closePrice!!.toDouble()) - lowPrice!!.toDouble())
 
         val body: Double = abs(closePrice!!.toDouble() - openPrice!!.toDouble())
 
@@ -77,9 +79,12 @@ class OrderCoinInfo: TradeCoinInfo {
 
             sign && (body / length > 0.9) -> {
                 // type1 : HHCO
-                Utils().convertPrice(sqrt(
-                    (highPrice!!.toDouble().pow(2.0) + highPrice!!.toDouble().pow(2.0)
-                            + closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble().pow(2.0)) / 4)
+                Utils().convertPrice(
+                    sqrt(
+                        (highPrice!!.toDouble().pow(2.0) + highPrice!!.toDouble().pow(2.0)
+                                + closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble()
+                            .pow(2.0)) / 4
+                    )
                 )!!.toDouble()
 
             }
@@ -90,7 +95,8 @@ class OrderCoinInfo: TradeCoinInfo {
                 Utils().convertPrice(
                     sqrt(
                         (highPrice!!.toDouble().pow(2.0) + closePrice!!.toDouble().pow(2.0)
-                                + openPrice!!.toDouble().pow(2.0)) / 3)
+                                + openPrice!!.toDouble().pow(2.0)) / 3
+                    )
                 )!!.toDouble()
             }
 
@@ -99,7 +105,8 @@ class OrderCoinInfo: TradeCoinInfo {
                 Utils().convertPrice(
                     sqrt(
                         (highPrice!!.toDouble().pow(2.0) + closePrice!!.toDouble().pow(2.0)
-                                + openPrice!!.toDouble().pow(2.0)) / 3)
+                                + openPrice!!.toDouble().pow(2.0)) / 3
+                    )
                 )!!.toDouble()
             }
 

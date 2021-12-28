@@ -19,7 +19,7 @@ class TradeManager(private val listener: TradeChangedListener) {
 
     interface TradeChangedListener {
         fun onPostBid(marketId: String, orderCoinInfo: OrderCoinInfo)
-        fun onPostAsk(marketId: String, orderCoinInfo: OrderCoinInfo, orderType: String, sellPrice: Double?, volume: Double)
+        fun onPostAsk(marketId: String, orderCoinInfo: OrderCoinInfo, orderType: String, askPrice: Double?, volume: Double)
     }
 
     enum class Type {
@@ -135,10 +135,12 @@ class TradeManager(private val listener: TradeChangedListener) {
 
                 val length: Double = highTail + lowTail + body
                 var askPrice: Double? = null
+                val type: Int?
 
                 when {
                     //Market
                     !sign && (body + highTail) / length > 0.8 -> {
+                        type = 0
                         listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
                     }
 
@@ -151,6 +153,7 @@ class TradeManager(private val listener: TradeChangedListener) {
                                     .pow(2.0)) / 4
                             )
                         )!!.toDouble()
+                        type = 1
                         listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
                     }
 
@@ -162,12 +165,17 @@ class TradeManager(private val listener: TradeChangedListener) {
                                         + openPrice.toDouble().pow(2.0)) / 3
                             )
                         )!!.toDouble()
+                        type = 2
                         listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
                     }
                 }
-                Log.d(TAG, "[DEBUG] tacticalToSell Stop a loss - marketId: $marketId " +
+                Log.d(TAG, "[DEBUG] tacticalToSell Stop a loss $type - marketId: $marketId " +
                             "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
-                            "sellPrice: ${TradeFragment.Format.zeroFormat.format(askPrice)} " +
+                            "sellPrice: ${
+                                if (askPrice == null)
+                                    null 
+                                else
+                                    TradeFragment.Format.zeroFormat.format(askPrice)} " +
                             "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
                             "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
                             "maxProfitRate: ${
