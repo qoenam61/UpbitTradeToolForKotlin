@@ -126,13 +126,13 @@ class TradeFragment: Fragment() {
 
                 if (side == "bid" && errorCode == 400) {
                     isInSufficientFunds = true
-                    if (postInfo?.state != OrderCoinInfo.State.BUYING) {
+                    /*if (postInfo?.state != OrderCoinInfo.State.BUYING) {
                         tradePostMapInfo.remove(marketId)
                         activity.runOnUiThread {
                             tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
                             tradeAdapter?.notifyDataSetChanged()
                         }
-                    }
+                    }*/
                 }
             }
         })
@@ -178,13 +178,15 @@ class TradeFragment: Fragment() {
                     return
                 }
 
-                val bidPrice = orderCoinInfo.getBidPrice()
-                val volume = (UserParam.priceToBuy / bidPrice!!).toString()
-                Log.d(TAG, "[DEBUG] onPostBid - key: $marketId bidPrice: $bidPrice volume: $volume PostState: ${orderCoinInfo.state}")
-
-                if (orderCoinInfo.state == OrderCoinInfo.State.READY) {
+                val postInfo = tradePostMapInfo[marketId]
+                if (postInfo == null) {
                     orderCoinInfo.state = OrderCoinInfo.State.BUYING
                     tradePostMapInfo[marketId] = orderCoinInfo
+
+                    val bidPrice = orderCoinInfo.getBidPrice()
+                    val volume = (UserParam.priceToBuy / bidPrice!!).toString()
+                    Log.d(TAG, "[DEBUG] onPostBid - key: $marketId bidPrice: $bidPrice volume: $volume PostState: ${orderCoinInfo.state}")
+
                     processor?.registerProcess(
                         PostOrderItem(
                             POST_ORDER_INFO,
