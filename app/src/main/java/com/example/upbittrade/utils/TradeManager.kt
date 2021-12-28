@@ -191,35 +191,48 @@ class TradeManager(private val listener: TradeChangedListener) {
 
     private fun getTickThreshold(price: Double): Double {
         val baseTick = TradeFragment.UserParam.thresholdTickGap
-        return when {
+        val rate = TradeFragment.UserParam.thresholdRate * 100 * 0.66
+        var result = TradeFragment.UserParam.thresholdTickGap
+         when {
+            price < 10 -> {
+                //0.01
+                result = baseTick * 2 * rate * (price / 10)
+            }
+            price  < 100 -> {
+                //0.1
+                result = baseTick * 2 * rate * (price / 1000)
+            }
             price  < 1000 -> {
-                baseTick
+                //1
+                result = baseTick * 2 * rate * (price / 1000)
             }
             price  < 10000 -> {
                 // 5
-                baseTick * 1.5
+                result = baseTick * 4 * rate * (price / 10000)
             }
             price  < 100000 -> {
                 // 10
-                baseTick * 2
+                result = baseTick * 20 * rate * (price / 100000)
             }
             price  < 1000000 -> {
                 // 50, 100
-                if (price  < 500000) {
-                    baseTick * 2.5
+                result = if (price  < 500000) {
+                    baseTick * 20 * rate * (price / 500000)
                 } else {
-                    baseTick * 3
+                    baseTick * 20 * rate * (price / 1000000)
                 }
             }
             price  < 10000000 -> {
                 // 1000
-                baseTick * 4
+                result = baseTick * 20 * rate * (price / 10000000)
             }
             price  < 100000000 -> {
                 // 1000
-                baseTick * 5
+                result = baseTick * 200 * rate * (price / 10000000)
             }
-            else -> TradeFragment.UserParam.thresholdTickGap
+            else ->
+                result = TradeFragment.UserParam.thresholdTickGap
         }
+        return result
     }
 }
