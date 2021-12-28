@@ -126,11 +126,13 @@ class TradeFragment: Fragment() {
 
                 if (side == "bid" && errorCode == 400) {
                     isInSufficientFunds = true
-                    /*tradePostMapInfo.remove(marketId)
-                    activity.runOnUiThread {
-                        tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
-                        tradeAdapter?.notifyDataSetChanged()
-                    }*/
+                    if (postInfo?.state != OrderCoinInfo.State.BUYING) {
+                        tradePostMapInfo.remove(marketId)
+                        activity.runOnUiThread {
+                            tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
+                            tradeAdapter?.notifyDataSetChanged()
+                        }
+                    }
                 }
             }
         })
