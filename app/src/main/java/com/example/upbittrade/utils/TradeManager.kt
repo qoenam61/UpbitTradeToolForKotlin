@@ -106,7 +106,7 @@ class TradeManager(private val listener: TradeChangedListener) {
 
         // Take a profit
         if (profitRate >= 0 && maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
-            && tickGap >  getTickThreshold(currentPrice)) {
+            && tickGap > getTickThreshold(currentPrice)) {
             val askPrice = (postInfo.highPrice!!.toDouble() + currentPrice.toDouble()) / 2.0
 
             Log.d(TAG, "[DEBUG] tacticalToSell - Take a profit marketId: $marketId " +

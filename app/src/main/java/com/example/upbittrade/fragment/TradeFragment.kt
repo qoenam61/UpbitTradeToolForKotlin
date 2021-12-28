@@ -730,10 +730,15 @@ class TradeFragment: Fragment() {
     }
 
     private fun makeTotalResult(tradePostInfo: OrderCoinInfo) {
+        val askPrice = tradePostInfo.askPrice
         Log.i(TAG, "makeTotalResult marketId: ${tradePostInfo.marketId} " +
                 "state: ${tradePostInfo.state} " +
                 "bidPrice: ${tradePostInfo.getBidPrice()} " +
-                "askPrice: ${tradePostInfo.askPrice}")
+                "askPrice: $askPrice")
+
+        if (askPrice == null) {
+            tradePostInfo.askPrice = tradePostInfo.currentPrice
+        }
         tradeReportListInfo.add(tradePostInfo)
         reportPopup?.setList(tradeReportListInfo.toList())
         val size = tradeReportListInfo.size
