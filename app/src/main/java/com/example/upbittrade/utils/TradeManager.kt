@@ -183,7 +183,7 @@ class TradeManager(private val listener: TradeChangedListener) {
                         "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} ")
 
         } else if(postInfo.getBuyDuration() != null
-            && postInfo.getBuyDuration()!! > TradeFragment.UserParam.monitorTime * 10
+            && postInfo.getBuyDuration()!! > TradeFragment.UserParam.monitorTime * 5
             && tickGap <= getTickThreshold(currentPrice)) {
             //HCO
             listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
