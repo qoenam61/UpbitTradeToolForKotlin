@@ -134,7 +134,7 @@ class TradeManager(private val listener: TradeChangedListener) {
                 val body: Double = abs(closePrice.toDouble() - openPrice.toDouble())
 
                 val length: Double = highTail + lowTail + body
-                var askPrice = 0.0
+                var askPrice: Double? = null
 
                 when {
                     //Market

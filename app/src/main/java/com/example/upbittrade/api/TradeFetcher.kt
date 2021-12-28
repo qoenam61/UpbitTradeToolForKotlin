@@ -203,7 +203,9 @@ class TradeFetcher(val listener: PostOrderListener) {
         params["market"] = marketId
         params["side"] = side
         params["volume"] = volume
-        params["price"] = price
+        if (price == null) {
+            params["price"] = price
+        }
         params["ord_type"] = ordType
         params["identifier"] = identifier.toString()
         postOrderRetrofit?.params = params
