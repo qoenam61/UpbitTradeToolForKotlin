@@ -98,6 +98,12 @@ class TradeManager(private val listener: TradeChangedListener) {
         val tickGap = abs(bidPrice!! - currentPrice!!) / postInfo.getTickPrice()!!
         val volume = responseOrder.volume?.toDouble()
 
+        val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice
+        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice
+        val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice
+        val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice
+        val sign: Boolean = closePrice!!.toDouble() - openPrice!!.toDouble() >= 0.0
+
         // Take a profit
         if (profitRate >= 0 && maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
             && tickGap >  getTickThreshold(currentPrice)) {
@@ -113,78 +119,85 @@ class TradeManager(private val listener: TradeChangedListener) {
             )
 
             listener.onPostAsk(marketId!!, postInfo, "limit", Utils().convertPrice(askPrice), volume!!)
-        } else {
+        } else if (profitRate < TradeFragment.UserParam.thresholdRate * -0.66
+            && tickGap > getTickThreshold(currentPrice)) {
             // Stop a loss
-            val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice
-            val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice
-            val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice
-            val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice
-            val sign: Boolean = closePrice!!.toDouble() - openPrice!!.toDouble() >= 0.0
+            val highTail: Double = (highPrice!!.toDouble() - closePrice.toDouble()
+                .coerceAtLeast(openPrice.toDouble()))
 
-            if (profitRate < TradeFragment.UserParam.thresholdRate * -0.66
-                && tickGap > getTickThreshold(currentPrice)
-            ) {
+            val lowTail: Double = (openPrice.toDouble()
+                .coerceAtMost(closePrice.toDouble()) - lowPrice!!.toDouble())
 
-                val highTail: Double = (highPrice!!.toDouble() - closePrice.toDouble()
-                    .coerceAtLeast(openPrice.toDouble()))
+            val body: Double = abs(closePrice.toDouble() - openPrice.toDouble())
 
-                val lowTail: Double = (openPrice.toDouble()
-                    .coerceAtMost(closePrice.toDouble()) - lowPrice!!.toDouble())
+            val length: Double = highTail + lowTail + body
+            var askPrice: Double? = null
+            val type: Int?
 
-                val body: Double = abs(closePrice.toDouble() - openPrice.toDouble())
-
-                val length: Double = highTail + lowTail + body
-                var askPrice: Double? = null
-                val type: Int?
-
-                when {
-                    //Market
-                    !sign && (body + highTail) / length > 0.8 -> {
-                        type = 0
-                        listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
-                    }
-
-                    // HHCO
-                    !sign && lowTail / length > 0.5 -> {
-                        askPrice = Utils().convertPrice(
-                            sqrt(
-                                (highPrice.toDouble().pow(2.0) + highPrice.toDouble().pow(2.0)
-                                        + closePrice.toDouble().pow(2.0) + openPrice.toDouble()
-                                    .pow(2.0)) / 4
-                            )
-                        )!!.toDouble()
-                        type = 1
-                        listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
-                    }
-
-                    else -> {
-                        //HCO
-                        askPrice = Utils().convertPrice(
-                            sqrt(
-                                (highPrice.toDouble().pow(2.0) + closePrice.toDouble().pow(2.0)
-                                        + openPrice.toDouble().pow(2.0)) / 3
-                            )
-                        )!!.toDouble()
-                        type = 2
-                        listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
-                    }
+            when {
+                //Market
+                !sign && (body + highTail) / length > 0.8 -> {
+                    type = 0
+                    listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
                 }
-                Log.d(TAG, "[DEBUG] tacticalToSell Stop a loss $type - marketId: $marketId " +
-                            "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
-                            "sellPrice: ${
-                                if (askPrice == null)
-                                    null 
-                                else
-                                    TradeFragment.Format.zeroFormat.format(askPrice)} " +
-                            "volume: ${if (volume == null) null else TradeFragment.Format.zeroFormat.format(volume)} " +
-                            "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
-                            "maxProfitRate: ${
-                                TradeFragment.Format.percentFormat.format(
-                                    maxProfitRate
-                                )
-                            } " +
-                            "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} ")
+
+                // HHCO
+                !sign && lowTail / length > 0.5 -> {
+                    askPrice = Utils().convertPrice(
+                        sqrt(
+                            (highPrice.toDouble().pow(2.0) + highPrice.toDouble().pow(2.0)
+                                    + closePrice.toDouble().pow(2.0) + openPrice.toDouble()
+                                .pow(2.0)) / 4
+                        )
+                    )!!.toDouble()
+                    type = 1
+                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
+                }
+
+                else -> {
+                    //HCO
+                    askPrice = Utils().convertPrice(
+                        sqrt(
+                            (highPrice.toDouble().pow(2.0) + closePrice.toDouble().pow(2.0)
+                                    + openPrice.toDouble().pow(2.0)) / 3
+                        )
+                    )!!.toDouble()
+                    type = 2
+                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
+                }
             }
+            Log.d(TAG, "[DEBUG] tacticalToSell Stop a loss $type - marketId: $marketId " +
+                        "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
+                        "sellPrice: ${
+                            if (askPrice == null)
+                                null 
+                            else
+                                TradeFragment.Format.zeroFormat.format(askPrice)} " +
+                        "volume: ${if (volume == null) null else TradeFragment.Format.zeroFormat.format(volume)} " +
+                        "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
+                        "maxProfitRate: ${
+                            TradeFragment.Format.percentFormat.format(
+                                maxProfitRate
+                            )
+                        } " +
+                        "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} ")
+
+        } else if(postInfo.getBuyDuration() != null
+            && postInfo.getBuyDuration()!! > TradeFragment.UserParam.monitorTime * 10
+            && tickGap <= getTickThreshold(currentPrice)) {
+            //HCO
+            listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
+            Log.d(TAG, "[DEBUG] tacticalToSell time expired $type - marketId: $marketId " +
+                    "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
+                    "sellPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
+                    "volume: ${if (volume == null) null else TradeFragment.Format.zeroFormat.format(volume)} " +
+                    "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
+                    "maxProfitRate: ${
+                        TradeFragment.Format.percentFormat.format(
+                            maxProfitRate
+                        )
+                    } " +
+                    "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} ")
         }
         return postInfo
     }
