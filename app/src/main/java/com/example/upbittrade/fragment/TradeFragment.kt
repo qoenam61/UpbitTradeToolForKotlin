@@ -602,9 +602,14 @@ class TradeFragment: Fragment() {
 
     private fun postOrderDeleteWait(marketId: String, responseOrder: ResponseOrder): Boolean {
         val tradePostInfo: OrderCoinInfo = tradePostMapInfo[marketId]!!
-        if (tradePostInfo.getRegisterDuration() != null
+
+        if (tradePostInfo.state != OrderCoinInfo.State.DELETE
+            && tradePostInfo.getRegisterDuration() != null
             && tradePostInfo.getRegisterDuration()!! > UserParam.monitorTime) {
             Log.d(TAG, "[DEBUG] postOrderDeleteWait - DELETE_ORDER_INFO marketId: $marketId uuid: ${responseOrder.uuid}")
+            tradePostInfo.state = OrderCoinInfo.State.DELETE
+            tradePostMapInfo[marketId] = tradePostInfo
+
             processor?.registerProcess(
                 TaskItem(
                     DELETE_ORDER_INFO,
@@ -612,6 +617,7 @@ class TradeFragment: Fragment() {
                     UUID.fromString(responseOrder.uuid)
                 )
             )
+            updateView()
             return true
         }
         return false

@@ -11,7 +11,8 @@ class OrderCoinInfo: TradeCoinInfo {
         BUYING,
         BUY,
         SELLING,
-        SELL
+        SELL,
+        DELETE
     }
 
     constructor(tradeCoinInfo: TradeCoinInfo):

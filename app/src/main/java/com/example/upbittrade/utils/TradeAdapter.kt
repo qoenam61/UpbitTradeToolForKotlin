@@ -250,13 +250,16 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                     holder.tradeStatus?.setTextColor(Color.GREEN)
                 }
                 OrderCoinInfo.State.SELLING -> {
-                    holder.tradeStatus?.setTextColor(Color.YELLOW)
+                    holder.tradeStatus?.setTextColor(Color.GREEN)
                 }
                 OrderCoinInfo.State.BUY -> {
                     holder.tradeStatus?.setTextColor(Color.RED)
                 }
                 OrderCoinInfo.State.SELL -> {
                     holder.tradeStatus?.setTextColor(Color.BLUE)
+                }
+                OrderCoinInfo.State.DELETE -> {
+                    holder.tradeStatus?.setTextColor(Color.DKGRAY)
                 }
             }
 
