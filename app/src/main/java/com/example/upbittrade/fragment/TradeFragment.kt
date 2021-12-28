@@ -135,6 +135,29 @@ class TradeFragment: Fragment() {
                     }*/
                 }
             }
+
+            override fun onError(marketId: String, side: String?, errorCode: Int, uuid: UUID) {
+                val postInfo = tradePostMapInfo[marketId]
+                if (side == "bid") {
+                    if (postInfo?.state == OrderCoinInfo.State.BUYING) {
+                        tradePostMapInfo.remove(marketId)
+                        activity.runOnUiThread {
+                            tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
+                            tradeAdapter?.notifyDataSetChanged()
+                        }
+                    }
+                }
+
+                if (side == "ask") {
+                    if (postInfo?.state == OrderCoinInfo.State.SELLING) {
+                        processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+                        tradePostMapInfo[marketId]?.state = OrderCoinInfo.State.BUY
+                        tradePostMapInfo[marketId]?.registerTime = null
+                        tradeResponseMapInfo[marketId]?.side = "bid"
+                        tradeResponseMapInfo[marketId]?.state = "done"
+                    }
+                }
+            }
         })
     }
 
@@ -180,24 +203,30 @@ class TradeFragment: Fragment() {
 
                 val postInfo = tradePostMapInfo[marketId]
                 if (postInfo == null) {
-                    orderCoinInfo.state = OrderCoinInfo.State.BUYING
-                    tradePostMapInfo[marketId] = orderCoinInfo
+
 
                     val bidPrice = orderCoinInfo.getBidPrice()
-                    val volume = (UserParam.priceToBuy / bidPrice!!).toString()
-                    Log.d(TAG, "[DEBUG] onPostBid - key: $marketId bidPrice: $bidPrice volume: $volume PostState: ${orderCoinInfo.state}")
+                    if (bidPrice != null) {
+                        val volume = (UserParam.priceToBuy / bidPrice)
+                        Log.d(TAG, "[DEBUG] onPostBid - key: $marketId " +
+                                "bidPrice: ${Format.nonZeroFormat.format(bidPrice)} " +
+                                "volume: ${Format.nonZeroFormat.format(volume)} " +
+                                "PostState: ${orderCoinInfo.state}")
 
-                    processor?.registerProcess(
-                        PostOrderItem(
-                            POST_ORDER_INFO,
-                            marketId,
-                            "bid",
-                            volume,
-                            bidPrice.toString(),
-                            "limit",
-                            UUID.randomUUID()
+                        orderCoinInfo.state = OrderCoinInfo.State.BUYING
+                        tradePostMapInfo[marketId] = orderCoinInfo
+                        processor?.registerProcess(
+                            PostOrderItem(
+                                POST_ORDER_INFO,
+                                marketId,
+                                "bid",
+                                volume,
+                                bidPrice,
+                                "limit",
+                                UUID.randomUUID()
+                            )
                         )
-                    )
+                    }
                 }
 
                 tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
@@ -226,8 +255,8 @@ class TradeFragment: Fragment() {
                             POST_ORDER_INFO,
                             marketId,
                             "ask",
-                            volume.toString(),
-                            askPrice.toString(),
+                            volume,
+                            askPrice,
                             orderType,
                             UUID.randomUUID()
                         )

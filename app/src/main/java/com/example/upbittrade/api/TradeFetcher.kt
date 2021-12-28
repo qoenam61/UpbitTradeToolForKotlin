@@ -20,6 +20,7 @@ class TradeFetcher(val listener: PostOrderListener) {
 
     interface PostOrderListener {
         fun onInSufficientFunds(marketId: String, side: String, errorCode: Int, uuid:UUID)
+        fun onError(marketId: String, side: String?, errorCode: Int, uuid:UUID)
     }
 
     var tradeInfoRetrofit: TradeInfoRetrofit? = null
@@ -194,16 +195,16 @@ class TradeFetcher(val listener: PostOrderListener) {
     fun postOrderInfo(postOrderItem: PostOrderItem): LiveData<ResponseOrder> {
         val marketId: String = postOrderItem.marketId!!
         val side: String? = postOrderItem.side
-        val volume: String? = postOrderItem.volume
-        val price: String? = postOrderItem.price
-        val ordType: String? = postOrderItem.ord_type
+        val volume: String = postOrderItem.volume.toString()
+        val price: String = postOrderItem.price.toString()
+        val ordType: String? = postOrderItem.ordType
         val identifier: UUID? = postOrderItem.identifier
 
         val params = HashMap<String?, String?>()
         params["market"] = marketId
         params["side"] = side
         params["volume"] = volume
-        if (price == null) {
+        if (price != null && price != "null") {
             params["price"] = price
         }
         params["ord_type"] = ordType
@@ -249,6 +250,10 @@ class TradeFetcher(val listener: PostOrderListener) {
                         && errorObj["name"] == "insufficient_funds_bid") {
                         Log.w(TAG, "postOrderInfo: insufficient_funds_bid")
                         listener.onInSufficientFunds(marketId,"bid", response.code(), identifier!!)
+                    } else if (response.code() == 500 && errorObj != null
+                        && errorObj["name"] != null
+                        && errorObj["name"] == "server_error") {
+                        listener.onError(marketId, side, response.code(), identifier!!)
                     }
                 }
             }
