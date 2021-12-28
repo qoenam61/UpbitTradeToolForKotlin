@@ -173,7 +173,7 @@ class BackgroundProcessor : Thread {
         while (iterator.hasNext()) {
             val item = iterator.next()
             if (item.type == postType && item.marketId.equals(marketId)) {
-                Log.i(TAG, "unregisterProcess type: $postType duplicated id: $marketId")
+                Log.i(TAG, "unregisterProcess type: $postType id: $marketId")
                 TaskList.remove(item)
             }
         }
@@ -183,7 +183,7 @@ class BackgroundProcessor : Thread {
         TaskList.forEach() {
             if (it.type == postType && it.marketId.equals(marketId)
                 && it.uuid != null && it.uuid.toString().equals(uuid)) {
-                Log.i(TAG, "unregisterProcess type: $postType duplicated id: $marketId")
+                Log.i(TAG, "unregisterProcess type: $postType id: $marketId")
                 TaskList.remove(it)
             }
         }
