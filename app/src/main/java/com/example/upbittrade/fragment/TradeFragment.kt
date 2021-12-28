@@ -210,7 +210,7 @@ class TradeFragment: Fragment() {
                         val volume = (UserParam.priceToBuy / bidPrice)
                         Log.d(TAG, "[DEBUG] onPostBid - key: $marketId " +
                                 "bidPrice: ${Format.nonZeroFormat.format(bidPrice)} " +
-                                "volume: ${Format.nonZeroFormat.format(volume)} " +
+                                "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
                                 "PostState: ${orderCoinInfo.state}")
 
                         orderCoinInfo.state = OrderCoinInfo.State.BUYING
@@ -243,7 +243,7 @@ class TradeFragment: Fragment() {
                             else 
                                 Format.zeroFormat.format(askPrice.toDouble())
                         } " +
-                        "volume: ${Format.zeroFormat.format(volume)} " +
+                        "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
                         "PostState: ${orderCoinInfo.state} "
                 )
 
@@ -468,6 +468,7 @@ class TradeFragment: Fragment() {
             var maxProfitRate = postInfo.maxProfitRate
             val bidPrice = postInfo.getBidPrice()
             val tickGap = abs(bidPrice!! - currentPrice!!) / postInfo.getTickPrice()!!
+            val volume = responseOrder?.volume?.toDouble()
 
             maxProfitRate = max(profitRate, maxProfitRate)
             postInfo.maxProfitRate = maxProfitRate
@@ -476,7 +477,7 @@ class TradeFragment: Fragment() {
             if (responseOrder != null) {
                 Log.i(TAG, "monitorTickerInfo marketId: $marketId  " +
                         "currentPrice: ${Format.zeroFormat.format(currentPrice)} " +
-                        "volume: ${Format.zeroFormat.format(responseOrder.volume)} " +
+                        "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
                         "PostState: ${postInfo.state} " +
                         "side: ${responseOrder.side} " +
                         "state: ${responseOrder.state} " +

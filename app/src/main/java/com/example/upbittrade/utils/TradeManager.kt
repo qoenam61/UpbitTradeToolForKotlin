@@ -106,7 +106,7 @@ class TradeManager(private val listener: TradeChangedListener) {
             Log.d(TAG, "[DEBUG] tacticalToSell - Take a profit marketId: $marketId " +
                     "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
                     "askPrice: ${TradeFragment.Format.zeroFormat.format(askPrice)} " +
-                    "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
+                    "volume: ${if (volume == null) null else TradeFragment.Format.zeroFormat.format(volume)} " +
                     "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
                     "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} " +
                     "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} "
@@ -176,7 +176,7 @@ class TradeManager(private val listener: TradeChangedListener) {
                                     null 
                                 else
                                     TradeFragment.Format.zeroFormat.format(askPrice)} " +
-                            "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
+                            "volume: ${if (volume == null) null else TradeFragment.Format.zeroFormat.format(volume)} " +
                             "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
                             "maxProfitRate: ${
                                 TradeFragment.Format.percentFormat.format(
