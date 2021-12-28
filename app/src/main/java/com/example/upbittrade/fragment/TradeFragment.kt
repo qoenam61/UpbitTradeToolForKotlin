@@ -203,8 +203,6 @@ class TradeFragment: Fragment() {
 
                 val postInfo = tradePostMapInfo[marketId]
                 if (postInfo == null) {
-
-
                     val bidPrice = orderCoinInfo.getBidPrice()
                     if (bidPrice != null) {
                         val volume = (UserParam.priceToBuy / bidPrice)

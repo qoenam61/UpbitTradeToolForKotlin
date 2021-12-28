@@ -132,12 +132,12 @@ class TradeManager(private val listener: TradeChangedListener) {
 
             val length: Double = highTail + lowTail + body
             var askPrice: Double? = null
-            val type: Int?
+            val askType: Int?
 
             when {
                 //Market
                 !sign && (body + highTail) / length > 0.8 -> {
-                    type = 0
+                    askType = 0
                     listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
                 }
 
@@ -149,8 +149,8 @@ class TradeManager(private val listener: TradeChangedListener) {
                                     + closePrice.toDouble().pow(2.0) + openPrice.toDouble()
                                 .pow(2.0)) / 4
                         )
-                    )!!.toDouble()
-                    type = 1
+                    )
+                    askType = 1
                     listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
                 }
 
@@ -161,12 +161,12 @@ class TradeManager(private val listener: TradeChangedListener) {
                             (highPrice.toDouble().pow(2.0) + closePrice.toDouble().pow(2.0)
                                     + openPrice.toDouble().pow(2.0)) / 3
                         )
-                    )!!.toDouble()
-                    type = 2
+                    )
+                    askType = 2
                     listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
                 }
             }
-            Log.d(TAG, "[DEBUG] tacticalToSell Stop a loss $type - marketId: $marketId " +
+            Log.d(TAG, "[DEBUG] tacticalToSell Stop a loss $askType - marketId: $marketId " +
                         "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
                         "sellPrice: ${
                             if (askPrice == null)
@@ -185,11 +185,13 @@ class TradeManager(private val listener: TradeChangedListener) {
         } else if(postInfo.getBuyDuration() != null
             && postInfo.getBuyDuration()!! > TradeFragment.UserParam.monitorTime * 10
             && tickGap <= getTickThreshold(currentPrice)) {
+
             //HCO
             listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
+
             Log.d(TAG, "[DEBUG] tacticalToSell time expired $type - marketId: $marketId " +
                     "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
-                    "sellPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
+                    "sellPrice: null " +
                     "volume: ${if (volume == null) null else TradeFragment.Format.zeroFormat.format(volume)} " +
                     "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
                     "maxProfitRate: ${
