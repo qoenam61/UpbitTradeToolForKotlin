@@ -140,26 +140,47 @@ class TradeManager(private val listener: TradeChangedListener) {
 
             when {
                 //Market
-                !sign && (body + highTail) / length > 0.8 -> {
+                !sign && body / length == 1.0 -> {
                     askType = 0
                     listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
                 }
 
-                // HHCO
-                !sign && lowTail / length > 0.5 -> {
+                !sign && (body + highTail) / length > 0.8 -> {
+                    askType = 1
+                    askPrice = Utils().convertPrice(
+                        sqrt(
+                            (closePrice.toDouble().pow(2.0) + openPrice.toDouble().pow(2.0)) / 2
+                        )
+                    )
+                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
+                }
+
+                !sign && lowTail / length > 0.8 -> {
+                    askType = 2
                     askPrice = Utils().convertPrice(
                         sqrt(
                             (highPrice.toDouble().pow(2.0) + highPrice.toDouble().pow(2.0)
                                     + max(closePrice.toDouble().pow(2.0), openPrice.toDouble().pow(2.0))
-                                ) / 3
+                                    ) / 3
                         )
                     )
-                    askType = 1
+                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
+                }
+
+                !sign && lowTail / length > 0.5 -> {
+                    askType = 3
+                    askPrice = Utils().convertPrice(
+                        sqrt(
+                            (highPrice.toDouble().pow(2.0)
+                                    + max(closePrice.toDouble().pow(2.0), openPrice.toDouble().pow(2.0))
+                                ) / 2
+                        )
+                    )
                     listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
                 }
 
                 else -> {
-                    //HCO
+                    askType = 4
                     askPrice = if (closePrice.toDouble() >= openPrice.toDouble().pow(2.0)) {
                         Utils().convertPrice(
                             sqrt(
@@ -175,7 +196,6 @@ class TradeManager(private val listener: TradeChangedListener) {
                             )
                         )
                     }
-                    askType = 2
                     listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
                 }
             }
@@ -198,7 +218,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         } else if(postInfo.getBuyDuration() != null
             && postInfo.getBuyDuration()!! > TradeFragment.UserParam.monitorTime * 5
             && tickGap <= getTickThreshold(currentPrice)
-            && postInfo.tickCount!! <= TradeFragment.UserParam.thresholdTick) {
+            && postInfo.tickCount!! <= TradeFragment.UserParam.thresholdTick * 1.5) {
 
             //HCO
             var askPrice = Utils().convertPrice(
@@ -208,9 +228,6 @@ class TradeManager(private val listener: TradeChangedListener) {
                 )
             )
             listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
-
-
-//            listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
 
             Log.d(TAG, "[DEBUG] tacticalToSell time expired $type - marketId: $marketId " +
                     "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
