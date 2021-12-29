@@ -21,6 +21,7 @@ import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.PostOrderItem
 import com.example.upbittrade.data.TaskItem
+import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdBidRange
 import com.example.upbittrade.model.*
 import com.example.upbittrade.utils.*
 import com.example.upbittrade.utils.TradeAdapter.Companion.Type.*
@@ -79,6 +80,7 @@ class TradeFragment: Fragment() {
         var thresholdBidAskRate: Float = THRESHOLD_BID_ASK_RATE
         var thresholdBidAskPriceVolumeRate: Float = THRESHOLD_BID_ASK_PRICE_VOLUME_RATE
         var thresholdTickGap: Double = 5.0 * 1.5
+        var thresholdBidRange: Double = 0.03
     }
 
     private lateinit var mainActivity: TradePagerActivity
@@ -199,7 +201,7 @@ class TradeFragment: Fragment() {
 
         tradeManager = TradeManager(object : TradeManager.TradeChangedListener {
             override fun onPostBid(marketId: String, orderCoinInfo: OrderCoinInfo) {
-                if (isInSufficientFunds || marketTrend < -3) {
+                if (isInSufficientFunds || marketTrend < thresholdBidRange * -1) {
                     return
                 }
 
@@ -427,10 +429,10 @@ class TradeFragment: Fragment() {
 
             circleBar?.setProgressBackgroundColor(
                 when {
-                    marketTrend > 0.03 -> {
+                    marketTrend > thresholdBidRange -> {
                         Color.GREEN
                     }
-                    marketTrend > -0.03 && marketTrend <= 0.03 -> {
+                    marketTrend > thresholdBidRange * -1 && marketTrend <= thresholdBidRange -> {
                         Color.YELLOW
                     }
                     else -> {
@@ -440,10 +442,10 @@ class TradeFragment: Fragment() {
 
             circleBar?.setProgressStartColor(
                 when {
-                    marketTrend > 0.03 -> {
+                    marketTrend > thresholdBidRange -> {
                         Color.GRAY
                     }
-                    marketTrend > -0.03 && marketTrend <= 0.03 -> {
+                    marketTrend > thresholdBidRange * -1 && marketTrend <= thresholdBidRange -> {
                         Color.GRAY
                     }
                     else -> {
