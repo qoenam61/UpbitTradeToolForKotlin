@@ -71,6 +71,9 @@ class TradeManager(private val listener: TradeChangedListener) {
         if (TradeFragment.tradePostMapInfo.containsKey(tradeCoinInfo.marketId)) {
             return false
         }
+        val highPrice = tradeCoinInfo.highPrice!!.toDouble()
+        val lowPrice = tradeCoinInfo.lowPrice!!.toDouble()
+        val tickGap = abs(highPrice - lowPrice) / tradeCoinInfo.getTickPrice()!!
 
         // tick count > thresholdTick
         // getTradeInfoPriceRate() > thresholdRate or getTradeInfoPriceRangeRate() > thresholdRangeRate
@@ -80,6 +83,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         if (tradeCoinInfo.tickCount!! > TradeFragment.UserParam.thresholdTick
             && (tradeCoinInfo.getPriceRate() > TradeFragment.UserParam.thresholdRate
                     || tradeCoinInfo.getPriceRangeRate() > TradeFragment.UserParam.thresholdRangeRate)
+            && tickGap > getTickThreshold(tradeCoinInfo.closePrice!!.toDouble())
             && tradeCoinInfo.getAvgAccVolumeRate() > TradeFragment.UserParam.thresholdAccPriceVolumeRate
             && tradeCoinInfo.getBidAskRate() > TradeFragment.UserParam.thresholdBidAskRate
             && tradeCoinInfo.getBidAskPriceRate() > TradeFragment.UserParam.thresholdBidAskPriceVolumeRate
