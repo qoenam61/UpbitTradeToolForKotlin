@@ -98,11 +98,11 @@ class TradeManager(private val listener: TradeChangedListener) {
         val tickGap = abs(bidPrice!! - currentPrice!!) / postInfo.getTickPrice()!!
         val volume = responseOrder.volume?.toDouble()
 
-        val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice
-        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice
-        val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice
-        val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice
-        val sign: Boolean = closePrice!!.toDouble() - openPrice!!.toDouble() >= 0.0
+        val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice!!
+        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice!!
+        val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice!!
+        val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice!!
+        val sign: Boolean = closePrice.toDouble() - openPrice.toDouble() >= 0.0
 
         // Take a profit
         if (profitRate >= 0 && maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
@@ -122,11 +122,11 @@ class TradeManager(private val listener: TradeChangedListener) {
         } else if (profitRate < TradeFragment.UserParam.thresholdRate * -0.66
             && tickGap > getTickThreshold(currentPrice)) {
             // Stop a loss
-            val highTail: Double = (highPrice!!.toDouble() - closePrice.toDouble()
+            val highTail: Double = (highPrice.toDouble() - closePrice.toDouble()
                 .coerceAtLeast(openPrice.toDouble()))
 
             val lowTail: Double = (openPrice.toDouble()
-                .coerceAtMost(closePrice.toDouble()) - lowPrice!!.toDouble())
+                .coerceAtMost(closePrice.toDouble()) - lowPrice.toDouble())
 
             val body: Double = abs(closePrice.toDouble() - openPrice.toDouble())
 
@@ -146,8 +146,8 @@ class TradeManager(private val listener: TradeChangedListener) {
                     askPrice = Utils().convertPrice(
                         sqrt(
                             (highPrice.toDouble().pow(2.0) + highPrice.toDouble().pow(2.0)
-                                    + closePrice.toDouble().pow(2.0) + openPrice.toDouble()
-                                .pow(2.0)) / 4
+                                    + max(closePrice.toDouble().pow(2.0), openPrice.toDouble().pow(2.0))
+                                ) / 3
                         )
                     )
                     askType = 1
@@ -156,12 +156,21 @@ class TradeManager(private val listener: TradeChangedListener) {
 
                 else -> {
                     //HCO
-                    askPrice = Utils().convertPrice(
-                        sqrt(
-                            (highPrice.toDouble().pow(2.0) + closePrice.toDouble().pow(2.0)
-                                    + openPrice.toDouble().pow(2.0)) / 3
+                    askPrice = if (closePrice.toDouble() >= openPrice.toDouble().pow(2.0)) {
+                        Utils().convertPrice(
+                            sqrt(
+                                (highPrice.toDouble().pow(2.0)
+                                        +closePrice.toDouble().pow(2.0)) / 2
+                            )
                         )
-                    )
+                    } else {
+                        Utils().convertPrice(
+                            sqrt(
+                                (closePrice.toDouble().pow(2.0)
+                                        +openPrice.toDouble().pow(2.0)) / 2
+                            )
+                        )
+                    }
                     askType = 2
                     listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
                 }
@@ -184,10 +193,20 @@ class TradeManager(private val listener: TradeChangedListener) {
 
         } else if(postInfo.getBuyDuration() != null
             && postInfo.getBuyDuration()!! > TradeFragment.UserParam.monitorTime * 5
-            && tickGap <= getTickThreshold(currentPrice)) {
+            && tickGap <= getTickThreshold(currentPrice)
+            && postInfo.tickCount!! <= TradeFragment.UserParam.thresholdTick) {
 
             //HCO
-            listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
+            var askPrice = Utils().convertPrice(
+                sqrt(
+                    (highPrice.toDouble().pow(2.0)
+                            + max(closePrice.toDouble().pow(2.0), openPrice.toDouble().pow(2.0))) / 2
+                )
+            )
+            listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
+
+
+//            listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
 
             Log.d(TAG, "[DEBUG] tacticalToSell time expired $type - marketId: $marketId " +
                     "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
