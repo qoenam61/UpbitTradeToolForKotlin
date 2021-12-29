@@ -105,6 +105,8 @@ class TradeFragment: Fragment() {
 
     var isInSufficientFunds = false
 
+    private var marketTrend: Double = 0.0
+
     override fun onAttach(activity: Activity) {
         super.onAttach(activity)
         mainActivity = activity as TradePagerActivity
@@ -197,7 +199,7 @@ class TradeFragment: Fragment() {
 
         tradeManager = TradeManager(object : TradeManager.TradeChangedListener {
             override fun onPostBid(marketId: String, orderCoinInfo: OrderCoinInfo) {
-                if (isInSufficientFunds) {
+                if (isInSufficientFunds || marketTrend < -3) {
                     return
                 }
 
@@ -359,15 +361,17 @@ class TradeFragment: Fragment() {
                 tradesInfoList.first().timestamp - tradeInfo.timestamp < UserParam.monitorTime
             }.reversed()
         } else {
-            val addList = tradesInfoList.asReversed().filter {tradeInfo ->
-                tradeMapInfo[marketId]!!.last().sequentialId < tradeInfo.sequentialId}
+            val addList = tradesInfoList.asReversed().filter { tradeInfo ->
+                tradeMapInfo[marketId]!!.last().sequentialId < tradeInfo.sequentialId
+            }
             val combineInfo = tradeMapInfo[marketId]!! + addList
             combineInfo.filter { tradeInfo ->
-                tradesInfoList.first().timestamp - tradeInfo.timestamp < UserParam.monitorTime }
+                tradesInfoList.first().timestamp - tradeInfo.timestamp < UserParam.monitorTime
+            }
         }
 
-        val accPriceVolume = tempInfo.fold(0.0) {
-                acc: Double, tradeInfo: TradeInfo -> acc + tradeInfo.getPriceVolume()
+        val accPriceVolume = tempInfo.fold(0.0) { acc: Double, tradeInfo: TradeInfo ->
+            acc + tradeInfo.getPriceVolume()
         }
         val highPrice = tempInfo.maxOf { it.tradePrice!!.toDouble() }
         val lowPrice = tempInfo.minOf { it.tradePrice!!.toDouble() }
@@ -377,24 +381,25 @@ class TradeFragment: Fragment() {
             minCandleMapInfo[marketId]?.accPriceVolume?.div(UNIT_MIN_CANDLE * UNIT_MIN_CANDLE_COUNT)
                 ?.times((UserParam.monitorTime / UNIT_MONITOR_TIME))
 
-        val bid = tempInfo.fold(0) {
-                acc: Int, tradeInfo: TradeInfo -> acc + addCount(tradeInfo, "BID")
+        val bid = tempInfo.fold(0) { acc: Int, tradeInfo: TradeInfo ->
+            acc + addCount(tradeInfo, "BID")
         }
 
-        val ask = tempInfo.fold(0) {
-                acc: Int, tradeInfo: TradeInfo -> acc + addCount(tradeInfo, "ASK")
+        val ask = tempInfo.fold(0) { acc: Int, tradeInfo: TradeInfo ->
+            acc + addCount(tradeInfo, "ASK")
         }
 
-        val bidPriceVolume = tempInfo.fold(0.0) {
-                acc: Double, tradeInfo: TradeInfo -> acc + addPriceVolume(tradeInfo, "BID")
+        val bidPriceVolume = tempInfo.fold(0.0) { acc: Double, tradeInfo: TradeInfo ->
+            acc + addPriceVolume(tradeInfo, "BID")
         }
 
-        val askPriceVolume = tempInfo.fold(0.0) {
-                acc: Double, tradeInfo: TradeInfo -> acc + addPriceVolume(tradeInfo, "ASK")
+        val askPriceVolume = tempInfo.fold(0.0) { acc: Double, tradeInfo: TradeInfo ->
+            acc + addPriceVolume(tradeInfo, "ASK")
         }
 
         tradeMapInfo[marketId] = tempInfo
-        tradeMonitorMapInfo[marketId] = TradeCoinInfo(marketId,
+        tradeMonitorMapInfo[marketId] = TradeCoinInfo(
+            marketId,
             tempInfo.size,
             tempInfo.last().timestamp,
             highPrice,
@@ -413,6 +418,42 @@ class TradeFragment: Fragment() {
         var progress = circleBar?.progress
         progress = progress!! + 1
         circleBar?.progress = progress % circleBar!!.max
+
+        if (progress % circleBar!!.max == 0) {
+            marketTrend = tempInfo.fold(0.0) { acc: Double, tradeInfo: TradeInfo ->
+                acc + tradeInfo.getDayChangeRate()
+            }
+            marketTrend /= tempInfo.size
+
+            circleBar?.setProgressBackgroundColor(when {
+                marketTrend > 3 -> {
+                    Color.GREEN
+                }
+                marketTrend > -3 && marketTrend <= 3 -> {
+                    Color.YELLOW
+                }
+                else -> {
+                    Color.RED
+                }
+            })
+
+            circleBar?.setProgressStartColor(when {
+                marketTrend > 3 -> {
+                    Color.GRAY
+                }
+                marketTrend > -3 && marketTrend <= 3 -> {
+                    Color.GRAY
+                }
+                else -> {
+                    Color.GRAY
+                }
+            })
+
+            Log.d(
+                TAG,
+                "[DEBUG] makeTradeMapInfo - totalRateSign: ${Format.percentFormat.format(marketTrend)}"
+            )
+        }
 
         // thresholdTick , thresholdAccPriceVolumeRate
         monitorKeyList = (tradeMonitorMapInfo.filter {
