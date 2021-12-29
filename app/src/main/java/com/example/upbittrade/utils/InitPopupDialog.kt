@@ -89,6 +89,8 @@ class InitPopupDialog: Dialog {
             monitorTickEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.thresholdTick))
             avgMinVsAvgDayEditText.setText((TradeFragment.UserParam.thresholdAccPriceVolumeRate * 100).toString())
 
+            TradeFragment.UserParam.thresholdTickGap = TradeFragment.UserParam.thresholdRate * 100 * 5
+
             buyingPriceEditText.clearFocus()
             monitorTimeEditText.clearFocus()
             monitorRateEditText.clearFocus()
