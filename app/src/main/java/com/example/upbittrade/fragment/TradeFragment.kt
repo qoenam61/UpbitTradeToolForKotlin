@@ -425,34 +425,31 @@ class TradeFragment: Fragment() {
             }
             marketTrend /= tempInfo.size
 
-            circleBar?.setProgressBackgroundColor(when {
-                marketTrend > 3 -> {
-                    Color.GREEN
-                }
-                marketTrend > -3 && marketTrend <= 3 -> {
-                    Color.YELLOW
-                }
-                else -> {
-                    Color.RED
-                }
-            })
+            circleBar?.setProgressBackgroundColor(
+                when {
+                    marketTrend > 0.03 -> {
+                        Color.GREEN
+                    }
+                    marketTrend > -0.03 && marketTrend <= 0.03 -> {
+                        Color.YELLOW
+                    }
+                    else -> {
+                        Color.RED
+                    }
+                })
 
-            circleBar?.setProgressStartColor(when {
-                marketTrend > 3 -> {
-                    Color.GRAY
-                }
-                marketTrend > -3 && marketTrend <= 3 -> {
-                    Color.GRAY
-                }
-                else -> {
-                    Color.GRAY
-                }
-            })
-
-            Log.d(
-                TAG,
-                "[DEBUG] makeTradeMapInfo - totalRateSign: ${Format.percentFormat.format(marketTrend)}"
-            )
+            circleBar?.setProgressStartColor(
+                when {
+                    marketTrend > 0.03 -> {
+                        Color.GRAY
+                    }
+                    marketTrend > -0.03 && marketTrend <= 0.03 -> {
+                        Color.GRAY
+                    }
+                    else -> {
+                        Color.GRAY
+                    }
+                })
         }
 
         // thresholdTick , thresholdAccPriceVolumeRate
