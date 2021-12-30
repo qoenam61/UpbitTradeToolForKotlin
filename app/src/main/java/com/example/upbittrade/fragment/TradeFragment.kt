@@ -130,7 +130,7 @@ class TradeFragment: Fragment() {
 
                 if (side == "bid" && errorCode == 400) {
                     isInSufficientFunds = true
-                    if (postInfo?.state == OrderCoinInfo.State.READY) {
+                    if (postInfo?.state == OrderCoinInfo.State.BUYING) {
                         tradePostMapInfo.remove(marketId)
                         activity.runOnUiThread {
                             tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
@@ -444,13 +444,13 @@ class TradeFragment: Fragment() {
             circleBar?.setProgressStartColor(
                 when {
                     marketTrend > thresholdBidRange -> {
-                        Color.GRAY
+                        Color.BLUE
                     }
                     marketTrend > thresholdBidRange * -1 && marketTrend <= thresholdBidRange -> {
-                        Color.GRAY
+                        Color.BLUE
                     }
                     else -> {
-                        Color.GRAY
+                        Color.BLUE
                     }
                 })
         }
