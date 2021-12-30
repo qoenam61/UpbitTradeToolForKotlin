@@ -38,9 +38,10 @@ class TradeInfo {
     }
 
     fun getDayChangeRate(): Double {
-        if (changePrice == null || prevClosingPrice == null) {
+        if (tradePrice == null || prevClosingPrice == null) {
             return 0.0
         }
-        return changePrice!!.toDouble() / prevClosingPrice!!.toDouble()
+        val diff = tradePrice!!.toDouble() - prevClosingPrice!!.toDouble()
+        return diff / prevClosingPrice!!.toDouble()
     }
 }
