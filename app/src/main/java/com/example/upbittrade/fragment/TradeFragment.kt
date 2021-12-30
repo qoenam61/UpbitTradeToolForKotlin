@@ -421,10 +421,12 @@ class TradeFragment: Fragment() {
         circleBar?.progress = progress % circleBar!!.max
 
         if (progress % circleBar!!.max == 0) {
-            marketTrend = tempInfo.fold(0.0) { acc: Double, tradeInfo: TradeInfo ->
-                acc + tradeInfo.getDayChangeRate()
+            marketTrend = tradeMapInfo.values.fold(0.0) { acc: Double, value: List<TradeInfo> ->
+                acc + value.first().getDayChangeRate()
             }
-            marketTrend /= tempInfo.size
+            marketTrend /= tradeMapInfo.size
+
+            Log.i(TAG, "makeTradeMapInfo - marketTrend: ${Format.percentFormat.format(marketTrend)}")
 
             circleBar?.setProgressBackgroundColor(
                 when {
