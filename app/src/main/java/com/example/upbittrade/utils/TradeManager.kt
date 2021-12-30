@@ -203,7 +203,7 @@ class TradeManager(private val listener: TradeChangedListener) {
             }
             Log.d(TAG, "[DEBUG] tacticalToSell Stop a loss $askType - marketId: $marketId " +
                         "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
-                        "sellPrice: ${
+                        "askPrice: ${
                             if (askPrice == null)
                                 null 
                             else
@@ -233,7 +233,7 @@ class TradeManager(private val listener: TradeChangedListener) {
 
             Log.d(TAG, "[DEBUG] tacticalToSell time expired $type - marketId: $marketId " +
                     "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
-                    "sellPrice: null " +
+                    "askPrice: $askPrice " +
                     "volume: ${if (volume == null) null else TradeFragment.Format.zeroFormat.format(volume)} " +
                     "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
                     "maxProfitRate: ${
