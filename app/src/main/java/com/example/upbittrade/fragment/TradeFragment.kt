@@ -61,7 +61,7 @@ class TradeFragment: Fragment() {
 
         var tradeResponseMapInfo = HashMap<String, ResponseOrder>()
 
-        var marketTrend: Double = 0.0
+        var marketTrend: Double? = null
     }
 
     object Format {
@@ -201,7 +201,7 @@ class TradeFragment: Fragment() {
 
         tradeManager = TradeManager(object : TradeManager.TradeChangedListener {
             override fun onPostBid(marketId: String, orderCoinInfo: OrderCoinInfo) {
-                if (isInSufficientFunds || marketTrend < thresholdBidRange * -1) {
+                if (isInSufficientFunds || marketTrend == null || marketTrend!! < thresholdBidRange * -1) {
                     return
                 }
 
@@ -424,35 +424,40 @@ class TradeFragment: Fragment() {
             marketTrend = tradeMapInfo.values.fold(0.0) { acc: Double, value: List<TradeInfo> ->
                 acc + value.last().getDayChangeRate()
             }
-            marketTrend /= tradeMapInfo.size
+            marketTrend = marketTrend!! / tradeMapInfo.size
 
-            Log.i(TAG, "makeTradeMapInfo - marketTrend: ${Format.percentFormat.format(marketTrend)}")
+            Log.i(
+                TAG,
+                "makeTradeMapInfo - marketTrend: ${Format.percentFormat.format(marketTrend)}"
+            )
 
             circleBar?.setProgressBackgroundColor(
                 when {
-                    marketTrend > thresholdBidRange -> {
+                    marketTrend!! > thresholdBidRange -> {
                         Color.GREEN
                     }
-                    marketTrend > thresholdBidRange * -1 && marketTrend <= thresholdBidRange -> {
+                    marketTrend!! > thresholdBidRange * -1 && marketTrend!! <= thresholdBidRange -> {
                         Color.YELLOW
                     }
                     else -> {
                         Color.RED
                     }
-                })
+                }
+            )
 
             circleBar?.setProgressStartColor(
                 when {
-                    marketTrend > thresholdBidRange -> {
+                    marketTrend!! > thresholdBidRange -> {
                         Color.BLUE
                     }
-                    marketTrend > thresholdBidRange * -1 && marketTrend <= thresholdBidRange -> {
+                    marketTrend!! > thresholdBidRange * -1 && marketTrend!! <= thresholdBidRange -> {
                         Color.BLUE
                     }
                     else -> {
                         Color.BLUE
                     }
-                })
+                }
+            )
         }
 
         // thresholdTick , thresholdAccPriceVolumeRate

@@ -2,6 +2,8 @@ package com.example.upbittrade.utils
 
 import android.util.Log
 import com.example.upbittrade.fragment.TradeFragment
+import com.example.upbittrade.fragment.TradeFragment.Companion.marketTrend
+import com.example.upbittrade.fragment.TradeFragment.Companion.tradeMapInfo
 import com.example.upbittrade.model.OrderCoinInfo
 import com.example.upbittrade.model.ResponseOrder
 import com.example.upbittrade.model.Ticker
@@ -73,12 +75,12 @@ class TradeManager(private val listener: TradeChangedListener) {
         if (TradeFragment.tradePostMapInfo.containsKey(tradeCoinInfo.marketId)) {
             return false
         }
-        
+
         val marketId = tradeCoinInfo.marketId
         val highPrice = tradeCoinInfo.highPrice!!.toDouble()
         val lowPrice = tradeCoinInfo.lowPrice!!.toDouble()
         val tickGap = abs(highPrice - lowPrice) / tradeCoinInfo.getTickPrice()!!
-        val dayChangeRate = TradeFragment.tradeMapInfo[marketId]!!.last().getDayChangeRate()
+        val dayChangeRate = tradeMapInfo[marketId]!!.last().getDayChangeRate()
 
         // tick count > thresholdTick
         // getTradeInfoPriceRate() > thresholdRate or getTradeInfoPriceRangeRate() > thresholdRangeRate
@@ -89,7 +91,7 @@ class TradeManager(private val listener: TradeChangedListener) {
             && (tradeCoinInfo.getPriceRate() > TradeFragment.UserParam.thresholdRate
                     || tradeCoinInfo.getPriceRangeRate() > TradeFragment.UserParam.thresholdRangeRate)
             && tickGap > getTickThreshold(tradeCoinInfo.closePrice!!.toDouble())
-            && (dayChangeRate - TradeFragment.marketTrend) > TradeFragment.UserParam.thresholdRate
+            && marketTrend != null && (dayChangeRate - marketTrend!!) > TradeFragment.UserParam.thresholdRate
             && tradeCoinInfo.getAvgAccVolumeRate() > TradeFragment.UserParam.thresholdAccPriceVolumeRate
             && tradeCoinInfo.getBidAskRate() > TradeFragment.UserParam.thresholdBidAskRate
             && tradeCoinInfo.getBidAskPriceRate() > TradeFragment.UserParam.thresholdBidAskPriceVolumeRate
