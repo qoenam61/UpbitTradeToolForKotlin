@@ -54,11 +54,14 @@ class TradeFragment: Fragment() {
 
         val marketMapInfo = HashMap<String, MarketInfo>()
 
+        val tradeMapInfo = HashMap<String, List<TradeInfo>>()
         val tradeMonitorMapInfo = HashMap<String, TradeCoinInfo>()
         var tradePostMapInfo = HashMap<String, OrderCoinInfo>()
         var tradeReportListInfo = ArrayList<OrderCoinInfo>()
 
         var tradeResponseMapInfo = HashMap<String, ResponseOrder>()
+
+        var marketTrend: Double = 0.0
     }
 
     object Format {
@@ -90,7 +93,6 @@ class TradeFragment: Fragment() {
     private var processor: BackgroundProcessor? = null
 
     private val minCandleMapInfo = HashMap<String, TradeCoinInfo>()
-    private val tradeMapInfo = HashMap<String, List<TradeInfo>>()
 
     private var monitorKeyList: List<String>? = null
     private var monitorAdapter: TradeAdapter? = null
@@ -106,8 +108,6 @@ class TradeFragment: Fragment() {
     var isRunning = false
 
     var isInSufficientFunds = false
-
-    private var marketTrend: Double = 0.0
 
     override fun onAttach(activity: Activity) {
         super.onAttach(activity)
@@ -357,7 +357,7 @@ class TradeFragment: Fragment() {
 
         val marketId: String = tradesInfoList.first().marketId.toString()
 
-        val tempInfo: List<TradeInfo> = if (tradeMapInfo[marketId] == null) {
+        val tempInfo: List<TradeInfo> = if (!tradeMapInfo.containsKey(marketId)) {
             tradesInfoList.filter { tradeInfo ->
                 tradesInfoList.first().timestamp - tradeInfo.timestamp < UserParam.monitorTime
             }.reversed()
@@ -422,7 +422,7 @@ class TradeFragment: Fragment() {
 
         if (progress % circleBar!!.max == 0) {
             marketTrend = tradeMapInfo.values.fold(0.0) { acc: Double, value: List<TradeInfo> ->
-                acc + value.first().getDayChangeRate()
+                acc + value.last().getDayChangeRate()
             }
             marketTrend /= tradeMapInfo.size
 
