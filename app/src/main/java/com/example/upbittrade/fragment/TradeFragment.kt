@@ -205,8 +205,7 @@ class TradeFragment: Fragment() {
                     return
                 }
 
-                val postInfo = tradePostMapInfo[marketId]
-                if (postInfo == null) {
+                if (!tradePostMapInfo.containsKey(marketId)) {
                     val bidPrice = orderCoinInfo.getBidPrice()
                     if (bidPrice != null) {
                         val volume = (UserParam.priceToBuy / bidPrice)
@@ -238,18 +237,18 @@ class TradeFragment: Fragment() {
             }
 
             override fun onPostAsk(marketId: String, orderCoinInfo: OrderCoinInfo, orderType: String, askPrice: Double?, volume: Double) {
-                Log.d(TAG, "[DEBUG] onPostAsk - key: $marketId " +
-                        "sellPrice: ${
-                            if (askPrice == null) 
-                                null 
-                            else 
-                                Format.zeroFormat.format(askPrice.toDouble())
-                        } " +
-                        "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
-                        "PostState: ${orderCoinInfo.state} "
-                )
-
                 if (orderCoinInfo.state == OrderCoinInfo.State.BUY) {
+                    Log.d(TAG, "[DEBUG] onPostAsk - key: $marketId " +
+                            "sellPrice: ${
+                                if (askPrice == null)
+                                    null
+                                else
+                                    Format.zeroFormat.format(askPrice.toDouble())
+                            } " +
+                            "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
+                            "PostState: ${orderCoinInfo.state} "
+                    )
+
                     orderCoinInfo.state = OrderCoinInfo.State.SELLING
                     tradePostMapInfo[marketId] = orderCoinInfo
                     processor?.registerProcess(
@@ -686,7 +685,7 @@ class TradeFragment: Fragment() {
 
     private fun postOrderBidWait(marketId: String, time: Long, responseOrder: ResponseOrder) {
         val tradePostInfo: OrderCoinInfo = tradePostMapInfo[marketId]!!
-        Log.d(TAG, "[DEBUG] postOrderBidWait marketId: $marketId state: ${tradePostInfo.state} uuid: ${responseOrder.uuid}")
+        Log.d(TAG, "[DEBUG] postOrderBidWait marketId: $marketId state: READY -> ${tradePostInfo.state} uuid: ${responseOrder.uuid}")
         if (tradePostInfo.state == OrderCoinInfo.State.BUYING) {
             val registerTime: Long? = tradePostInfo.registerTime
             if (registerTime == null) {
@@ -708,7 +707,7 @@ class TradeFragment: Fragment() {
 
     private fun postOrderBidDone(marketId: String, time: Long, responseOrder: ResponseOrder) {
         val tradePostInfo: OrderCoinInfo = tradePostMapInfo[marketId]!!
-        Log.d(TAG, "[DEBUG] postOrderBidDone marketId: $marketId state: ${tradePostInfo.state} uuid: ${responseOrder.uuid}")
+        Log.d(TAG, "[DEBUG] postOrderBidDone marketId: $marketId state: ${tradePostInfo.state} -> BUY uuid: ${responseOrder.uuid}")
         if (tradePostInfo.state == OrderCoinInfo.State.BUYING) {
             processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
             processor?.registerProcess(TaskItem(TICKER_INFO, marketId))
@@ -722,7 +721,7 @@ class TradeFragment: Fragment() {
 
     private fun postOrderAskWait(marketId: String, time: Long, responseOrder: ResponseOrder) {
         val tradePostInfo: OrderCoinInfo = tradePostMapInfo[marketId]!!
-        Log.d(TAG, "[DEBUG] postOrderAskWait marketId: $marketId state: ${tradePostInfo.state} uuid: ${responseOrder.uuid}")
+        Log.d(TAG, "[DEBUG] postOrderAskWait marketId: $marketId state: BUY -> ${tradePostInfo.state} uuid: ${responseOrder.uuid}")
         if (tradePostInfo.state == OrderCoinInfo.State.SELLING) {
             val registerTime: Long? = tradePostInfo.registerTime
             if (registerTime == null) {
@@ -745,7 +744,7 @@ class TradeFragment: Fragment() {
 
     private fun postOrderAskDone(marketId: String, time: Long, responseOrder: ResponseOrder) {
         val tradePostInfo: OrderCoinInfo = tradePostMapInfo[marketId]!!
-        Log.d(TAG, "[DEBUG] postOrderAskDone marketId: $marketId state: ${tradePostInfo.state} uuid: ${responseOrder.uuid}")
+        Log.d(TAG, "[DEBUG] postOrderAskDone marketId: $marketId state: ${tradePostInfo.state} -> SELL uuid: ${responseOrder.uuid}")
         if (tradePostInfo.state == OrderCoinInfo.State.SELLING) {
             processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
             processor?.unregisterProcess(TICKER_INFO, marketId)

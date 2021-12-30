@@ -55,9 +55,11 @@ class TradeManager(private val listener: TradeChangedListener) {
             }
 
             filteredList!!.forEach {
-                val orderCoinInfo = OrderCoinInfo(TradeFragment.tradeMonitorMapInfo[it]!!)
-                if (orderCoinInfo.getBidPrice() != null) {
-                    listener.onPostBid(it, orderCoinInfo)
+                if (!TradeFragment.tradePostMapInfo.containsKey(it)) {
+                    val orderCoinInfo = OrderCoinInfo(TradeFragment.tradeMonitorMapInfo[it]!!)
+                    if (orderCoinInfo.getBidPrice() != null) {
+                        listener.onPostBid(it, orderCoinInfo)
+                    }
                 }
             }
         }
