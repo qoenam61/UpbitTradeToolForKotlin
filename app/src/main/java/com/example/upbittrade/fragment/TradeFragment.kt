@@ -710,7 +710,7 @@ class TradeFragment: Fragment() {
     private fun postOrderBidDone(marketId: String, time: Long, responseOrder: ResponseOrder) {
         val tradePostInfo: OrderCoinInfo = tradePostMapInfo[marketId]!!
         Log.d(TAG, "[DEBUG] postOrderBidDone marketId: $marketId state: ${tradePostInfo.state} -> BUY uuid: ${responseOrder.uuid}")
-        if (tradePostInfo.state == OrderCoinInfo.State.BUYING) {
+        if (tradePostInfo.state == OrderCoinInfo.State.DELETE || tradePostInfo.state == OrderCoinInfo.State.BUYING) {
             processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
             processor?.registerProcess(TaskItem(TICKER_INFO, marketId))
 
@@ -747,7 +747,7 @@ class TradeFragment: Fragment() {
     private fun postOrderAskDone(marketId: String, time: Long, responseOrder: ResponseOrder) {
         val tradePostInfo: OrderCoinInfo = tradePostMapInfo[marketId]!!
         Log.d(TAG, "[DEBUG] postOrderAskDone marketId: $marketId state: ${tradePostInfo.state} -> SELL uuid: ${responseOrder.uuid}")
-        if (tradePostInfo.state == OrderCoinInfo.State.SELLING) {
+        if (tradePostInfo.state == OrderCoinInfo.State.DELETE || tradePostInfo.state == OrderCoinInfo.State.SELLING) {
             processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
             processor?.unregisterProcess(TICKER_INFO, marketId)
 
