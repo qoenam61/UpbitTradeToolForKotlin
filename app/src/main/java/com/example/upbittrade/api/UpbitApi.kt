@@ -59,4 +59,8 @@ interface UpbitApi {
 
     @DELETE("/v1/order")
     fun deleteOrderInfo(@Query("uuid") uuid: String?): Call<ResponseOrder?>?
+
+    @GET("/v1/orders")
+    fun checkOrderInfo(@QueryMap fields: Map<String?, String?>?): Call<List<ResponseOrder?>?>?
+
 }

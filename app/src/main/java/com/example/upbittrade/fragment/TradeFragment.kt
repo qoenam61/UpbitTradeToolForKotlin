@@ -227,6 +227,25 @@ class TradeFragment: Fragment() {
                                 UUID.randomUUID()
                             )
                         )
+
+                        processor?.registerProcess(
+                            PostOrderItem(
+                                CHECK_ORDER_INFO,
+                                marketId,
+                                "wait",
+                                1,
+                                "asc"
+                            )
+                        )
+//                        processor?.registerProcess(
+//                            PostOrderItem(
+//                                CHECK_ORDER_INFO,
+//                                marketId,
+//                                "done",
+//                                1,
+//                                "asc"
+//                            )
+//                        )
                     }
                 }
 
@@ -311,6 +330,10 @@ class TradeFragment: Fragment() {
                 responseOrder ->
             resultDeleteOrderInfo(responseOrder)
         }
+        viewModel?.resultOrderInfo?.observe(viewCycleOwner) {
+                responseOrder ->
+            Log.d(TAG, "[DEBUG] resultOrderInfo: $responseOrder")
+        }
     }
 
     private fun makeMarketMapInfo(marketsInfo: List<MarketInfo>) {
@@ -324,7 +347,7 @@ class TradeFragment: Fragment() {
             if (marketId?.contains("KRW-") == true
                 && marketInfo.marketWarning?.contains("CAUTION") == false) {
                 marketMapInfo[marketId] = marketInfo
-                Log.i(TAG, "resultMarketsInfo - marketId: $marketId")
+//                Log.i(TAG, "resultMarketsInfo - marketId: $marketId")
                 extTaskItemList.add(ExtendCandleItem(MIN_CANDLE_INFO, UNIT_MIN_CANDLE.toString(), marketId, UNIT_MIN_CANDLE_COUNT))
                 taskItemList.add(CandleItem(TRADE_INFO, marketId, UNIT_TRADE_COUNT))
             }
@@ -519,16 +542,16 @@ class TradeFragment: Fragment() {
             tradePostMapInfo[marketId!!] = postInfo
 
             if (responseOrder != null) {
-                Log.i(TAG, "monitorTickerInfo marketId: $marketId  " +
-                        "currentPrice: ${Format.zeroFormat.format(currentPrice)} " +
-                        "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
-                        "PostState: ${postInfo.state} " +
-                        "side: ${responseOrder.side} " +
-                        "state: ${responseOrder.state} " +
-                        "profitRate: ${Format.percentFormat.format(profitRate)} " +
-                        "maxProfitRate: ${Format.percentFormat.format(maxProfitRate)} " +
-                        "tickGap: $tickGap " +
-                        "time: ${Format.timeFormat.format(time)}")
+//                Log.i(TAG, "monitorTickerInfo marketId: $marketId  " +
+//                        "currentPrice: ${Format.zeroFormat.format(currentPrice)} " +
+//                        "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
+//                        "PostState: ${postInfo.state} " +
+//                        "side: ${responseOrder.side} " +
+//                        "state: ${responseOrder.state} " +
+//                        "profitRate: ${Format.percentFormat.format(profitRate)} " +
+//                        "maxProfitRate: ${Format.percentFormat.format(maxProfitRate)} " +
+//                        "tickGap: $tickGap " +
+//                        "time: ${Format.timeFormat.format(time)}")
 
                 if (postInfo.state == OrderCoinInfo.State.BUY
                     && (responseOrder.side.equals("bid") || responseOrder.side.equals("Bid"))

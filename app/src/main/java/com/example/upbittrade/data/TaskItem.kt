@@ -77,7 +77,7 @@ open class PostOrderItem: TaskItem {
     var identifier: UUID? = null
 
     var state: String? = null
-    var page: Number? = null
+    var limit: Number? = null
     var orderBy: String? = null
 
     constructor(
@@ -100,11 +100,11 @@ open class PostOrderItem: TaskItem {
         type: PostType,
         marketId: String?,
         state: String?,
-        page: Number?,
+        limit: Number?,
         orderBy: String?
     ) : super(type, marketId) {
         this.state = state
-        this.page = page
+        this.limit = limit
         this.ordType = orderBy
     }
 

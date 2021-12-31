@@ -33,6 +33,7 @@ class TradeViewModel: AndroidViewModel {
     val postOrderInfo = MutableLiveData<PostOrderItem>()
     val searchOrderInfo = MutableLiveData<UUID>()
     val deleteOrderInfo = MutableLiveData<UUID>()
+    val checkOrderInfo = MutableLiveData<PostOrderItem>()
 
 
     var resultMarketsInfo: LiveData<List<MarketInfo>>? = Transformations.switchMap(searchMarketsInfo) {
@@ -65,6 +66,10 @@ class TradeViewModel: AndroidViewModel {
 
     val resultDeleteOrderInfo: LiveData<ResponseOrder>? = Transformations.switchMap(deleteOrderInfo) {
             input -> upbitFetcher?.deleteOrderInfo(input)
+    }
+
+    val resultOrderInfo: LiveData<List<ResponseOrder>>? = Transformations.switchMap(checkOrderInfo) {
+            input -> upbitFetcher?.checkOrderInfo(input)
     }
 
     private class CandleInput {

@@ -33,7 +33,8 @@ class TradePagerActivity : FragmentActivity() {
         CHANCE_INFO,
         TICKER_INFO,
         TRADE_INFO,
-        SEARCH_ORDER_INFO
+        SEARCH_ORDER_INFO,
+        CHECK_ORDER_INFO
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -3,7 +3,6 @@ package com.example.upbittrade.utils
 import android.os.Bundle
 import android.os.Looper
 import android.os.Message
-import android.os.SystemClock
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import com.example.upbittrade.activity.TradePagerActivity
@@ -13,20 +12,17 @@ import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.PostOrderItem
 import com.example.upbittrade.data.TaskItem
 import com.example.upbittrade.model.TradeViewModel
-import okhttp3.internal.notify
-import okhttp3.internal.wait
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
-import kotlin.collections.ArrayList
 
 class BackgroundProcessor : Thread {
     companion object {
         const val TAG = "BackgroundProcessor"
         var viewModel: AndroidViewModel? = null
-        const val pingDelay: Long = 103
+        const val pingDelay: Long = 110
     }
 
     constructor(model: AndroidViewModel) {
@@ -112,6 +108,11 @@ class BackgroundProcessor : Thread {
                         (viewModel as TradeViewModel).searchOrderInfo.value = item.uuid
                     }
                 }
+                CHECK_ORDER_INFO -> {
+                    if (viewModel is TradeViewModel) {
+                        (viewModel as TradeViewModel).checkOrderInfo.value = item as PostOrderItem
+                    }
+                }
             }
         }
     }
@@ -154,13 +155,21 @@ class BackgroundProcessor : Thread {
         val iterator = TaskList.iterator()
         while (iterator.hasNext()) {
             val list = iterator.next()
-            if (list.type == item.type && list.marketId.equals(item.marketId)) {
+            if (list.type == CHECK_ORDER_INFO) {
+                val extendList = list as PostOrderItem
+                val extendItem = item as PostOrderItem
+                if (list.type == item.type && list.marketId.equals(item.marketId)
+                    && extendList.state.equals(extendItem.state)) {
+                    Log.i(TAG, "registerProcess type: ${item.type} duplicated id: ${item.marketId} state: ${item.marketId}")
+                    return
+                }
+            } else if (list.type == item.type && list.marketId.equals(item.marketId)) {
                 Log.i(TAG, "registerProcess type: ${item.type} duplicated id: ${item.marketId}")
                 return
             }
         }
 
-        Log.i(TAG, "registerProcess type: ${item.type} offer id: " + item.marketId)
+//        Log.i(TAG, "registerProcess type: ${item.type} offer id: " + item.marketId)
         TaskList.offer(item)
     }
 

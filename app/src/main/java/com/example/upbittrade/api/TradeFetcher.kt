@@ -46,15 +46,11 @@ class TradeFetcher(val listener: PostOrderListener) {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as List<MarketInfo>
                 } else {
-//                    val jObjError = JSONObject(
-//                        response.errorBody()!!.string()
-//                    )
                     Log.w(TAG, "getMarketInfo"
                                 + " call: " + call.request()
                                 + " code: " + response.code()
                                 + " headers: " + response.headers()
                                 + " raw: " + response.raw()
-//                                + " jObjError: " + (jObjError ?: "NULL")
                     )
                 }
             }
@@ -200,10 +196,6 @@ class TradeFetcher(val listener: PostOrderListener) {
         val ordType: String? = postOrderItem.ordType
         val identifier: UUID? = postOrderItem.identifier
 
-        val state: String? = postOrderItem.state
-        val page: Number? = postOrderItem.page
-        val orderBy: String? = postOrderItem.orderBy
-
         val params = HashMap<String?, String?>()
         params["market"] = marketId
 
@@ -224,18 +216,6 @@ class TradeFetcher(val listener: PostOrderListener) {
             params["identifier"] = identifier.toString()
         }
 
-        // Get OrderInfo
-        if (state != null && state != "null") {
-            params["state"] = state
-        }
-        if (page != null) {
-            params["page"] = page.toString()
-        }
-        if (orderBy != null && orderBy != "null") {
-            params["order_by"] = orderBy
-        }
-
-
         postOrderRetrofit?.params = params
 
         val result = MutableLiveData<ResponseOrder>()
@@ -247,10 +227,10 @@ class TradeFetcher(val listener: PostOrderListener) {
             ) {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as ResponseOrder
-                    Log.i(TAG, "postOrderInfo:  " +
-                            "raw: ${response.raw()} " +
-                            "body: ${(response.body() as ResponseOrder)}"
-                    )
+//                    Log.i(TAG, "postOrderInfo:  " +
+//                            "raw: ${response.raw()} " +
+//                            "body: ${(response.body() as ResponseOrder)}"
+//                    )
                 } else {
                     val jObjError = JSONObject(
                         response.errorBody()!!.string()
@@ -306,10 +286,10 @@ class TradeFetcher(val listener: PostOrderListener) {
             ) {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as ResponseOrder
-                    Log.i(TAG, "searchOrderInfo :  " +
-                            "raw: ${response.raw()} " +
-                            "body: ${(response.body() as ResponseOrder)}"
-                    )
+//                    Log.i(TAG, "searchOrderInfo :  " +
+//                            "raw: ${response.raw()} " +
+//                            "body: ${(response.body() as ResponseOrder)}"
+//                    )
                 } else {
                     val jObjError = JSONObject(
                         response.errorBody()!!.string()
@@ -345,10 +325,10 @@ class TradeFetcher(val listener: PostOrderListener) {
             ) {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as ResponseOrder
-                    Log.i(TAG, "deleteOrderInfo:  " +
-                            "raw: ${response.raw()} " +
-                            "body: ${(response.body() as ResponseOrder)}"
-                    )
+//                    Log.i(TAG, "deleteOrderInfo:  " +
+//                            "raw: ${response.raw()} " +
+//                            "body: ${(response.body() as ResponseOrder)}"
+//                    )
                 } else {
                     val jObjError = JSONObject(
                         response.errorBody()!!.string()
@@ -364,6 +344,62 @@ class TradeFetcher(val listener: PostOrderListener) {
             }
 
             override fun onFailure(call: Call<ResponseOrder?>, t: Throwable) {
+                Log.w(TAG, "onFailure: $t")
+            }
+        })
+        return result
+    }
+
+    fun checkOrderInfo(postOrderItem: PostOrderItem): LiveData<List<ResponseOrder>> {
+        val marketId: String = postOrderItem.marketId!!
+        val state: String? = postOrderItem.state
+        val limit: Number? = postOrderItem.limit
+        val orderBy: String? = postOrderItem.orderBy
+
+        val params = HashMap<String?, String?>()
+        params["market"] = marketId
+        if (state != null && state != "null") {
+            params["state"] = state
+        }
+        if (limit != null) {
+            params["limit"] = limit.toString()
+        }
+        if (orderBy != null && orderBy != "null") {
+            params["order_by"] = orderBy
+        }
+
+        postOrderRetrofit?.params = params
+
+        val result = MutableLiveData<List<ResponseOrder>>()
+        val call: Call<List<ResponseOrder?>?>? = postOrderRetrofit?.getUpBitApi()?.checkOrderInfo(params)
+        call!!.enqueue(object : Callback<List<ResponseOrder?>?> {
+            override fun onResponse(
+                call: Call<List<ResponseOrder?>?>,
+                response: Response<List<ResponseOrder?>?>
+            ) {
+                if (response.body() != null && response.isSuccessful) {
+                    result.value = response.body() as List<ResponseOrder>
+                    Log.i(TAG, "checkOrderInfo:  " +
+                            "raw: ${response.raw()} " +
+                            "body: ${(response.body() as List<ResponseOrder>)}"
+                    )
+                } else {
+                    val jObjError = JSONObject(
+                        response.errorBody()!!.string()
+                    )
+                    Log.w(
+                        TAG,
+                        "checkOrderInfo"
+                                + " call: " + call.request()
+                                + " code: " + response.code()
+                                + " headers: " + response.headers()
+                                + " raw: " + response.raw()
+                                + " jObjError: " + (jObjError ?: "NULL")
+                    )
+                }
+            }
+
+            override fun onFailure(call: Call<List<ResponseOrder?>?>, t: Throwable) {
                 Log.w(TAG, "onFailure: $t")
             }
         })
