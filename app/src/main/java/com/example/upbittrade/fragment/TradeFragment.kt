@@ -37,9 +37,9 @@ class TradeFragment: Fragment() {
     companion object {
         const val TAG = "TradeFragment"
         const val LIMIT_AMOUNT = 7000.0
-        const val BASE_TIME: Long = 3 * 60 * 1000
+        const val BASE_TIME: Long = 5 * 60 * 1000
         const val THRESHOLD_RATE = 0.015
-        const val THRESHOLD_TICK = 300
+        const val THRESHOLD_TICK = 350
         const val THRESHOLD_ACC_PRICE_VOLUME_RATE = 1f
         const val THRESHOLD_BID_ASK_RATE = 0.5f
         const val THRESHOLD_BID_ASK_PRICE_VOLUME_RATE = 0.5f
@@ -817,6 +817,7 @@ class TradeFragment: Fragment() {
         }
         tradeReportListInfo.add(tradePostInfo)
         reportPopup?.setList(tradeReportListInfo.toList())
+
         val size = tradeReportListInfo.size
         totalResultCount?.text = size.toString()
         if (size > 0) {

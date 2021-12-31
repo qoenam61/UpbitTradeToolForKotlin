@@ -284,15 +284,27 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                     }
                 }
             }
-            if (tradeInfo.currentPrice != null) {
-                holder.tradePrice?.text =
-                    TradeFragment.Format.nonZeroFormat.format(tradeInfo.currentPrice)
+
+            if (tradeInfo.currentPrice != null ) {
+                if (tradeInfo.currentPrice!!.toDouble() < 100.0) {
+                    holder.tradePrice?.text =
+                        TradeFragment.Format.zeroFormat.format(tradeInfo.currentPrice!!)
+                } else {
+                    holder.tradePrice?.text =
+                        TradeFragment.Format.nonZeroFormat.format(tradeInfo.currentPrice!!)
+                }
             }
 
             if (tradeInfo.getBidPrice() != null) {
-                holder.tradeBidPrice?.text =
-                    TradeFragment.Format.nonZeroFormat.format(tradeInfo.getBidPrice())
+                if (tradeInfo.getBidPrice()!! < 100.0) {
+                    holder.tradeBidPrice?.text =
+                        TradeFragment.Format.zeroFormat.format(tradeInfo.getBidPrice()!!)
+                } else {
+                    holder.tradeBidPrice?.text =
+                        TradeFragment.Format.nonZeroFormat.format(tradeInfo.getBidPrice()!!)
+                }
             }
+
             if (tradeInfo.tradeBidTime != null) {
                 holder.tradeBidTime?.text =
                     timeZoneFormat.format(tradeInfo.tradeBidTime)
@@ -352,14 +364,25 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                     }
                 }
             }
+
             if (tradeInfo.askPrice != null) {
-                holder.tradeAskPrice?.text =
-                    TradeFragment.Format.nonZeroFormat.format(tradeInfo.askPrice)
+                if (tradeInfo.askPrice!! < 100.0) {
+                    holder.tradeAskPrice?.text =
+                        TradeFragment.Format.zeroFormat.format(tradeInfo.askPrice!!)
+                } else {
+                    holder.tradeAskPrice?.text =
+                        TradeFragment.Format.nonZeroFormat.format(tradeInfo.askPrice!!)
+                }
             }
 
             if (tradeInfo.getBidPrice() != null) {
-                holder.tradeBidPrice?.text =
-                    TradeFragment.Format.nonZeroFormat.format(tradeInfo.getBidPrice())
+                if (tradeInfo.getBidPrice()!! < 100.0) {
+                    holder.tradeBidPrice?.text =
+                        TradeFragment.Format.zeroFormat.format(tradeInfo.getBidPrice()!!)
+                } else {
+                    holder.tradeBidPrice?.text =
+                        TradeFragment.Format.nonZeroFormat.format(tradeInfo.getBidPrice()!!)
+                }
             }
 
             if (tradeInfo.tradeAskTime != null) {

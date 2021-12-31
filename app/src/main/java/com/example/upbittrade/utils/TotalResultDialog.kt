@@ -41,7 +41,12 @@ class TotalResultDialog: Dialog {
         }
 
         val profit = (askPriceAmount - bidPriceAmount)
-        profitPrice?.text = TradeFragment.Format.nonZeroFormat.format(profit)
+        if (profit < 100.0) {
+            profitPrice?.text = TradeFragment.Format.zeroFormat.format(profit)
+        } else {
+            profitPrice?.text = TradeFragment.Format.nonZeroFormat.format(profit)
+        }
+        
         when {
             profit > 0 -> {
                 profitPrice?.setTextColor(Color.RED)
