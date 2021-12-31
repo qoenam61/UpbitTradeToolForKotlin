@@ -107,6 +107,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         val bidPrice = postInfo.getBidPrice()
         val profitRate = postInfo.getProfitRate()!!
         val maxProfitRate = postInfo.maxProfitRate
+        val maxPrice = postInfo.maxPrice!!
         val tickGap = abs(bidPrice!! - currentPrice!!) / postInfo.getTickPrice()!!
         val volume = responseOrder.volume?.toDouble()
 
@@ -119,10 +120,19 @@ class TradeManager(private val listener: TradeChangedListener) {
         // Take a profit
         if (profitRate >= 0 && maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
             && tickGap > getTickThreshold(currentPrice)) {
-            val askPrice = (postInfo.highPrice!!.toDouble() + currentPrice.toDouble()) / 2.0
+            val askPrice = Utils().convertPrice(
+                sqrt(
+                    (maxPrice.pow(2.0)
+                            + maxPrice.pow(2.0)
+                            + highPrice.toDouble().pow(2.0)
+                            + max(closePrice.toDouble().pow(2.0), openPrice.toDouble().pow(2.0))
+                            ) / 4
+                )
+            )
 
             Log.d(TAG, "[DEBUG] tacticalToSell - Take a profit marketId: $marketId " +
                     "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
+                    "maxPrice: ${TradeFragment.Format.zeroFormat.format(maxPrice)} " +
                     "askPrice: ${TradeFragment.Format.zeroFormat.format(askPrice)} " +
                     "volume: ${if (volume == null) null else TradeFragment.Format.zeroFormat.format(volume)} " +
                     "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
@@ -130,7 +140,7 @@ class TradeManager(private val listener: TradeChangedListener) {
                     "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} "
             )
 
-            listener.onPostAsk(marketId!!, postInfo, "limit", Utils().convertPrice(askPrice), volume!!)
+            listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
         } else if (profitRate < TradeFragment.UserParam.thresholdRate * -0.66
             && tickGap > getTickThreshold(currentPrice)) {
             // Stop a loss
@@ -157,7 +167,10 @@ class TradeManager(private val listener: TradeChangedListener) {
                     askType = 1
                     askPrice = Utils().convertPrice(
                         sqrt(
-                            (closePrice.toDouble().pow(2.0) + openPrice.toDouble().pow(2.0)) / 2
+                            (highPrice.toDouble().pow(2.0)
+                                    + closePrice.toDouble().pow(2.0)
+                                    + openPrice.toDouble().pow(2.0)
+                                    ) / 3
                         )
                     )
                     listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
@@ -167,9 +180,11 @@ class TradeManager(private val listener: TradeChangedListener) {
                     askType = 2
                     askPrice = Utils().convertPrice(
                         sqrt(
-                            (highPrice.toDouble().pow(2.0) + highPrice.toDouble().pow(2.0)
+                            (maxPrice.pow(2.0)
+                                    + maxPrice.pow(2.0)
+                                    + highPrice.toDouble().pow(2.0)
                                     + max(closePrice.toDouble().pow(2.0), openPrice.toDouble().pow(2.0))
-                                    ) / 3
+                                    ) / 4
                         )
                     )
                     listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
@@ -179,9 +194,10 @@ class TradeManager(private val listener: TradeChangedListener) {
                     askType = 3
                     askPrice = Utils().convertPrice(
                         sqrt(
-                            (highPrice.toDouble().pow(2.0)
+                            (maxPrice.pow(2.0)
+                                    + highPrice.toDouble().pow(2.0)
                                     + max(closePrice.toDouble().pow(2.0), openPrice.toDouble().pow(2.0))
-                                ) / 2
+                                ) / 3
                         )
                     )
                     listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
@@ -189,18 +205,23 @@ class TradeManager(private val listener: TradeChangedListener) {
 
                 else -> {
                     askType = 4
-                    askPrice = if (closePrice.toDouble() >= openPrice.toDouble().pow(2.0)) {
+                    askPrice = if (closePrice.toDouble() >= openPrice.toDouble()) {
                         Utils().convertPrice(
                             sqrt(
-                                (highPrice.toDouble().pow(2.0)
-                                        +closePrice.toDouble().pow(2.0)) / 2
+                                (maxPrice.pow(2.0)
+                                        +highPrice.toDouble().pow(2.0)
+                                        +closePrice.toDouble().pow(2.0)
+                                        ) / 3
                             )
                         )
                     } else {
                         Utils().convertPrice(
                             sqrt(
-                                (closePrice.toDouble().pow(2.0)
-                                        +openPrice.toDouble().pow(2.0)) / 2
+                                (maxPrice.pow(2.0)
+                                        +highPrice.toDouble().pow(2.0)
+                                        +closePrice.toDouble().pow(2.0)
+                                        +openPrice.toDouble().pow(2.0)
+                                        ) / 4
                             )
                         )
                     }

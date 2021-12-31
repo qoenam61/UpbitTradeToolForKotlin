@@ -539,6 +539,13 @@ class TradeFragment: Fragment() {
 
             maxProfitRate = max(profitRate, maxProfitRate)
             postInfo.maxProfitRate = maxProfitRate
+
+            if (postInfo.maxPrice == null) {
+                postInfo.maxPrice = currentPrice
+            } else {
+                postInfo.maxPrice = max(currentPrice, postInfo.maxPrice!!)
+            }
+
             tradePostMapInfo[marketId!!] = postInfo
 
             if (responseOrder != null) {

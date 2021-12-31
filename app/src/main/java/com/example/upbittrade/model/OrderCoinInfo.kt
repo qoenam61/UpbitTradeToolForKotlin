@@ -51,6 +51,7 @@ class OrderCoinInfo: TradeCoinInfo {
     var tradeAskTime: Long? = null
     var currentTime: Long? = null
 
+    var maxPrice: Double? = null
     var maxProfitRate: Double = 0.0
 
     var volume: Double? = null
