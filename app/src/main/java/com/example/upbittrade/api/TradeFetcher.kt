@@ -200,15 +200,42 @@ class TradeFetcher(val listener: PostOrderListener) {
         val ordType: String? = postOrderItem.ordType
         val identifier: UUID? = postOrderItem.identifier
 
+        val state: String? = postOrderItem.state
+        val page: Number? = postOrderItem.page
+        val orderBy: String? = postOrderItem.orderBy
+
         val params = HashMap<String?, String?>()
         params["market"] = marketId
-        params["side"] = side
-        params["volume"] = volume
+
+        // Order
+        if (side != null && side != "null") {
+            params["side"] = side
+        }
+        if (volume != null && volume != "null") {
+            params["volume"] = volume
+        }
         if (price != null && price != "null") {
             params["price"] = price
         }
-        params["ord_type"] = ordType
-        params["identifier"] = identifier.toString()
+        if (ordType != null && ordType != "null") {
+            params["ord_type"] = ordType
+        }
+        if (identifier != null && identifier.toString() != "null") {
+            params["identifier"] = identifier.toString()
+        }
+
+        // Get OrderInfo
+        if (state != null && state != "null") {
+            params["state"] = state
+        }
+        if (page != null) {
+            params["page"] = page.toString()
+        }
+        if (orderBy != null && orderBy != "null") {
+            params["order_by"] = orderBy
+        }
+
+
         postOrderRetrofit?.params = params
 
         val result = MutableLiveData<ResponseOrder>()

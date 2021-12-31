@@ -76,6 +76,10 @@ open class PostOrderItem: TaskItem {
     var ordType: String? = null
     var identifier: UUID? = null
 
+    var state: String? = null
+    var page: Number? = null
+    var orderBy: String? = null
+
     constructor(
         type: PostType,
         marketId: String?,
@@ -91,4 +95,17 @@ open class PostOrderItem: TaskItem {
         this.ordType = ordType
         this.identifier = identifier
     }
+
+    constructor(
+        type: PostType,
+        marketId: String?,
+        state: String?,
+        page: Number?,
+        orderBy: String?
+    ) : super(type, marketId) {
+        this.state = state
+        this.page = page
+        this.ordType = orderBy
+    }
+
 }
