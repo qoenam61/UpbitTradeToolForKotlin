@@ -228,6 +228,7 @@ class TradeFragment: Fragment() {
                             )
                         )
 
+                        /*
                         processor?.registerProcess(
                             PostOrderItem(
                                 CHECK_ORDER_INFO,
@@ -237,15 +238,16 @@ class TradeFragment: Fragment() {
                                 "asc"
                             )
                         )
-//                        processor?.registerProcess(
-//                            PostOrderItem(
-//                                CHECK_ORDER_INFO,
-//                                marketId,
-//                                "done",
-//                                1,
-//                                "asc"
-//                            )
-//                        )
+                        processor?.registerProcess(
+                            PostOrderItem(
+                                CHECK_ORDER_INFO,
+                                marketId,
+                                "done",
+                                1,
+                                "asc"
+                            )
+                        )
+                        */
                     }
                 }
 
