@@ -74,42 +74,61 @@ class OrderCoinInfo: TradeCoinInfo {
         val sign = closePrice!!.toDouble() - openPrice!!.toDouble() >= 0.0
 
         return when {
-            sign && (body / length == 1.0) -> {
-                // type0 : C
-                Utils().convertPrice(closePrice!!.toDouble())!!.toDouble()
+            body / length == 1.0 -> {
+                if (sign) {
+                    Utils().convertPrice(
+                        sqrt(
+                            (closePrice!!.toDouble().pow(2.0)
+                                    + openPrice!!.toDouble().pow(2.0)
+                                    ) / 2
+                        )
+                    )!!.toDouble()
+                } else {
+                    null
+                }
             }
 
-            sign && (body / length > 0.9) -> {
-                // type1 : HHCO
-                Utils().convertPrice(
-                    sqrt(
-                        (highPrice!!.toDouble().pow(2.0) + highPrice!!.toDouble().pow(2.0)
-                                + closePrice!!.toDouble().pow(2.0) + openPrice!!.toDouble()
-                            .pow(2.0)) / 4
-                    )
-                )!!.toDouble()
-
+            body / length > 0.5 && lowTail > highTail-> {
+                if (sign) {
+                    Utils().convertPrice(
+                        sqrt(
+                            (closePrice!!.toDouble().pow(2.0)
+                                    + openPrice!!.toDouble().pow(2.0)
+                                    + lowPrice!!.toDouble().pow(2.0)
+                                    ) / 3
+                        )
+                    )!!.toDouble()
+                } else {
+                    null
+                }
             }
 
-            sign && (body / length > 0.8) -> {
-                // type2 : HCO
-
-                Utils().convertPrice(
-                    sqrt(
-                        (highPrice!!.toDouble().pow(2.0) + closePrice!!.toDouble().pow(2.0)
-                                + openPrice!!.toDouble().pow(2.0)) / 3
-                    )
-                )!!.toDouble()
+            body / length > 0.5 && lowTail <= highTail-> {
+                if (sign) {
+                    Utils().convertPrice(
+                        sqrt(
+                            (openPrice!!.toDouble().pow(2.0)
+                                    + lowPrice!!.toDouble().pow(2.0)
+                                    ) / 2
+                        )
+                    )!!.toDouble()
+                } else {
+                    null
+                }
             }
 
-            sign && ((body + lowTail) / length > 0.8) -> {
-                // type3 : HCO
-                Utils().convertPrice(
-                    sqrt(
-                        (highPrice!!.toDouble().pow(2.0) + closePrice!!.toDouble().pow(2.0)
-                                + openPrice!!.toDouble().pow(2.0)) / 3
+            body / length <= 0.5 && lowTail > highTail-> {
+                if (sign) {
+                    Utils().convertPrice(
+                        sqrt(
+                            (openPrice!!.toDouble().pow(2.0)
+                                    + lowPrice!!.toDouble().pow(2.0)
+                                    ) / 2
+                        )
                     )
-                )!!.toDouble()
+                } else {
+                    null
+                }
             }
 
             else -> null

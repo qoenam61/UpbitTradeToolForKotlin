@@ -158,54 +158,104 @@ class TradeManager(private val listener: TradeChangedListener) {
 
             when {
                 //Market
-                !sign && body / length == 1.0 -> {
+                body / length == 1.0 -> {
                     askType = 0
-                    listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
+                    if (sign) {
+                        askPrice = Utils().convertPrice(
+                            sqrt(
+                                (maxPrice.pow(2.0)
+                                        + highPrice.toDouble().pow(2.0)
+                                        ) / 2
+                            )
+                        )
+                        listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
+                    } else {
+                        listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
+                    }
                 }
 
-                !sign && (body + highTail) / length > 0.8 -> {
-                    askType = 1
+                body / length > 0.5 && lowTail > highTail-> {
+                    if (sign) {
+                        askType = 1
+                        askPrice = Utils().convertPrice(
+                            sqrt(
+                                (maxPrice.pow(2.0)
+                                        + highPrice.toDouble().pow(2.0)
+                                        + closePrice.toDouble().pow(2.0)
+                                        ) / 3
+                            )
+                        )
+                    } else {
+                        askType = 2
+                        askPrice = Utils().convertPrice(
+                            sqrt(
+                                (highPrice.toDouble().pow(2.0)
+                                        + closePrice.toDouble().pow(2.0)
+                                        + openPrice.toDouble().pow(2.0)
+                                        ) / 3
+                            )
+                        )
+                    }
+                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
+                }
+
+                body / length > 0.5 && lowTail <= highTail-> {
+                    if (sign) {
+                        askType = 3
+                        askPrice = Utils().convertPrice(
+                            sqrt(
+                                (maxPrice.pow(2.0)
+                                        + highPrice.toDouble().pow(2.0)
+                                        + closePrice.toDouble().pow(2.0)
+                                        + openPrice.toDouble().pow(2.0)
+                                        ) / 4
+                            )
+                        )
+                    } else {
+                        askType = 4
+                        askPrice = Utils().convertPrice(
+                            sqrt(
+                                (highPrice.toDouble().pow(2.0)
+                                        + closePrice.toDouble().pow(2.0)
+                                        + openPrice.toDouble().pow(2.0)
+                                        + lowPrice.toDouble().pow(2.0)
+                                        ) / 4
+                            )
+                        )
+                    }
+                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
+                }
+
+                body / length <= 0.5 && lowTail > highTail-> {
+                    askType = 5
+                    askPrice = Utils().convertPrice(
+                        sqrt(
+                            (maxPrice.pow(2.0)
+                                    + highPrice.toDouble().pow(2.0)
+                                    + closePrice.toDouble().pow(2.0)
+                                    + openPrice.toDouble().pow(2.0)
+                                    + lowPrice.toDouble().pow(2.0)
+                                    ) / 5
+                        )
+                    )
+                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
+                }
+
+                body / length <= 0.5 && lowTail <= highTail-> {
+                    askType = 6
                     askPrice = Utils().convertPrice(
                         sqrt(
                             (highPrice.toDouble().pow(2.0)
                                     + closePrice.toDouble().pow(2.0)
-                                    + openPrice.toDouble().pow(2.0)
-                                    ) / 3
-                        )
-                    )
-                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
-                }
-
-                !sign && lowTail / length > 0.8 -> {
-                    askType = 2
-                    askPrice = Utils().convertPrice(
-                        sqrt(
-                            (maxPrice.pow(2.0)
-                                    + maxPrice.pow(2.0)
-                                    + highPrice.toDouble().pow(2.0)
-                                    + max(closePrice.toDouble().pow(2.0), openPrice.toDouble().pow(2.0))
-                                    ) / 4
-                        )
-                    )
-                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
-                }
-
-                !sign && lowTail / length > 0.5 -> {
-                    askType = 3
-                    askPrice = Utils().convertPrice(
-                        sqrt(
-                            (maxPrice.pow(2.0)
-                                    + highPrice.toDouble().pow(2.0)
-                                    + max(closePrice.toDouble().pow(2.0), openPrice.toDouble().pow(2.0))
-                                ) / 3
+                                    ) / 2
                         )
                     )
                     listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
                 }
 
                 else -> {
-                    askType = 4
                     askPrice = if (closePrice.toDouble() >= openPrice.toDouble()) {
+                        askType = 7
                         Utils().convertPrice(
                             sqrt(
                                 (maxPrice.pow(2.0)
@@ -215,6 +265,7 @@ class TradeManager(private val listener: TradeChangedListener) {
                             )
                         )
                     } else {
+                        askType = 8
                         Utils().convertPrice(
                             sqrt(
                                 (maxPrice.pow(2.0)
