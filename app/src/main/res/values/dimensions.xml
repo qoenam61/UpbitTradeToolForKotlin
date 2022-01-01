@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="text_view_login_height">30dp</dimen>
+    <dimen name="small_text_size">12sp</dimen>
     <dimen name="default_text_size">18sp</dimen>
     <dimen name="large_text_size">22sp</dimen>
     <dimen name="low_text_size">15sp</dimen>
@@ -11,10 +12,10 @@
     <dimen name="short_margin">7dp</dimen>
     <dimen name="default_margin">7dp</dimen>
     <dimen name="large_margin">22dp</dimen>
-    <dimen name="larger_margin">44dp</dimen>
+    <dimen name="larger_margin">33dp</dimen>
     <dimen name="largest_margin">66dp</dimen>
     <dimen name="accounts_coin_list_height">80dp</dimen>
-    <dimen name="progress_circle_bar_margin">80dp</dimen>
+    <dimen name="progress_circle_bar_margin">66dp</dimen>
     <dimen name="evaluation_coin_list_column_height">20dp</dimen>
     <dimen name="coin_list_item_margin">3dp</dimen>
     <dimen name="default_view_height">330dp</dimen>

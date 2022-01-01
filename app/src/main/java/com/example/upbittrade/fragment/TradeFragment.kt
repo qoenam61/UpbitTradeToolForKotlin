@@ -103,6 +103,7 @@ class TradeFragment: Fragment() {
     private var tradeListView: RecyclerView? = null
     private var totalResultCount: TextView? = null
     private var circleBar: CircleProgressBar? = null
+    private var trendRate: TextView? = null
 
 
     var isRunning = false
@@ -191,6 +192,9 @@ class TradeFragment: Fragment() {
 
         circleBar = view.findViewById(R.id.circle_bar)
         circleBar?.progress = 0
+        circleBar?.progress = 0
+
+        trendRate = view.findViewById(R.id.trend_rate)
 
         reportPopup = TotalResultDialog(requireContext())
         val totalResultButton = view.findViewById<Button>(R.id.total_result)
@@ -450,6 +454,19 @@ class TradeFragment: Fragment() {
                 acc + value.last().getDayChangeRate()
             }
             marketTrend = marketTrend!! / tradeMapInfo.size
+
+            trendRate?.text = Format.percentFormat.format(marketTrend)
+            when {
+                marketTrend!! < 0.0 -> {
+                    trendRate?.setTextColor(Color.BLUE)
+                }
+                marketTrend!! > 0.0 -> {
+                    trendRate?.setTextColor(Color.RED)
+                }
+                else -> {
+                    trendRate?.setTextColor(Color.DKGRAY)
+                }
+            }
 
             Log.i(
                 TAG,

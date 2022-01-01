@@ -28,6 +28,15 @@
             android:layout_height="@dimen/larger_margin"
             android:layout_gravity="center"
             android:layout_marginStart="@dimen/progress_circle_bar_margin"/>
+        <TextView
+            android:id="@+id/trend_rate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textStyle="bold"
+            android:textSize="@dimen/small_text_size"
+            android:layout_margin="@dimen/default_margin"
+            android:text="x%"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
