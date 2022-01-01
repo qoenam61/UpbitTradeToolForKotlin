@@ -92,10 +92,11 @@ class OrderCoinInfo: TradeCoinInfo {
                 if (sign) {
                     Utils().convertPrice(
                         sqrt(
-                            (closePrice!!.toDouble().pow(2.0)
+                            (highPrice!!.toDouble().pow(2.0)
+                                    + closePrice!!.toDouble().pow(2.0)
                                     + openPrice!!.toDouble().pow(2.0)
                                     + lowPrice!!.toDouble().pow(2.0)
-                                    ) / 3
+                                    ) / 4
                         )
                     )!!.toDouble()
                 } else {
@@ -107,7 +108,7 @@ class OrderCoinInfo: TradeCoinInfo {
                 if (sign) {
                     Utils().convertPrice(
                         sqrt(
-                            (openPrice!!.toDouble().pow(2.0)
+                            (closePrice!!.toDouble().pow(2.0)
                                     + lowPrice!!.toDouble().pow(2.0)
                                     ) / 2
                         )
@@ -121,9 +122,10 @@ class OrderCoinInfo: TradeCoinInfo {
                 if (sign) {
                     Utils().convertPrice(
                         sqrt(
-                            (openPrice!!.toDouble().pow(2.0)
+                            (closePrice!!.toDouble().pow(2.0)
+                                    + openPrice!!.toDouble().pow(2.0)
                                     + lowPrice!!.toDouble().pow(2.0)
-                                    ) / 2
+                                    ) / 3
                         )
                     )
                 } else {
