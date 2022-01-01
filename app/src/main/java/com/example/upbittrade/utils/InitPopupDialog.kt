@@ -14,24 +14,28 @@ class InitPopupDialog: Dialog {
 
     constructor(context: Context): super(context) {
         setContentView(R.layout.init_parameter_popup)
+        val buyingTotalPriceText = findViewById<TextView>(R.id.trade_total_buying_price)
         val buyingPriceText = findViewById<TextView>(R.id.trade_buying_price)
         val monitorTimeText = findViewById<TextView>(R.id.trade_monitor_time)
         val monitorRateText = findViewById<TextView>(R.id.trade_monitor_rate)
         val monitorTickText = findViewById<TextView>(R.id.trade_monitor_tick)
         val avgMinVsAvgDayText = findViewById<TextView>(R.id.min_price_per_avg_price)
+        val buyingTotalPriceEditText = findViewById<EditText>(R.id.trade_total_input_buying_price)
         val buyingPriceEditText = findViewById<EditText>(R.id.trade_input_buying_price)
         val monitorTimeEditText = findViewById<EditText>(R.id.trade_input_monitor_time)
         val monitorRateEditText = findViewById<EditText>(R.id.trade_input_monitor_rate)
         val monitorTickEditText = findViewById<EditText>(R.id.trade_input_monitor_tick)
         val avgMinVsAvgDayEditText = findViewById<EditText>(R.id.input_min_price_per_avg_price)
 
-        buyingPriceText.text = TradeFragment.Format.nonZeroFormat.format(TradeFragment.LIMIT_AMOUNT)
+        buyingTotalPriceText.text = TradeFragment.Format.nonZeroFormat.format(TradeFragment.LIMIT_AMOUNT)
+        buyingPriceText.text = TradeFragment.Format.nonZeroFormat.format(TradeFragment.BID_AMOUNT)
         monitorTimeText.text = TradeFragment.Format.zeroFormat.format(TradeFragment.BASE_TIME / (60 * 1000))
         monitorRateText.text = TradeFragment.Format.percentFormat.format(TradeFragment.THRESHOLD_RATE)
         monitorTickText.text = TradeFragment.Format.nonZeroFormat.format(TradeFragment.THRESHOLD_TICK)
         avgMinVsAvgDayText.text = TradeFragment.Format.percentFormat.format(TradeFragment.THRESHOLD_ACC_PRICE_VOLUME_RATE)
 
-        buyingPriceEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.LIMIT_AMOUNT))
+        buyingTotalPriceEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.LIMIT_AMOUNT))
+        buyingPriceEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.BID_AMOUNT))
         monitorTimeEditText.setText(TradeFragment.Format.zeroFormat.format(TradeFragment.BASE_TIME /  (60 * 1000)))
         monitorRateEditText.setText((TradeFragment.THRESHOLD_RATE * 100).toString())
         monitorTickEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.THRESHOLD_TICK))
@@ -39,15 +43,20 @@ class InitPopupDialog: Dialog {
 
         val applyButton = findViewById<Button>(R.id.trade_input_button)
         applyButton?.setOnClickListener {
+            val totalBuyingPrice = buyingTotalPriceEditText.text.toString()
             val buyingPrice = buyingPriceEditText.text.toString()
             val monitorTime = monitorTimeEditText.text.toString()
             val monitorRate = monitorRateEditText.text.toString()
             val monitorTick = monitorTickEditText.text.toString()
             val avgMinVsAvgDay = avgMinVsAvgDayEditText.text.toString()
             try {
+                TradeFragment.UserParam.totalPriceToBuy =
+                    if (totalBuyingPrice.isNotBlank()) totalBuyingPrice.replace(",", "").toDouble()
+                    else TradeFragment.LIMIT_AMOUNT
+
                 TradeFragment.UserParam.priceToBuy =
                     if (buyingPrice.isNotBlank()) buyingPrice.replace(",", "").toDouble()
-                    else TradeFragment.LIMIT_AMOUNT
+                    else TradeFragment.BID_AMOUNT
 
                 TradeFragment.UserParam.monitorTime =
                     if (monitorTime.isNotBlank()) monitorTime.toLong() * 60 * 1000
@@ -71,7 +80,8 @@ class InitPopupDialog: Dialog {
                     "Error NumberFormatException"
                 )
             }
-
+            buyingTotalPriceText.text =
+                TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.totalPriceToBuy)
             buyingPriceText.text =
                 TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.priceToBuy)
             monitorTimeText.text =
@@ -83,6 +93,7 @@ class InitPopupDialog: Dialog {
             avgMinVsAvgDayText.text =
                 TradeFragment.Format.percentFormat.format(TradeFragment.UserParam.thresholdAccPriceVolumeRate)
 
+            buyingTotalPriceEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.totalPriceToBuy))
             buyingPriceEditText.setText(TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.priceToBuy))
             monitorTimeEditText.setText(TradeFragment.Format.zeroFormat.format(TradeFragment.UserParam.monitorTime / (60 * 1000)))
             monitorRateEditText.setText((TradeFragment.UserParam.thresholdRate * 100).toString())
@@ -91,6 +102,7 @@ class InitPopupDialog: Dialog {
 
             TradeFragment.UserParam.thresholdTickGap = TradeFragment.UserParam.thresholdRate * 100 * 5
 
+            buyingTotalPriceEditText.clearFocus()
             buyingPriceEditText.clearFocus()
             monitorTimeEditText.clearFocus()
             monitorRateEditText.clearFocus()

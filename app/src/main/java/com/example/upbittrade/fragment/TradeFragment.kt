@@ -36,7 +36,8 @@ import kotlin.math.max
 class TradeFragment: Fragment() {
     companion object {
         const val TAG = "TradeFragment"
-        const val LIMIT_AMOUNT = 7000.0
+        const val LIMIT_AMOUNT = 28000.0
+        const val BID_AMOUNT = 7000.0
         const val BASE_TIME: Long = 5 * 60 * 1000
         const val THRESHOLD_RATE = 0.015
         const val THRESHOLD_TICK = 350
@@ -74,7 +75,8 @@ class TradeFragment: Fragment() {
 
     object UserParam {
         var completed = false
-        var priceToBuy: Double = LIMIT_AMOUNT
+        var totalPriceToBuy: Double = LIMIT_AMOUNT
+        var priceToBuy: Double = BID_AMOUNT
         var monitorTime: Long = BASE_TIME
         var thresholdRate: Double = THRESHOLD_RATE
         var thresholdRangeRate: Double = thresholdRate * 1.5
@@ -104,6 +106,7 @@ class TradeFragment: Fragment() {
     private var totalResultCount: TextView? = null
     private var circleBar: CircleProgressBar? = null
     private var trendRate: TextView? = null
+    private var totalBidPrice = HashMap<String, Double>()
 
 
     var isRunning = false
@@ -146,6 +149,7 @@ class TradeFragment: Fragment() {
                 if (side == "bid") {
                     if (postInfo?.state == OrderCoinInfo.State.BUYING) {
                         tradePostMapInfo.remove(marketId)
+                        totalBidPrice.remove(marketId)
                         activity.runOnUiThread {
                             tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
                             tradeAdapter?.notifyDataSetChanged()
@@ -711,6 +715,8 @@ class TradeFragment: Fragment() {
                 )
             )
             updateView()
+
+
             return true
         }
         return false
@@ -725,6 +731,7 @@ class TradeFragment: Fragment() {
         if (responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
             tradePostMapInfo.remove(marketId)
             tradeResponseMapInfo.remove(marketId)
+            totalBidPrice.remove(marketId)
             processor?.unregisterProcess(TICKER_INFO, marketId!!)
             processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId!!)
         }
@@ -756,6 +763,8 @@ class TradeFragment: Fragment() {
                     UUID.fromString(responseOrder.uuid)
                 )
             )
+
+            checkTotalBidPriceAmount(marketId, responseOrder)
         } else {
             Log.i(TAG, "postOrderBidWait marketId: $marketId state: ${tradePostInfo.state} uuid: ${responseOrder.uuid}")
         }
@@ -772,6 +781,8 @@ class TradeFragment: Fragment() {
             tradePostInfo.registerTime = null
             tradePostInfo.tradeBidTime = time
             tradePostMapInfo[marketId] = tradePostInfo
+
+            checkTotalBidPriceAmount(marketId, responseOrder)
         }
     }
 
@@ -818,6 +829,7 @@ class TradeFragment: Fragment() {
 
             tradePostMapInfo.remove(marketId)
             tradeResponseMapInfo.remove(marketId)
+            totalBidPrice.remove(marketId)
             updateView()
         }
     }
@@ -904,5 +916,19 @@ class TradeFragment: Fragment() {
         monitorAdapter!!.notifyDataSetChanged()
         tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
         tradeAdapter?.notifyDataSetChanged()
+    }
+
+    private fun checkTotalBidPriceAmount(marketId: String, responseOrder: ResponseOrder) {
+        if (!totalBidPrice.containsKey(marketId)) {
+            totalBidPrice[marketId] =
+                responseOrder.price!!.toDouble() * responseOrder.volume!!.toDouble()
+            val totalBidPrice = totalBidPrice.values.fold(0.0) {
+                    acc:Double, value: Double -> acc + value
+            }
+            if (totalBidPrice >= UserParam.totalPriceToBuy) {
+                isInSufficientFunds = true
+                Log.d(TAG, "[DEBUG] checkTotalBidPriceAmount - isInSufficientFunds: $isInSufficientFunds")
+            }
+        }
     }
 }
