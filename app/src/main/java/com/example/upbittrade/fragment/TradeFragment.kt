@@ -24,7 +24,8 @@ import com.example.upbittrade.data.TaskItem
 import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdBidRange
 import com.example.upbittrade.model.*
 import com.example.upbittrade.utils.*
-import com.example.upbittrade.utils.TradeAdapter.Companion.Type.*
+import com.example.upbittrade.utils.TradeAdapter.Companion.Type.MONITOR_LIST
+import com.example.upbittrade.utils.TradeAdapter.Companion.Type.TRADE_LIST
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -219,11 +220,15 @@ class TradeFragment: Fragment() {
                     if (bidPrice != null) {
                         val volume = (UserParam.priceToBuy / bidPrice)
                         val uuid = UUID.randomUUID()
+
+                        val timeZoneFormat = Format.timeFormat
+                        timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
                         Log.d(TAG, "[DEBUG] onPostBid - key: $marketId " +
                                 "bidPrice: ${Format.nonZeroFormat.format(bidPrice)} " +
                                 "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
                                 "PostState: ${orderCoinInfo.state} " +
-                                "uuid: $uuid"
+                                "uuid: $uuid" +
+                                "time: ${timeZoneFormat.format(System.currentTimeMillis())}"
                         )
 
                         orderCoinInfo.state = OrderCoinInfo.State.BUYING
@@ -605,10 +610,26 @@ class TradeFragment: Fragment() {
     private fun makeResponseMapInfo(responseOrder: ResponseOrder) {
         val marketId = responseOrder.marketId!!
         val time: Long = System.currentTimeMillis()
-        val timeZoneFormat = Format.timeFormat
         val price = responseOrder.price?.toDouble()
         val volume = responseOrder.volume?.toDouble()
+        val timeZoneFormat = Format.timeFormat
         timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
+
+        if (responseOrder.createdAt != null) {
+            val myDate = responseOrder.createdAt
+            val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZZZZ")
+            if (sdf != null) {
+                val date = sdf.parse(myDate!!)
+                val millis = date.time
+                Log.d(TAG, "[DEBUG] makeResponseMapInfo: ${timeZoneFormat.format(millis)}")
+            } else {
+                Log.d(TAG, "[DEBUG] makeResponseMapInfo: date is Null")
+            }
+
+
+        } else {
+            Log.d(TAG, "[DEBUG] makeResponseMapInfo: myDate is Null")
+        }
         tradePostMapInfo[marketId]!!.currentTime = time
         Log.i(TAG, "makeResponseMapInfo marketId: $marketId state: ${responseOrder.state} " +
                 "side: ${responseOrder.side} " +
