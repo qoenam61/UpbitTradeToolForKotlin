@@ -68,7 +68,7 @@ class TradeViewModel: AndroidViewModel {
             input -> upbitFetcher?.deleteOrderInfo(input)
     }
 
-    val resultOrderInfo: LiveData<List<ResponseOrder>>? = Transformations.switchMap(checkOrderInfo) {
+    val resultCheckOrderInfo: LiveData<List<ResponseOrder>>? = Transformations.switchMap(checkOrderInfo) {
             input -> upbitFetcher?.checkOrderInfo(input)
     }
 

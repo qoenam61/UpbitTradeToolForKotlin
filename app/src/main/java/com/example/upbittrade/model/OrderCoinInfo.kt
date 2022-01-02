@@ -46,6 +46,7 @@ class OrderCoinInfo: TradeCoinInfo {
 
     var state: State = State.READY
 
+    var orderTime: Long? = null
     var registerTime: Long? = null
     var tradeBidTime: Long? = null
     var tradeAskTime: Long? = null
