@@ -305,6 +305,25 @@ class TradeFragment: Fragment() {
                             uuid
                         )
                     )
+
+                    processor?.registerProcess(
+                        PostOrderItem(
+                            CHECK_ORDER_INFO,
+                            marketId,
+                            "wait",
+                            1,
+                            "asc"
+                        )
+                    )
+                    processor?.registerProcess(
+                        PostOrderItem(
+                            CHECK_ORDER_INFO,
+                            marketId,
+                            "done",
+                            1,
+                            "asc"
+                        )
+                    )
                 }
                 tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
                 activity?.runOnUiThread {
@@ -850,6 +869,7 @@ class TradeFragment: Fragment() {
                     "uuid: ${responseOrder.uuid}")
             processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
             processor?.registerProcess(TaskItem(TICKER_INFO, marketId))
+            processor?.unregisterProcess(CHECK_ORDER_INFO, marketId)
 
             tradePostInfo.state = OrderCoinInfo.State.BUY
             tradePostInfo.registerTime = null
