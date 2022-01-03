@@ -1,11 +1,15 @@
 package com.example.upbittrade.model
 
+import android.util.Log
 import com.example.upbittrade.utils.Utils
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 class OrderCoinInfo: TradeCoinInfo {
+    companion object {
+        const val TAG = "OrderCoinInfo"
+    }
     enum class State {
         READY,
         BUYING,
@@ -61,6 +65,8 @@ class OrderCoinInfo: TradeCoinInfo {
     var askPrice: Double? = null
     var type: Int? = null
 
+    var bidType: Int? = null
+
     fun getBidPrice(): Double? {
         val highTail: Double = (highPrice!!.toDouble() - closePrice!!.toDouble()
             .coerceAtLeast(openPrice!!.toDouble()))
@@ -74,9 +80,11 @@ class OrderCoinInfo: TradeCoinInfo {
 
         val sign = closePrice!!.toDouble() - openPrice!!.toDouble() >= 0.0
 
-        return when {
+        val bidPrice: Double?
+        when {
             body / length == 1.0 -> {
-                if (sign) {
+                bidPrice = if (sign) {
+                    bidType = 0
                     Utils().convertPrice(
                         sqrt(
                             (highPrice!!.toDouble().pow(2.0)
@@ -86,12 +94,14 @@ class OrderCoinInfo: TradeCoinInfo {
                         )
                     )
                 } else {
+                    bidType = 1
                     null
                 }
             }
 
             body / length > 0.5 && lowTail > highTail-> {
-                if (sign) {
+                bidPrice = if (sign) {
+                    bidType = 2
                     Utils().convertPrice(
                         sqrt(
                             (highPrice!!.toDouble().pow(2.0)
@@ -102,12 +112,14 @@ class OrderCoinInfo: TradeCoinInfo {
                         )
                     )
                 } else {
+                    bidType = 3
                     null
                 }
             }
 
             body / length > 0.5 && lowTail <= highTail-> {
-                if (sign) {
+                bidPrice = if (sign) {
+                    bidType = 4
                     Utils().convertPrice(
                         sqrt(
                             (highPrice!!.toDouble().pow(2.0)
@@ -118,12 +130,14 @@ class OrderCoinInfo: TradeCoinInfo {
                         )
                     )
                 } else {
+                    bidType = 5
                     null
                 }
             }
 
             body / length <= 0.5 && lowTail > highTail-> {
-                if (sign) {
+                bidPrice = if (sign) {
+                    bidType = 6
                     Utils().convertPrice(
                         sqrt(
                             (highPrice!!.toDouble().pow(2.0)
@@ -134,12 +148,18 @@ class OrderCoinInfo: TradeCoinInfo {
                         )
                     )
                 } else {
+                    bidType = 7
                     null
                 }
             }
 
-            else -> null
+            else -> {
+                bidType = 9
+                bidPrice = null
+            }
         }
+
+        return bidPrice
     }
 
     fun getProfit(): Double? {

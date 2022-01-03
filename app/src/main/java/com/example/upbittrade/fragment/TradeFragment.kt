@@ -225,15 +225,17 @@ class TradeFragment: Fragment() {
                         val volume = (UserParam.priceToBuy / bidPrice)
                         val uuid = UUID.randomUUID()
                         val time = System.currentTimeMillis()
+                        val bidType = orderCoinInfo.bidType
 
                         val timeZoneFormat = Format.timeFormat
                         timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
                         Log.d(TAG, "[DEBUG] onPostBid - key: $marketId " +
                                 "bidPrice: ${Format.nonZeroFormat.format(bidPrice)} " +
                                 "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
+                                "bidType: $bidType " +
                                 "PostState: ${orderCoinInfo.state} " +
                                 "uuid: $uuid" +
-                                "time: ${timeZoneFormat.format(time)}"
+                                "time: ${timeZoneFormat.format(time)} "
                         )
 
                         orderCoinInfo.state = OrderCoinInfo.State.BUYING
