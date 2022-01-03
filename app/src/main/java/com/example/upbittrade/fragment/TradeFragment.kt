@@ -381,7 +381,6 @@ class TradeFragment: Fragment() {
         }
         viewModel?.resultCheckOrderInfo?.observe(viewCycleOwner) {
                 responseOrder ->
-            Log.d(TAG, "[DEBUG] resultOrderInfo: $responseOrder")
             checkOrderInfo(responseOrder)
         }
     }
