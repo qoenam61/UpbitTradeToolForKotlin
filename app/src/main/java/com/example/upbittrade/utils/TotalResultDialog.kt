@@ -46,7 +46,7 @@ class TotalResultDialog: Dialog {
         } else {
             profitPrice?.text = TradeFragment.Format.nonZeroFormat.format(profit)
         }
-        
+
         when {
             profit > 0 -> {
                 profitPrice?.setTextColor(Color.RED)

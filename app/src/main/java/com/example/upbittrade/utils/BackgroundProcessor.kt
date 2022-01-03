@@ -155,17 +155,22 @@ class BackgroundProcessor : Thread {
         val iterator = TaskList.iterator()
         while (iterator.hasNext()) {
             val list = iterator.next()
-            if (list.type == CHECK_ORDER_INFO) {
-                val extendList = list as PostOrderItem
-                val extendItem = item as PostOrderItem
-                if (list.type == item.type && list.marketId.equals(item.marketId)
-                    && extendList.state.equals(extendItem.state)) {
-                    Log.i(TAG, "registerProcess type: ${item.type} duplicated id: ${item.marketId} state: ${item.marketId}")
+            when {
+                list.type == CHECK_ORDER_INFO && list.type == item.type && list.marketId.equals(item.marketId) -> {
+                    val extendList = list as PostOrderItem
+                    val extendItem = item as PostOrderItem
+                    if (!extendList.state.equals(extendItem.state)) {
+                        break
+                    } else {
+                        Log.i(TAG, "registerProcess type: ${item.type} duplicated id: ${item.marketId} state: ${item.marketId}")
+                        return
+                    }
+                }
+
+                list.type == item.type && list.marketId.equals(item.marketId) -> {
+                    Log.i(TAG, "registerProcess type: ${item.type} duplicated id: ${item.marketId}")
                     return
                 }
-            } else if (list.type == item.type && list.marketId.equals(item.marketId)) {
-                Log.i(TAG, "registerProcess type: ${item.type} duplicated id: ${item.marketId}")
-                return
             }
         }
 
