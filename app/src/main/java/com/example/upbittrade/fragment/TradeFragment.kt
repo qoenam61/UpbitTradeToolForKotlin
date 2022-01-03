@@ -203,7 +203,6 @@ class TradeFragment: Fragment() {
 
         circleBar = view.findViewById(R.id.circle_bar)
         circleBar?.progress = 0
-        circleBar?.progress = 0
 
         trendRate = view.findViewById(R.id.trend_rate)
 
@@ -810,20 +809,37 @@ class TradeFragment: Fragment() {
         if (!responseOrder.state.equals("wait")) {
             return
         }
-        if (responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
+
+        val postInfo = tradePostMapInfo[marketId] ?: return
+
+        if (postInfo.state == OrderCoinInfo.State.BUYING
+            && responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
             tradePostMapInfo.remove(marketId)
             tradeResponseMapInfo.remove(marketId)
             totalBidPrice.remove(marketId)
-            processor?.unregisterProcess(TICKER_INFO, marketId)
-            processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+            processor?.apply {
+                unregisterProcess(TICKER_INFO, marketId)
+                unregisterProcess(SEARCH_ORDER_INFO, marketId)
+                unregisterProcess(CHECK_ORDER_INFO, marketId)
+            }
         }
 
-        if (responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
-            processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
-            tradePostMapInfo[marketId]?.state = OrderCoinInfo.State.BUY
-            tradePostMapInfo[marketId]?.registerTime = null
-            tradeResponseMapInfo[marketId]?.side = "bid"
-            tradeResponseMapInfo[marketId]?.state = "done"
+        if (postInfo.state == OrderCoinInfo.State.SELLING
+            && responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
+            processor?.apply {
+                unregisterProcess(SEARCH_ORDER_INFO, marketId)
+                unregisterProcess(CHECK_ORDER_INFO, marketId)
+            }
+            tradePostMapInfo[marketId]?.apply {
+                state = OrderCoinInfo.State.BUY
+                orderTime = null
+                registerTime = null
+                tradeResponseMapInfo[marketId]?.apply {
+                    side = "bid"
+                    state = "done"
+                }
+            }
+
         }
         updateView()
     }
@@ -861,14 +877,20 @@ class TradeFragment: Fragment() {
             Log.d(TAG, "[DEBUG] postOrderBidDone marketId: $marketId " +
                     "state: ${tradePostInfo.state} -> BUY " +
                     "uuid: ${responseOrder.uuid}")
-            processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
-            processor?.registerProcess(TaskItem(TICKER_INFO, marketId))
-            processor?.unregisterProcess(CHECK_ORDER_INFO, marketId)
 
-            tradePostInfo.state = OrderCoinInfo.State.BUY
-            tradePostInfo.orderTime = null
-            tradePostInfo.registerTime = null
-            tradePostInfo.tradeBidTime = time
+            processor?.apply {
+                unregisterProcess(SEARCH_ORDER_INFO, marketId)
+                registerProcess(TaskItem(TICKER_INFO, marketId))
+                unregisterProcess(CHECK_ORDER_INFO, marketId)
+            }
+
+            tradePostInfo.apply {
+                state = OrderCoinInfo.State.BUY
+                orderTime = null
+                registerTime = null
+                tradeBidTime = time
+            }
+
             tradePostMapInfo[marketId] = tradePostInfo
             tradeResponseMapInfo[marketId] = responseOrder
 
@@ -878,15 +900,16 @@ class TradeFragment: Fragment() {
 
     private fun postOrderAskWait(marketId: String, time: Long, responseOrder: ResponseOrder) {
         val tradePostInfo: OrderCoinInfo = tradePostMapInfo[marketId] ?: return
-        val registerTime: Long? = tradePostInfo.registerTime
 
-        if (tradePostInfo.state == OrderCoinInfo.State.SELLING && registerTime == null) {
+        if (tradePostInfo.state == OrderCoinInfo.State.SELLING && tradePostInfo.registerTime == null) {
             Log.d(TAG, "[DEBUG] postOrderAskWait marketId: $marketId " +
                     "state: BUY -> ${tradePostInfo.state} " +
                     "uuid: ${responseOrder.uuid}")
 
-            tradePostInfo.registerTime = time
-            tradePostInfo.askPrice = responseOrder.price?.toDouble()
+            tradePostInfo.apply {
+                registerTime = time
+                askPrice = responseOrder.price?.toDouble()
+            }
 
             tradePostMapInfo[marketId] = tradePostInfo
             tradeResponseMapInfo[marketId] = responseOrder
@@ -910,17 +933,23 @@ class TradeFragment: Fragment() {
                     "state: ${tradePostInfo.state} -> SELL " +
                     "uuid: ${responseOrder.uuid}")
 
-            processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
-            processor?.unregisterProcess(TICKER_INFO, marketId)
-            processor?.unregisterProcess(CHECK_ORDER_INFO, marketId)
+            processor?.apply {
+                unregisterProcess(SEARCH_ORDER_INFO, marketId)
+                unregisterProcess(TICKER_INFO, marketId)
+                unregisterProcess(CHECK_ORDER_INFO, marketId)
+            }
 
             isInSufficientFunds = false
-            tradePostInfo.state = OrderCoinInfo.State.SELL
-            tradePostInfo.askPrice = responseOrder.price?.toDouble()
-            tradePostInfo.volume = responseOrder.volume?.toDouble()
-            tradePostInfo.orderTime = null
-            tradePostInfo.registerTime = null
-            tradePostInfo.tradeAskTime = time
+
+            tradePostInfo.apply {
+                state = OrderCoinInfo.State.SELL
+                askPrice = responseOrder.price?.toDouble()
+                volume = responseOrder.volume?.toDouble()
+                orderTime = null
+                registerTime = null
+                tradeAskTime = time
+            }
+
             tradePostMapInfo[marketId] = tradePostInfo
             tradeResponseMapInfo[marketId] = responseOrder
 
