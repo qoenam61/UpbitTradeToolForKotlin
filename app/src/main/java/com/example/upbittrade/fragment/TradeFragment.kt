@@ -675,6 +675,10 @@ class TradeFragment: Fragment() {
 
     private fun makeResponseMapInfo(responseOrder: ResponseOrder) {
         val marketId = responseOrder.marketId!!
+        if (tradePostMapInfo[marketId] == null || responseOrder == null) {
+            return
+        }
+
         val time: Long = System.currentTimeMillis()
         val price = responseOrder.price?.toDouble()
         val volume = responseOrder.volume?.toDouble()
@@ -728,6 +732,10 @@ class TradeFragment: Fragment() {
 
     private fun updateResponseMapInfo(responseOrder: ResponseOrder) {
         val marketId: String = responseOrder.marketId!!
+        if (tradePostMapInfo[marketId] == null || responseOrder == null) {
+            return
+        }
+
         val time: Long = System.currentTimeMillis()
         val timeZoneFormat = Format.timeFormat
         val price = responseOrder.price?.toDouble()
