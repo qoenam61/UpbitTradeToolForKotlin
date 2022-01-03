@@ -421,15 +421,15 @@ class TradeFragment: Fragment() {
             if (orderTime != null && createdTime - orderTime < thresholdTime) {
                 val timeZoneFormat = Format.timeFormat
                 timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
-                Log.i(TAG, "checkOrderInfo marketId: $marketId state: ${responseOrder.state} " +
-                        "side: ${responseOrder.side} " +
-                        "price: ${if (price == null) null else Format.zeroFormat.format(price)} " +
-                        "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
-                        "time: ${timeZoneFormat.format(createdTime)}"
-                )
                 if ((postInfo.state == OrderCoinInfo.State.BUYING && responseOrder.side.equals("bid"))
                             || (postInfo.state == OrderCoinInfo.State.SELLING && responseOrder.side.equals("ask"))
                 ) {
+                    Log.i(TAG, "checkOrderInfo marketId: $marketId state: ${responseOrder.state} " +
+                            "side: ${responseOrder.side} " +
+                            "price: ${if (price == null) null else Format.zeroFormat.format(price)} " +
+                            "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
+                            "time: ${timeZoneFormat.format(createdTime)}"
+                    )
                     makeResponseMapInfo(responseOrder)
                 }
             }
