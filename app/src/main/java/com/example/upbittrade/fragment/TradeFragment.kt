@@ -126,9 +126,8 @@ class TradeFragment: Fragment() {
                 Log.d(TAG, "[DEBUG] onInSufficientFunds marketId: $marketId side: $side errorCode: $errorCode uuid: $uuid")
 
                 val postInfo = tradePostMapInfo[marketId] ?: return
-/*
-                if (side == "ask" && errorCode == 400) {
-                    if (postInfo.state != OrderCoinInfo.State.SELLING) {
+                /*if (side == "ask" && errorCode == 400) {
+                    if (postInfo.state == OrderCoinInfo.State.SELLING) {
                         val time: Long = System.currentTimeMillis()
                         val tradePostInfo = tradePostMapInfo[marketId]
                         val responseOrder = tradeResponseMapInfo[marketId]
@@ -139,8 +138,9 @@ class TradeFragment: Fragment() {
                 }*/
 
                 if (side == "bid" && errorCode == 400) {
-                    isInSufficientFunds = true
                     if (postInfo.state == OrderCoinInfo.State.BUYING) {
+                        isInSufficientFunds = true
+                        processor?.unregisterProcess(CHECK_ORDER_INFO, marketId)
                         tradePostMapInfo.remove(marketId)
                         activity.runOnUiThread {
                             tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
@@ -156,6 +156,7 @@ class TradeFragment: Fragment() {
 
                 if (side == "bid") {
                     if (postInfo.state == OrderCoinInfo.State.BUYING) {
+                        processor?.unregisterProcess(CHECK_ORDER_INFO, marketId)
                         tradePostMapInfo.remove(marketId)
                         totalBidPrice.remove(marketId)
                         activity.runOnUiThread {
