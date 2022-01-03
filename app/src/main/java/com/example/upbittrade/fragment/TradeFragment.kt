@@ -396,7 +396,6 @@ class TradeFragment: Fragment() {
         var createdTime: Long?
         val price = responseOrder.price?.toDouble()
         val volume = responseOrder.volume?.toDouble()
-        val time: Long = System.currentTimeMillis()
 
         if (createdAt != null) {
             val myDate = responseOrder.createdAt
@@ -408,15 +407,15 @@ class TradeFragment: Fragment() {
             createdTime = date?.time
 
             if (createdTime != null) {
-                Log.d(TAG, "[DEBUG] checkOrderInfo marketId: $marketId state: ${responseOrder.state} " +
-                        "side: ${responseOrder.side} " +
-                        "price: ${if (price == null) null else Format.zeroFormat.format(price)} " +
-                        "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
-                        "time: ${timeZoneFormat.format(createdTime)}"
-                )
                 if (tradePostMapInfo[marketId] != null) {
                     val orderTime = tradePostMapInfo[marketId]!!.orderTime
                     if (orderTime != null && createdTime - orderTime < UserParam.monitorTime * 6) {
+                        Log.i(TAG, "checkOrderInfo marketId: $marketId state: ${responseOrder.state} " +
+                                "side: ${responseOrder.side} " +
+                                "price: ${if (price == null) null else Format.zeroFormat.format(price)} " +
+                                "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
+                                "time: ${timeZoneFormat.format(createdTime)}"
+                        )
                         makeResponseMapInfo(responseOrder)
                     }
                 }
