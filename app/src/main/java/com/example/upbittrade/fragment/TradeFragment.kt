@@ -125,8 +125,8 @@ class TradeFragment: Fragment() {
             override fun onInSufficientFunds(marketId: String, side: String, errorCode:Int, uuid: UUID) {
                 Log.d(TAG, "[DEBUG] onInSufficientFunds marketId: $marketId side: $side errorCode: $errorCode uuid: $uuid")
 
-                /*val postInfo = tradePostMapInfo[marketId] ?: return
-
+                val postInfo = tradePostMapInfo[marketId] ?: return
+/*
                 if (side == "ask" && errorCode == 400) {
                     if (postInfo.state != OrderCoinInfo.State.SELLING) {
                         val time: Long = System.currentTimeMillis()
@@ -140,13 +140,13 @@ class TradeFragment: Fragment() {
 
                 if (side == "bid" && errorCode == 400) {
                     isInSufficientFunds = true
-//                    if (postInfo.state == OrderCoinInfo.State.BUYING) {
-//                        tradePostMapInfo.remove(marketId)
-//                        activity.runOnUiThread {
-//                            tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
-//                            tradeAdapter?.notifyDataSetChanged()
-//                        }
-//                    }
+                    if (postInfo.state == OrderCoinInfo.State.BUYING) {
+                        tradePostMapInfo.remove(marketId)
+                        activity.runOnUiThread {
+                            tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
+                            tradeAdapter?.notifyDataSetChanged()
+                        }
+                    }
                 }
             }
 
