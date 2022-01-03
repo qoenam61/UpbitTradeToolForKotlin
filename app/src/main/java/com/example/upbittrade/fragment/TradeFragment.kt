@@ -406,7 +406,19 @@ class TradeFragment: Fragment() {
 
         if (createdTime != null) {
             val orderTime = postInfo.orderTime
-            if (orderTime != null && createdTime - orderTime < UserParam.monitorTime * 6) {
+            val thresholdTime: Long = when {
+                responseOrder.state.equals("wait") -> {
+                    UserParam.monitorTime
+                }
+                responseOrder.state.equals("done") -> {
+                    UserParam.monitorTime * 5
+                }
+                else -> {
+                    0
+                }
+            }
+
+            if (orderTime != null && createdTime - orderTime < thresholdTime) {
                 val timeZoneFormat = Format.timeFormat
                 timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
                 Log.i(TAG, "checkOrderInfo marketId: $marketId state: ${responseOrder.state} " +
@@ -415,8 +427,11 @@ class TradeFragment: Fragment() {
                         "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
                         "time: ${timeZoneFormat.format(createdTime)}"
                 )
-
-                makeResponseMapInfo(responseOrder)
+                if ((postInfo.state == OrderCoinInfo.State.BUYING && responseOrder.side.equals("bid"))
+                            || (postInfo.state == OrderCoinInfo.State.SELLING && responseOrder.side.equals("ask"))
+                ) {
+                    makeResponseMapInfo(responseOrder)
+                }
             }
         }
     }
@@ -803,8 +818,8 @@ class TradeFragment: Fragment() {
         val marketId = responseOrder.marketId ?: return
         Log.d(TAG, "[DEBUG] resultDeleteOrderInfo marketId : $marketId " +
                 "side: ${responseOrder.side} " +
-                "state: ${responseOrder.state}" +
-                "uuid: ${responseOrder.uuid}"
+                "state: ${responseOrder.state} " +
+                "uuid: ${responseOrder.uuid} "
         )
         if (!responseOrder.state.equals("wait")) {
             return
