@@ -375,16 +375,19 @@ class TradeFragment: Fragment() {
         }
         viewModel?.resultCheckOrderInfo?.observe(viewCycleOwner) {
                 responseOrder ->
-            checkOrderInfo(responseOrder)
             Log.d(TAG, "[DEBUG] resultOrderInfo: $responseOrder")
+            checkOrderInfo(responseOrder)
         }
     }
 
     private fun checkOrderInfo(responseOrderList: List<ResponseOrder>?) {
-        val responseOrder = responseOrderList?.first() ?: return
+        if (responseOrderList.isNullOrEmpty()) {
+            return
+        }
+        val responseOrder = responseOrderList.first()
         val marketId = responseOrder.marketId!!
         val createdAt = responseOrder.createdAt
-        var createdTime: Long? = null
+        var createdTime: Long?
         val price = responseOrder.price?.toDouble()
         val volume = responseOrder.volume?.toDouble()
         val time: Long = System.currentTimeMillis()
@@ -408,22 +411,7 @@ class TradeFragment: Fragment() {
 
                 val orderTime = tradePostMapInfo[marketId]!!.orderTime
                 if (orderTime!! - createdTime < UserParam.monitorTime) {
-                    if (responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
-                        if (responseOrder.state.equals("wait")) {
-                            postOrderBidWait(marketId, time, responseOrder)
-                        } else if (responseOrder.state.equals("done")) {
-                            postOrderBidDone(marketId, time, responseOrder)
-                        }
-                    }
-
-                    if (responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
-                        if (responseOrder.state.equals("wait")) {
-                            postOrderAskWait(marketId, time, responseOrder)
-                        } else if (responseOrder.state.equals("done")) {
-                            postOrderAskDone(marketId, time, responseOrder)
-                        }
-                    }
-
+                    makeResponseMapInfo(responseOrder)
                 }
             }
         }
