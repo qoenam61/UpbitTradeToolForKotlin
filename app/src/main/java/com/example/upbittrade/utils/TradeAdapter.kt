@@ -149,12 +149,26 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         if (tradeInfo != null) {
             holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
 
-            if (tradeInfo.closePrice!!.toDouble() < 100.0) {
-                holder.tradePrice?.text =
-                    TradeFragment.Format.zeroFormat.format(tradeInfo.closePrice!!.toDouble())
-            } else {
-                holder.tradePrice?.text =
-                    TradeFragment.Format.nonZeroFormat.format(tradeInfo.closePrice!!.toDouble())
+            val price = tradeInfo.closePrice
+            if (price != null) {
+                when {
+                    price.toDouble() < 100.0 -> {
+                        holder.tradePrice?.text =
+                            TradeFragment.Format.zeroFormat.format(price.toDouble())
+                    }
+                    price.toDouble() < 10.0 -> {
+                        holder.tradePrice?.text =
+                            TradeFragment.Format.zeroFormat2.format(price.toDouble())
+                    }
+                    price.toDouble() < 1.0 -> {
+                        holder.tradePrice?.text =
+                            TradeFragment.Format.zeroFormat3.format(price.toDouble())
+                    }
+                    else -> {
+                        holder.tradePrice?.text =
+                            TradeFragment.Format.nonZeroFormat.format(price.toDouble())
+                    }
+                }
             }
 
             holder.tradePriceRate?.text =
@@ -285,25 +299,50 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 }
             }
 
-            if (tradeInfo.currentPrice != null ) {
-                if (tradeInfo.currentPrice!!.toDouble() < 100.0) {
-                    holder.tradePrice?.text =
-                        TradeFragment.Format.zeroFormat.format(tradeInfo.currentPrice!!)
-                } else {
-                    holder.tradePrice?.text =
-                        TradeFragment.Format.nonZeroFormat.format(tradeInfo.currentPrice!!)
+            val price = tradeInfo.currentPrice
+            if (price != null) {
+                when {
+                    price.toDouble() < 100.0 -> {
+                        holder.tradePrice?.text =
+                            TradeFragment.Format.zeroFormat.format(price.toDouble())
+                    }
+                    price.toDouble() < 10.0 -> {
+                        holder.tradePrice?.text =
+                            TradeFragment.Format.zeroFormat2.format(price.toDouble())
+                    }
+                    price.toDouble() < 1.0 -> {
+                        holder.tradePrice?.text =
+                            TradeFragment.Format.zeroFormat3.format(price.toDouble())
+                    }
+                    else -> {
+                        holder.tradePrice?.text =
+                            TradeFragment.Format.nonZeroFormat.format(price.toDouble())
+                    }
                 }
             }
 
-            if (tradeInfo.getBidPrice() != null) {
-                if (tradeInfo.getBidPrice()!! < 100.0) {
-                    holder.tradeBidPrice?.text =
-                        TradeFragment.Format.zeroFormat.format(tradeInfo.getBidPrice()!!)
-                } else {
-                    holder.tradeBidPrice?.text =
-                        TradeFragment.Format.nonZeroFormat.format(tradeInfo.getBidPrice()!!)
+            val bidPrice = tradeInfo.getBidPrice()
+            if (bidPrice != null) {
+                when {
+                    bidPrice < 100.0 -> {
+                        holder.tradeBidPrice?.text =
+                            TradeFragment.Format.zeroFormat.format(bidPrice)
+                    }
+                    bidPrice < 10.0 -> {
+                        holder.tradeBidPrice?.text =
+                            TradeFragment.Format.zeroFormat2.format(bidPrice)
+                    }
+                    bidPrice < 1.0 -> {
+                        holder.tradeBidPrice?.text =
+                            TradeFragment.Format.zeroFormat3.format(bidPrice)
+                    }
+                    else -> {
+                        holder.tradeBidPrice?.text =
+                            TradeFragment.Format.nonZeroFormat.format(bidPrice)
+                    }
                 }
             }
+
 
             if (tradeInfo.tradeBidTime != null) {
                 holder.tradeBidTime?.text =
@@ -365,23 +404,47 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 }
             }
 
-            if (tradeInfo.askPrice != null) {
-                if (tradeInfo.askPrice!! < 100.0) {
-                    holder.tradeAskPrice?.text =
-                        TradeFragment.Format.zeroFormat.format(tradeInfo.askPrice!!)
-                } else {
-                    holder.tradeAskPrice?.text =
-                        TradeFragment.Format.nonZeroFormat.format(tradeInfo.askPrice!!)
+            val askPrice = tradeInfo.askPrice
+            if (askPrice != null) {
+                when {
+                    askPrice < 100.0 -> {
+                        holder.tradeAskPrice?.text =
+                            TradeFragment.Format.zeroFormat.format(askPrice)
+                    }
+                    askPrice < 10.0 -> {
+                        holder.tradeAskPrice?.text =
+                            TradeFragment.Format.zeroFormat2.format(askPrice)
+                    }
+                    askPrice < 1.0 -> {
+                        holder.tradeAskPrice?.text =
+                            TradeFragment.Format.zeroFormat3.format(askPrice)
+                    }
+                    else -> {
+                        holder.tradeAskPrice?.text =
+                            TradeFragment.Format.nonZeroFormat.format(askPrice)
+                    }
                 }
             }
 
-            if (tradeInfo.getBidPrice() != null) {
-                if (tradeInfo.getBidPrice()!! < 100.0) {
-                    holder.tradeBidPrice?.text =
-                        TradeFragment.Format.zeroFormat.format(tradeInfo.getBidPrice()!!)
-                } else {
-                    holder.tradeBidPrice?.text =
-                        TradeFragment.Format.nonZeroFormat.format(tradeInfo.getBidPrice()!!)
+            val bidPrice = tradeInfo.getBidPrice()
+            if (bidPrice != null) {
+                when {
+                    bidPrice < 100.0 -> {
+                        holder.tradeBidPrice?.text =
+                            TradeFragment.Format.zeroFormat.format(bidPrice)
+                    }
+                    bidPrice < 10.0 -> {
+                        holder.tradeBidPrice?.text =
+                            TradeFragment.Format.zeroFormat2.format(bidPrice)
+                    }
+                    bidPrice < 1.0 -> {
+                        holder.tradeBidPrice?.text =
+                            TradeFragment.Format.zeroFormat3.format(bidPrice)
+                    }
+                    else -> {
+                        holder.tradeBidPrice?.text =
+                            TradeFragment.Format.nonZeroFormat.format(bidPrice)
+                    }
                 }
             }
 

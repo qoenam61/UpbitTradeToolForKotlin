@@ -70,6 +70,8 @@ class TradeFragment: Fragment() {
     object Format {
         var nonZeroFormat = DecimalFormat("###,###,###,###")
         var zeroFormat = DecimalFormat("###,###,###,###.#")
+        var zeroFormat2 = DecimalFormat("###,###,###,###.##")
+        var zeroFormat3 = DecimalFormat("###,###,###,###.####")
         var percentFormat = DecimalFormat("###.##" + "%")
         var timeFormat = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
         var durationFormat = SimpleDateFormat("HH:mm:ss")
