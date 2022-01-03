@@ -827,7 +827,7 @@ class TradeFragment: Fragment() {
 
         val postInfo = tradePostMapInfo[marketId] ?: return
 
-        if (postInfo.state == OrderCoinInfo.State.BUYING
+        if (postInfo.state == OrderCoinInfo.State.DELETE
             && responseOrder.side.equals("bid") || responseOrder.side.equals("BID")) {
             tradePostMapInfo.remove(marketId)
             tradeResponseMapInfo.remove(marketId)
@@ -839,7 +839,7 @@ class TradeFragment: Fragment() {
             }
         }
 
-        if (postInfo.state == OrderCoinInfo.State.SELLING
+        if (postInfo.state == OrderCoinInfo.State.DELETE
             && responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
             processor?.apply {
                 unregisterProcess(SEARCH_ORDER_INFO, marketId)

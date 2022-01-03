@@ -207,4 +207,8 @@ class BackgroundProcessor : Thread {
         interrupt()
         TaskList.clear()
     }
+
+    fun getTaskList(): ConcurrentLinkedDeque<TaskItem> {
+        return TaskList
+    }
 }
