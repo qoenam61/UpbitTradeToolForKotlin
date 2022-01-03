@@ -74,6 +74,7 @@ class TradeFragment: Fragment() {
         var zeroFormat3 = DecimalFormat("###,###,###,###.####")
         var percentFormat = DecimalFormat("###.##" + "%")
         var timeFormat = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
+        @SuppressLint("SimpleDateFormat")
         var durationFormat = SimpleDateFormat("HH:mm:ss")
     }
 
@@ -124,18 +125,18 @@ class TradeFragment: Fragment() {
             override fun onInSufficientFunds(marketId: String, side: String, errorCode:Int, uuid: UUID) {
                 Log.d(TAG, "[DEBUG] onInSufficientFunds marketId: $marketId side: $side errorCode: $errorCode uuid: $uuid")
 
-//                val postInfo = tradePostMapInfo[marketId] ?: return
+                /*val postInfo = tradePostMapInfo[marketId] ?: return
 
                 if (side == "ask" && errorCode == 400) {
-//                    if (postInfo.state != OrderCoinInfo.State.SELLING) {
-//                        val time: Long = System.currentTimeMillis()
-//                        val tradePostInfo = tradePostMapInfo[marketId]
-//                        val responseOrder = tradeResponseMapInfo[marketId]
-//                        if (tradePostInfo != null && responseOrder != null) {
-//                            postOrderAskDone(marketId, time, responseOrder)
-//                        }
-//                    }
-                }
+                    if (postInfo.state != OrderCoinInfo.State.SELLING) {
+                        val time: Long = System.currentTimeMillis()
+                        val tradePostInfo = tradePostMapInfo[marketId]
+                        val responseOrder = tradeResponseMapInfo[marketId]
+                        if (tradePostInfo != null && responseOrder != null) {
+                            postOrderAskDone(marketId, time, responseOrder)
+                        }
+                    }
+                }*/
 
                 if (side == "bid" && errorCode == 400) {
                     isInSufficientFunds = true
@@ -231,7 +232,7 @@ class TradeFragment: Fragment() {
                         timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
                         Log.d(TAG, "[DEBUG] onPostBid - key: $marketId " +
                                 "bidPrice: ${Format.nonZeroFormat.format(bidPrice)} " +
-                                "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
+                                "volume: ${Format.zeroFormat.format(volume)} " +
                                 "bidType: $bidType " +
                                 "PostState: ${orderCoinInfo.state} " +
                                 "uuid: $uuid" +
@@ -390,6 +391,7 @@ class TradeFragment: Fragment() {
         }
     }
 
+    @SuppressLint("SimpleDateFormat")
     private fun checkOrderInfo(responseOrderList: List<ResponseOrder>?) {
         if (responseOrderList.isNullOrEmpty()) {
             return
