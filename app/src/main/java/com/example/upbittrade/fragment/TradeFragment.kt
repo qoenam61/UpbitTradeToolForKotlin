@@ -279,7 +279,10 @@ class TradeFragment: Fragment() {
             override fun onPostAsk(marketId: String, orderCoinInfo: OrderCoinInfo, orderType: String, askPrice: Double?, volume: Double) {
                 if (orderCoinInfo.state == OrderCoinInfo.State.BUY) {
                     val uuid = UUID.randomUUID()
+                    val time = System.currentTimeMillis()
 
+                    val timeZoneFormat = Format.timeFormat
+                    timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
                     Log.d(TAG, "[DEBUG] onPostAsk - key: $marketId " +
                             "sellPrice: ${
                                 if (askPrice == null)
@@ -289,10 +292,13 @@ class TradeFragment: Fragment() {
                             } " +
                             "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
                             "PostState: ${orderCoinInfo.state} " +
-                            "uuid: $uuid"
+                            "uuid: $uuid " +
+                            "time: ${timeZoneFormat.format(time)}"
                     )
 
                     orderCoinInfo.state = OrderCoinInfo.State.SELLING
+                    orderCoinInfo.orderTime = time
+
                     tradePostMapInfo[marketId] = orderCoinInfo
                     processor?.registerProcess(
                         PostOrderItem(
@@ -408,11 +414,13 @@ class TradeFragment: Fragment() {
                         "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
                         "time: ${timeZoneFormat.format(createdTime)}"
                 )
-
-                val orderTime = tradePostMapInfo[marketId]!!.orderTime
-                if (orderTime!! - createdTime < UserParam.monitorTime) {
-                    makeResponseMapInfo(responseOrder)
+                if (tradePostMapInfo[marketId] != null) {
+                    val orderTime = tradePostMapInfo[marketId]!!.orderTime
+                    if (orderTime != null && createdTime - orderTime < UserParam.monitorTime * 6) {
+                        makeResponseMapInfo(responseOrder)
+                    }
                 }
+
             }
         }
     }
@@ -860,6 +868,7 @@ class TradeFragment: Fragment() {
             processor?.unregisterProcess(CHECK_ORDER_INFO, marketId)
 
             tradePostInfo.state = OrderCoinInfo.State.BUY
+            tradePostInfo.orderTime = null
             tradePostInfo.registerTime = null
             tradePostInfo.tradeBidTime = time
             tradePostMapInfo[marketId] = tradePostInfo
@@ -911,6 +920,7 @@ class TradeFragment: Fragment() {
             tradePostInfo.state = OrderCoinInfo.State.SELL
             tradePostInfo.askPrice = responseOrder.price?.toDouble()
             tradePostInfo.volume = responseOrder.volume?.toDouble()
+            tradePostInfo.orderTime = null
             tradePostInfo.registerTime = null
             tradePostInfo.tradeAskTime = time
             tradePostMapInfo[marketId] = tradePostInfo
