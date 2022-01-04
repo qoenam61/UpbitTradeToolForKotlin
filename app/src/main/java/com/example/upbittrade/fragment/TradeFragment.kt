@@ -119,6 +119,8 @@ class TradeFragment: Fragment() {
 
     var isInSufficientFunds = false
 
+    val DEBUG = false
+
     override fun onAttach(activity: Activity) {
         super.onAttach(activity)
         mainActivity = activity as TradePagerActivity
@@ -313,7 +315,7 @@ class TradeFragment: Fragment() {
 
     override fun onStart() {
         super.onStart()
-        Log.i(TAG, "onStart: ")
+//        Log.i(TAG, "onStart: ")
         val viewCycleOwner = viewLifecycleOwner
         viewModel?.resultMarketsInfo?.observe(viewCycleOwner) {
                 marketsInfo ->
@@ -392,12 +394,22 @@ class TradeFragment: Fragment() {
                 if ((postInfo.state == OrderCoinInfo.State.BUYING && responseOrder.side.equals("bid"))
                             || (postInfo.state == OrderCoinInfo.State.SELLING && responseOrder.side.equals("ask"))
                 ) {
-                    Log.i(TAG, "checkOrderInfo marketId: $marketId state: ${responseOrder.state} " +
-                            "side: ${responseOrder.side} " +
-                            "price: ${if (price == null) null else Format.zeroFormat.format(price)} " +
-                            "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
-                            "time: ${timeZoneFormat.format(createdTime)}"
-                    )
+                    if (DEBUG) {
+                        Log.i(TAG,"checkOrderInfo marketId: $marketId " +
+                                "state: ${responseOrder.state} " +
+                                "side: ${responseOrder.side} " +
+                                "price: ${
+                                    if (price == null) null else Format.zeroFormat.format(
+                                        price
+                                    )
+                                } " +
+                                "volume: ${
+                                    if (volume == null) null else Format.zeroFormat.format(
+                                        volume
+                                    )
+                                } " +
+                                "time: ${timeZoneFormat.format(createdTime)}")
+                    }
                     makeResponseMapInfo(responseOrder)
                 }
             }
@@ -530,10 +542,7 @@ class TradeFragment: Fragment() {
                 }
             }
 
-            Log.i(
-                TAG,
-                "makeTradeMapInfo - marketTrend: ${Format.percentFormat.format(marketTrend)}"
-            )
+//            Log.i(TAG,"makeTradeMapInfo - marketTrend: ${Format.percentFormat.format(marketTrend)}")
 
             circleBar?.setProgressBackgroundColor(
                 when {
@@ -580,8 +589,7 @@ class TradeFragment: Fragment() {
             val rate = tradeMonitorMapInfo[marketId]!!.getAvgAccVolumeRate()
             val timeZoneFormat = Format.timeFormat
             timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
-            Log.i(
-                TAG, "makeTradeMapInfo marketId: $marketId " +
+            Log.i(TAG, "makeTradeMapInfo marketId: $marketId " +
                         "count: ${tradeMonitorMapInfo[marketId]!!.tickCount} " +
                         "rate: ${Format.percentFormat.format(rate)} " +
                         "highPrice: ${Format.nonZeroFormat.format(tradeMonitorMapInfo[marketId]!!.highPrice)} " +
@@ -663,12 +671,14 @@ class TradeFragment: Fragment() {
         timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
 
         tradePostMapInfo[marketId]!!.currentTime = time
-        Log.i(TAG, "makeResponseMapInfo marketId: $marketId state: ${responseOrder.state} " +
-                "side: ${responseOrder.side} " +
-                "price: ${if (price == null) null else Format.zeroFormat.format(price)} " +
-                "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
-                "time: ${timeZoneFormat.format(time)}"
-        )
+        if (DEBUG) {
+            Log.i(TAG, "makeResponseMapInfo marketId: $marketId state: ${responseOrder.state} " +
+                        "side: ${responseOrder.side} " +
+                        "price: ${if (price == null) null else Format.zeroFormat.format(price)} " +
+                        "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
+                        "time: ${timeZoneFormat.format(time)}"
+            )
+        }
 
         if (responseOrder.state.equals("wait")) {
             if (postOrderDeleteWait(marketId, responseOrder)) {
@@ -716,12 +726,14 @@ class TradeFragment: Fragment() {
         val volume = responseOrder.volume?.toDouble()
         timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
         tradePostMapInfo[marketId]!!.currentTime = time
-        Log.i(TAG, "updateResponseMapInfo marketId: $marketId state: ${responseOrder.state} " +
-                "side: ${responseOrder.side} " +
-                "price: ${if (price == null) null else Format.zeroFormat.format(price)} " +
-                "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
-                "time: ${timeZoneFormat.format(time)}"
-        )
+        if (DEBUG) {
+            Log.i(TAG, "updateResponseMapInfo marketId: $marketId state: ${responseOrder.state} " +
+                        "side: ${responseOrder.side} " +
+                        "price: ${if (price == null) null else Format.zeroFormat.format(price)} " +
+                        "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
+                        "time: ${timeZoneFormat.format(time)}"
+            )
+        }
 
         if (responseOrder.state.equals("wait")) {
             if (postOrderDeleteWait(marketId, responseOrder)) {
@@ -850,7 +862,7 @@ class TradeFragment: Fragment() {
 
             checkTotalBidPriceAmount(marketId, responseOrder)
         } else {
-            Log.i(TAG, "postOrderBidWait marketId: $marketId state: ${tradePostInfo.state} uuid: ${responseOrder.uuid}")
+            Log.w(TAG, "postOrderBidWait marketId: $marketId state: ${tradePostInfo.state} uuid: ${responseOrder.uuid}")
         }
     }
 
@@ -905,7 +917,7 @@ class TradeFragment: Fragment() {
                 )
             )
         } else {
-            Log.i(TAG, "postOrderAskWait marketId: $marketId state: ${tradePostInfo.state} uuid: ${responseOrder.uuid}")
+            Log.w(TAG, "postOrderAskWait marketId: $marketId state: ${tradePostInfo.state} uuid: ${responseOrder.uuid}")
         }
     }
 
@@ -949,10 +961,10 @@ class TradeFragment: Fragment() {
 
     private fun makeTotalResult(tradePostInfo: OrderCoinInfo) {
         val askPrice = tradePostInfo.askPrice
-        Log.i(TAG, "makeTotalResult marketId: ${tradePostInfo.marketId} " +
-                "state: ${tradePostInfo.state} " +
-                "bidPrice: ${tradePostInfo.getBidPrice()} " +
-                "askPrice: $askPrice")
+//        Log.i(TAG, "makeTotalResult marketId: ${tradePostInfo.marketId} " +
+//                "state: ${tradePostInfo.state} " +
+//                "bidPrice: ${tradePostInfo.getBidPrice()} " +
+//                "askPrice: $askPrice")
 
         if (askPrice == null) {
             tradePostInfo.askPrice = tradePostInfo.currentPrice
@@ -996,14 +1008,8 @@ class TradeFragment: Fragment() {
 
     override fun onPause() {
         super.onPause()
-        Log.i(TAG, "onPause: ")
         processor?.release()
         isRunning = false
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.i(TAG, "onStop: ")
     }
 
     private fun addCount(it: TradeInfo, string: String): Int {

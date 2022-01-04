@@ -75,10 +75,7 @@ class InitPopupDialog: Dialog {
                     else TradeFragment.THRESHOLD_ACC_PRICE_VOLUME_RATE
 
             } catch (e: NumberFormatException) {
-                Log.e(
-                    TradeFragment.TAG,
-                    "Error NumberFormatException"
-                )
+                Log.e(TradeFragment.TAG, "Error NumberFormatException")
             }
             buyingTotalPriceText.text =
                 TradeFragment.Format.nonZeroFormat.format(TradeFragment.UserParam.totalPriceToBuy)

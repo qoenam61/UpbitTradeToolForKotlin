@@ -235,9 +235,7 @@ class TradeFetcher(val listener: PostOrderListener) {
                     val jObjError = JSONObject(
                         response.errorBody()!!.string()
                     )
-                    Log.w(
-                        TAG,
-                        "postOrderInfo"
+                    Log.w(TAG,"postOrderInfo"
                                 + " call: " + call.request()
                                 + " code: " + response.code()
                                 + " headers: " + response.headers()
@@ -379,17 +377,15 @@ class TradeFetcher(val listener: PostOrderListener) {
             ) {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as List<ResponseOrder>
-                    Log.i(TAG, "checkOrderInfo:  " +
-                            "raw: ${response.raw()} " +
-                            "body: ${(response.body() as List<ResponseOrder>)}"
-                    )
+//                    Log.i(TAG, "checkOrderInfo:  " +
+//                            "raw: ${response.raw()} " +
+//                            "body: ${(response.body() as List<ResponseOrder>)}"
+//                    )
                 } else {
                     val jObjError = JSONObject(
                         response.errorBody()!!.string()
                     )
-                    Log.w(
-                        TAG,
-                        "checkOrderInfo"
+                    Log.w(TAG, "checkOrderInfo"
                                 + " call: " + call.request()
                                 + " code: " + response.code()
                                 + " headers: " + response.headers()
