@@ -247,35 +247,15 @@ class TradeFragment: Fragment() {
                         orderCoinInfo.orderTime = time
 
                         tradePostMapInfo[marketId] = orderCoinInfo
-                        processor?.registerProcess(
-                            PostOrderItem(
-                                POST_ORDER_INFO,
-                                marketId,
-                                "bid",
-                                volume,
-                                bidPrice,
-                                "limit",
-                                uuid
-                            )
-                        )
 
                         processor?.registerProcess(
-                            PostOrderItem(
-                                CHECK_ORDER_INFO,
-                                marketId,
-                                "wait",
-                                1,
-                                "asc"
-                            )
+                            PostOrderItem(POST_ORDER_INFO, marketId, "bid", volume, bidPrice, "limit", uuid)
                         )
                         processor?.registerProcess(
-                            PostOrderItem(
-                                CHECK_ORDER_INFO,
-                                marketId,
-                                "done",
-                                1,
-                                "asc"
-                            )
+                            PostOrderItem(CHECK_ORDER_INFO, marketId, "wait", 1, "asc")
+                        )
+                        processor?.registerProcess(
+                            PostOrderItem(CHECK_ORDER_INFO, marketId, "done", 1, "asc")
                         )
                     }
                 }
@@ -310,35 +290,15 @@ class TradeFragment: Fragment() {
                     orderCoinInfo.orderTime = time
 
                     tradePostMapInfo[marketId] = orderCoinInfo
-                    processor?.registerProcess(
-                        PostOrderItem(
-                            POST_ORDER_INFO,
-                            marketId,
-                            "ask",
-                            volume,
-                            askPrice,
-                            orderType,
-                            uuid
-                        )
-                    )
 
                     processor?.registerProcess(
-                        PostOrderItem(
-                            CHECK_ORDER_INFO,
-                            marketId,
-                            "wait",
-                            1,
-                            "asc"
-                        )
+                        PostOrderItem(POST_ORDER_INFO, marketId, "ask", volume, askPrice, orderType, uuid)
                     )
                     processor?.registerProcess(
-                        PostOrderItem(
-                            CHECK_ORDER_INFO,
-                            marketId,
-                            "done",
-                            1,
-                            "asc"
-                        )
+                        PostOrderItem(CHECK_ORDER_INFO, marketId, "wait", 1, "asc")
+                    )
+                    processor?.registerProcess(
+                        PostOrderItem(CHECK_ORDER_INFO, marketId, "done", 1, "asc")
                     )
                 }
                 tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()

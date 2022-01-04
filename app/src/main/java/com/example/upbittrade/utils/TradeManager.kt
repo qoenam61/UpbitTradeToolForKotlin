@@ -6,10 +6,8 @@ import com.example.upbittrade.fragment.TradeFragment.Companion.marketTrend
 import com.example.upbittrade.fragment.TradeFragment.Companion.tradeMapInfo
 import com.example.upbittrade.model.OrderCoinInfo
 import com.example.upbittrade.model.ResponseOrder
-import com.example.upbittrade.model.Ticker
 import com.example.upbittrade.model.TradeCoinInfo
 import java.lang.Double.max
-import java.util.*
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -39,11 +37,9 @@ class TradeManager(private val listener: TradeChangedListener) {
     }
 
     inner class FilterList(val marketIdList: List<String>?): Thread() {
-        var filteredList: List<String>? = null
         override fun run() {
             super.run()
-
-            filteredList = when(type) {
+            val filteredList = when(type) {
                 Type.POST_BID -> {
                     marketIdList?.filter { filterBuyingList(TradeFragment.tradeMonitorMapInfo[it])}
                 }
@@ -293,7 +289,7 @@ class TradeManager(private val listener: TradeChangedListener) {
                                 null 
                             else
                                 TradeFragment.Format.zeroFormat.format(askPrice)} " +
-                        "volume: ${if (volume == null) null else TradeFragment.Format.zeroFormat.format(volume)} " +
+                        "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
                         "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
                         "maxProfitRate: ${
                             TradeFragment.Format.percentFormat.format(
@@ -310,7 +306,7 @@ class TradeManager(private val listener: TradeChangedListener) {
             && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate) {
 
             //HCO
-            var askPrice = Utils().convertPrice(
+            val askPrice = Utils().convertPrice(
                 sqrt(
                     (highPrice.toDouble().pow(2.0)
                             + max(closePrice.toDouble().pow(2.0), openPrice.toDouble().pow(2.0))) / 2
@@ -321,7 +317,7 @@ class TradeManager(private val listener: TradeChangedListener) {
             Log.d(TAG, "[DEBUG] tacticalToSell time expired $type - marketId: $marketId " +
                     "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
                     "askPrice: $askPrice " +
-                    "volume: ${if (volume == null) null else TradeFragment.Format.zeroFormat.format(volume)} " +
+                    "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
                     "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
                     "maxProfitRate: ${
                         TradeFragment.Format.percentFormat.format(
@@ -336,7 +332,7 @@ class TradeManager(private val listener: TradeChangedListener) {
     private fun getTickThreshold(price: Double): Double {
         val baseTick = TradeFragment.UserParam.thresholdTickGap
         val rate = TradeFragment.UserParam.thresholdRate * 100 * 0.66
-        var result = TradeFragment.UserParam.thresholdTickGap
+        val result: Double
          when {
             price < 10 -> {
                 //0.01
