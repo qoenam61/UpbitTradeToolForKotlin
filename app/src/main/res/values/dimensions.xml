@@ -15,7 +15,7 @@
     <dimen name="larger_margin">33dp</dimen>
     <dimen name="largest_margin">66dp</dimen>
     <dimen name="accounts_coin_list_height">80dp</dimen>
-    <dimen name="progress_circle_bar_margin">66dp</dimen>
+    <dimen name="progress_circle_bar_margin">18dp</dimen>
     <dimen name="evaluation_coin_list_column_height">20dp</dimen>
     <dimen name="coin_list_item_margin">3dp</dimen>
     <dimen name="default_view_height">330dp</dimen>

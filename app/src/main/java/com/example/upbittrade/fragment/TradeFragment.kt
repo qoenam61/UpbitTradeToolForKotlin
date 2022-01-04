@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -140,6 +141,8 @@ class TradeFragment: Fragment() {
                 if (side == "bid" && errorCode == 400) {
                     if (postInfo.state == OrderCoinInfo.State.BUYING) {
                         isInSufficientFunds = true
+                        setBreakIconVisibility(isInSufficientFunds)
+
                         processor?.unregisterProcess(CHECK_ORDER_INFO, marketId)
                         tradePostMapInfo.remove(marketId)
                         activity.runOnUiThread {
@@ -960,6 +963,7 @@ class TradeFragment: Fragment() {
             }
 
             isInSufficientFunds = false
+            setBreakIconVisibility(isInSufficientFunds)
 
             tradePostInfo.apply {
                 state = OrderCoinInfo.State.SELL
@@ -1076,8 +1080,14 @@ class TradeFragment: Fragment() {
             }
             if (totalBidPrice >= UserParam.totalPriceToBuy) {
                 isInSufficientFunds = true
+                setBreakIconVisibility(isInSufficientFunds)
                 Log.d(TAG, "[DEBUG] checkTotalBidPriceAmount - isInSufficientFunds: $isInSufficientFunds")
             }
         }
+    }
+
+    private fun setBreakIconVisibility(visible: Boolean) {
+        view?.findViewById<ImageView>(R.id.insufficient_funds)?.visibility =
+            if(visible) View.VISIBLE else View.INVISIBLE
     }
 }

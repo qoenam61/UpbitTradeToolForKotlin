@@ -22,12 +22,20 @@
             android:layout_gravity="center"
             android:layout_marginStart="@dimen/large_margin"
             android:text="조건"/>
+        <ImageView
+            android:id="@+id/insufficient_funds"
+            android:layout_width="@dimen/larger_margin"
+            android:layout_height="@dimen/larger_margin"
+            android:layout_gravity="center"
+            android:layout_marginStart="@dimen/progress_circle_bar_margin"
+            android:visibility="invisible"
+            android:src="@drawable/img_break"/>
         <com.dinuscxj.progressbar.CircleProgressBar
             android:id="@+id/circle_bar"
             android:layout_width="@dimen/larger_margin"
             android:layout_height="@dimen/larger_margin"
-            android:layout_gravity="center"
-            android:layout_marginStart="@dimen/progress_circle_bar_margin"/>
+            android:layout_marginStart="@dimen/progress_circle_bar_margin"
+            android:layout_gravity="center"/>
         <TextView
             android:id="@+id/trend_rate"
             android:layout_width="wrap_content"
