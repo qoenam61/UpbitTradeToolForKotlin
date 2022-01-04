@@ -113,12 +113,13 @@ class TradeManager(private val listener: TradeChangedListener) {
         val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice!!
         val sign: Boolean = closePrice.toDouble() - openPrice.toDouble() >= 0.0
 
-//        val bidAskRate = TradeFragment.tradeMonitorMapInfo[marketId]?.getBidAskRate()!!
+        val bidAskRate = TradeFragment.tradeMonitorMapInfo[marketId]?.getBidAskRate()!!
         val bidAskPriceRate = TradeFragment.tradeMonitorMapInfo[marketId]?.getBidAskPriceRate()!!
 
         // Take a profit
         if (profitRate >= 0 && maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
             && tickGap > getTickThreshold(currentPrice)
+            && bidAskRate <= TradeFragment.UserParam.thresholdBidAskRate
             && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate) {
             val askPrice = Utils().convertPrice(
                 sqrt(
@@ -143,6 +144,7 @@ class TradeManager(private val listener: TradeChangedListener) {
             listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
         } else if (profitRate < TradeFragment.UserParam.thresholdRate * -0.66
             && tickGap > getTickThreshold(currentPrice)
+            && bidAskRate <= TradeFragment.UserParam.thresholdBidAskRate
             && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate) {
             // Stop a loss
             val highTail: Double = (highPrice.toDouble() - closePrice.toDouble()
@@ -300,6 +302,7 @@ class TradeManager(private val listener: TradeChangedListener) {
             && postInfo.getBuyDuration()!! > TradeFragment.UserParam.monitorTime * 5
             && tickGap <= getTickThreshold(currentPrice)
             && postInfo.tickCount!! <= TradeFragment.UserParam.thresholdTick * 1.5
+            && bidAskRate <= TradeFragment.UserParam.thresholdBidAskRate
             && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate) {
 
             //HCO
