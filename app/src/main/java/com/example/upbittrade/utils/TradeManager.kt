@@ -149,7 +149,8 @@ class TradeManager(private val listener: TradeChangedListener) {
             (profitRate < TradeFragment.UserParam.thresholdRate * -0.66
                     && tickGap > getTickThreshold(currentPrice)
                     && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate)
-            || (bidAskRate <= TradeFragment.UserParam.thresholdBidAskRate
+            || (profitRate >= 0
+                    && bidAskRate <= TradeFragment.UserParam.thresholdBidAskRate
                     && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate) -> {
                 val highTail: Double = (highPrice.toDouble() - closePrice.toDouble()
                     .coerceAtLeast(openPrice.toDouble()))
@@ -309,7 +310,6 @@ class TradeManager(private val listener: TradeChangedListener) {
                     && postInfo.getBuyDuration()!! > TradeFragment.UserParam.monitorTime * 5
                     && tickGap <= getTickThreshold(currentPrice)
                     && postInfo.tickCount!! <= TradeFragment.UserParam.thresholdTick * 1.5
-                    && bidAskRate <= TradeFragment.UserParam.thresholdBidAskRate
                     && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate -> {
 
                 //HCO
