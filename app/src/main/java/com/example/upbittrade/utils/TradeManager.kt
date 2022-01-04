@@ -342,13 +342,21 @@ class TradeManager(private val listener: TradeChangedListener) {
         val rate = TradeFragment.UserParam.thresholdRate * 100 * 0.66
         val result: Double
          when {
+             price < 0.1 -> {
+                 //0.0001
+                 result = baseTick * 2 * rate * price
+             }
+             price < 1 -> {
+                 //0.001
+                 result = baseTick * 2 * rate * price
+             }
             price < 10 -> {
                 //0.01
                 result = baseTick * 2 * rate * (price / 10)
             }
             price  < 100 -> {
                 //0.1
-                result = baseTick * 2 * rate * (price / 1000)
+                result = baseTick * 2 * rate * (price / 100)
             }
             price  < 1000 -> {
                 //1

@@ -6,6 +6,7 @@ import kotlin.math.roundToInt
 
 class Utils {
     fun convertPrice(price: Double): Double? {
+        val mFormatUnder1 = DecimalFormat("#.####")
         val mFormatUnder10 = DecimalFormat("#.##")
         val mFormatUnder100 = DecimalFormat("##.#")
         val mFormatUnder1_000 = DecimalFormat("###")
@@ -17,6 +18,14 @@ class Utils {
         var result: String? = null
         var priceResult = 0.0
         when {
+            price < 0.1 -> {
+                priceResult = floor(price * 10000) / 10000
+                result = mFormatUnder1.format(priceResult)
+            }
+            price < 1 -> {
+                priceResult = floor(price * 1000) / 1000
+                result = mFormatUnder1.format(priceResult)
+            }
             price < 10 -> {
                 priceResult = floor(price * 100) / 100
                 result = mFormatUnder10.format(priceResult)

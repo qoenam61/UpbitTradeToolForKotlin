@@ -147,6 +147,12 @@ open class TradeCoinInfo {
        }
 
       return when {
+          closePrice!!.toDouble() < 0.1 -> {
+              0.0001
+          }
+          closePrice!!.toDouble() < 1 -> {
+              0.001
+          }
           closePrice!!.toDouble() < 10 -> {
               0.01
           }

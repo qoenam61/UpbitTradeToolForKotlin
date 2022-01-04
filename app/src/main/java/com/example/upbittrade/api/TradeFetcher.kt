@@ -259,6 +259,10 @@ class TradeFetcher(val listener: PostOrderListener) {
                         && errorObj["name"] != null
                         && errorObj["name"] == "server_error") {
                         listener.onError(marketId, side, response.code(), identifier!!)
+                    } else if (response.code() == 400 && errorObj != null
+                        && errorObj["name"] != null
+                        && errorObj["name"] == "invalid_price_bid") {
+                        listener.onError(marketId, side, response.code(), identifier!!)
                     }
                 }
             }
