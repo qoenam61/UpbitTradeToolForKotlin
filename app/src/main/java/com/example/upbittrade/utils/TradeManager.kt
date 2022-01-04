@@ -116,177 +116,181 @@ class TradeManager(private val listener: TradeChangedListener) {
         val bidAskRate = TradeFragment.tradeMonitorMapInfo[marketId]?.getBidAskRate()!!
         val bidAskPriceRate = TradeFragment.tradeMonitorMapInfo[marketId]?.getBidAskPriceRate()!!
 
-        // Take a profit
-        if (profitRate >= 0 && maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
-            && tickGap > getTickThreshold(currentPrice)
-            && bidAskRate <= TradeFragment.UserParam.thresholdBidAskRate
-            && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate) {
-            val askPrice = Utils().convertPrice(
-                sqrt(
-                    (maxPrice.pow(2.0)
-                            + maxPrice.pow(2.0)
-                            + highPrice.toDouble().pow(2.0)
-                            + max(closePrice.toDouble().pow(2.0), openPrice.toDouble().pow(2.0))
-                            ) / 4
+        when {
+            // Take a profit
+            profitRate >= 0 && maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
+                    && tickGap > getTickThreshold(currentPrice)
+    //            && bidAskRate <= TradeFragment.UserParam.thresholdBidAskRate
+                    && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate -> {
+                val askPrice = Utils().convertPrice(
+                    sqrt(
+                        (maxPrice.pow(2.0)
+                                + maxPrice.pow(2.0)
+                                + highPrice.toDouble().pow(2.0)
+                                + max(closePrice.toDouble().pow(2.0), openPrice.toDouble().pow(2.0))
+                                ) / 4
+                    )
                 )
-            )
 
-            Log.d(TAG, "[DEBUG] tacticalToSell - Take a profit marketId: $marketId " +
-                    "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
-                    "maxPrice: ${TradeFragment.Format.zeroFormat.format(maxPrice)} " +
-                    "askPrice: ${TradeFragment.Format.zeroFormat.format(askPrice)} " +
-                    "volume: ${if (volume == null) null else TradeFragment.Format.zeroFormat.format(volume)} " +
-                    "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
-                    "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} " +
-                    "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} "
-            )
+                Log.d(TAG, "[DEBUG] tacticalToSell - Take a profit marketId: $marketId " +
+                        "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
+                        "maxPrice: ${TradeFragment.Format.zeroFormat.format(maxPrice)} " +
+                        "askPrice: ${TradeFragment.Format.zeroFormat.format(askPrice)} " +
+                        "volume: ${if (volume == null) null else TradeFragment.Format.zeroFormat.format(volume)} " +
+                        "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
+                        "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} " +
+                        "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} "
+                )
 
-            listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
-        } else if (profitRate < TradeFragment.UserParam.thresholdRate * -0.66
-            && tickGap > getTickThreshold(currentPrice)
-            && bidAskRate <= TradeFragment.UserParam.thresholdBidAskRate
-            && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate) {
+                listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
+            }
+
             // Stop a loss
-            val highTail: Double = (highPrice.toDouble() - closePrice.toDouble()
-                .coerceAtLeast(openPrice.toDouble()))
+            (profitRate < TradeFragment.UserParam.thresholdRate * -0.66
+                    && tickGap > getTickThreshold(currentPrice)
+                    && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate)
+            || (bidAskRate <= TradeFragment.UserParam.thresholdBidAskRate
+                    && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate) -> {
+                val highTail: Double = (highPrice.toDouble() - closePrice.toDouble()
+                    .coerceAtLeast(openPrice.toDouble()))
 
-            val lowTail: Double = (openPrice.toDouble()
-                .coerceAtMost(closePrice.toDouble()) - lowPrice.toDouble())
+                val lowTail: Double = (openPrice.toDouble()
+                    .coerceAtMost(closePrice.toDouble()) - lowPrice.toDouble())
 
-            val body: Double = abs(closePrice.toDouble() - openPrice.toDouble())
+                val body: Double = abs(closePrice.toDouble() - openPrice.toDouble())
 
-            val length: Double = highTail + lowTail + body
-            var askPrice: Double? = null
-            val askType: Int?
+                val length: Double = highTail + lowTail + body
+                var askPrice: Double? = null
+                val askType: Int?
 
-            when {
-                //Market
-                body / length == 1.0 -> {
-                    askType = 0
-                    if (sign) {
+                when {
+                    //Market
+                    body / length == 1.0 -> {
+                        askType = 0
+                        if (sign) {
+                            askPrice = Utils().convertPrice(
+                                sqrt(
+                                    (maxPrice.pow(2.0)
+                                            + highPrice.toDouble().pow(2.0)
+                                            ) / 2
+                                )
+                            )
+                            listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
+                        } else {
+                            listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
+                        }
+                    }
+
+                    body / length > 0.5 && lowTail > highTail-> {
+                        if (sign) {
+                            askType = 1
+                            askPrice = Utils().convertPrice(
+                                sqrt(
+                                    (maxPrice.pow(2.0)
+                                            + highPrice.toDouble().pow(2.0)
+                                            + closePrice.toDouble().pow(2.0)
+                                            ) / 3
+                                )
+                            )
+                        } else {
+                            askType = 2
+                            askPrice = Utils().convertPrice(
+                                sqrt(
+                                    (highPrice.toDouble().pow(2.0)
+                                            + closePrice.toDouble().pow(2.0)
+                                            + openPrice.toDouble().pow(2.0)
+                                            ) / 3
+                                )
+                            )
+                        }
+                        listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
+                    }
+
+                    body / length > 0.5 && lowTail <= highTail-> {
+                        if (sign) {
+                            askType = 3
+                            askPrice = Utils().convertPrice(
+                                sqrt(
+                                    (maxPrice.pow(2.0)
+                                            + highPrice.toDouble().pow(2.0)
+                                            + closePrice.toDouble().pow(2.0)
+                                            + openPrice.toDouble().pow(2.0)
+                                            ) / 4
+                                )
+                            )
+                        } else {
+                            askType = 4
+                            askPrice = Utils().convertPrice(
+                                sqrt(
+                                    (highPrice.toDouble().pow(2.0)
+                                            + closePrice.toDouble().pow(2.0)
+                                            + openPrice.toDouble().pow(2.0)
+                                            + lowPrice.toDouble().pow(2.0)
+                                            ) / 4
+                                )
+                            )
+                        }
+                        listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
+                    }
+
+                    body / length <= 0.5 && lowTail > highTail-> {
+                        askType = 5
                         askPrice = Utils().convertPrice(
                             sqrt(
                                 (maxPrice.pow(2.0)
                                         + highPrice.toDouble().pow(2.0)
+                                        + closePrice.toDouble().pow(2.0)
+                                        + openPrice.toDouble().pow(2.0)
+                                        + lowPrice.toDouble().pow(2.0)
+                                        ) / 5
+                            )
+                        )
+                        listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
+                    }
+
+                    body / length <= 0.5 && lowTail <= highTail-> {
+                        askType = 6
+                        askPrice = Utils().convertPrice(
+                            sqrt(
+                                (highPrice.toDouble().pow(2.0)
+                                        + closePrice.toDouble().pow(2.0)
                                         ) / 2
                             )
                         )
                         listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
-                    } else {
-                        listener.onPostAsk(marketId!!, postInfo, "market", null, volume!!)
+                    }
+
+                    else -> {
+                        askPrice = if (closePrice.toDouble() >= openPrice.toDouble()) {
+                            askType = 7
+                            Utils().convertPrice(
+                                sqrt(
+                                    (maxPrice.pow(2.0)
+                                            +highPrice.toDouble().pow(2.0)
+                                            +closePrice.toDouble().pow(2.0)
+                                            ) / 3
+                                )
+                            )
+                        } else {
+                            askType = 8
+                            Utils().convertPrice(
+                                sqrt(
+                                    (maxPrice.pow(2.0)
+                                            +highPrice.toDouble().pow(2.0)
+                                            +closePrice.toDouble().pow(2.0)
+                                            +openPrice.toDouble().pow(2.0)
+                                            ) / 4
+                                )
+                            )
+                        }
+                        listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
                     }
                 }
-
-                body / length > 0.5 && lowTail > highTail-> {
-                    if (sign) {
-                        askType = 1
-                        askPrice = Utils().convertPrice(
-                            sqrt(
-                                (maxPrice.pow(2.0)
-                                        + highPrice.toDouble().pow(2.0)
-                                        + closePrice.toDouble().pow(2.0)
-                                        ) / 3
-                            )
-                        )
-                    } else {
-                        askType = 2
-                        askPrice = Utils().convertPrice(
-                            sqrt(
-                                (highPrice.toDouble().pow(2.0)
-                                        + closePrice.toDouble().pow(2.0)
-                                        + openPrice.toDouble().pow(2.0)
-                                        ) / 3
-                            )
-                        )
-                    }
-                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
-                }
-
-                body / length > 0.5 && lowTail <= highTail-> {
-                    if (sign) {
-                        askType = 3
-                        askPrice = Utils().convertPrice(
-                            sqrt(
-                                (maxPrice.pow(2.0)
-                                        + highPrice.toDouble().pow(2.0)
-                                        + closePrice.toDouble().pow(2.0)
-                                        + openPrice.toDouble().pow(2.0)
-                                        ) / 4
-                            )
-                        )
-                    } else {
-                        askType = 4
-                        askPrice = Utils().convertPrice(
-                            sqrt(
-                                (highPrice.toDouble().pow(2.0)
-                                        + closePrice.toDouble().pow(2.0)
-                                        + openPrice.toDouble().pow(2.0)
-                                        + lowPrice.toDouble().pow(2.0)
-                                        ) / 4
-                            )
-                        )
-                    }
-                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
-                }
-
-                body / length <= 0.5 && lowTail > highTail-> {
-                    askType = 5
-                    askPrice = Utils().convertPrice(
-                        sqrt(
-                            (maxPrice.pow(2.0)
-                                    + highPrice.toDouble().pow(2.0)
-                                    + closePrice.toDouble().pow(2.0)
-                                    + openPrice.toDouble().pow(2.0)
-                                    + lowPrice.toDouble().pow(2.0)
-                                    ) / 5
-                        )
-                    )
-                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
-                }
-
-                body / length <= 0.5 && lowTail <= highTail-> {
-                    askType = 6
-                    askPrice = Utils().convertPrice(
-                        sqrt(
-                            (highPrice.toDouble().pow(2.0)
-                                    + closePrice.toDouble().pow(2.0)
-                                    ) / 2
-                        )
-                    )
-                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
-                }
-
-                else -> {
-                    askPrice = if (closePrice.toDouble() >= openPrice.toDouble()) {
-                        askType = 7
-                        Utils().convertPrice(
-                            sqrt(
-                                (maxPrice.pow(2.0)
-                                        +highPrice.toDouble().pow(2.0)
-                                        +closePrice.toDouble().pow(2.0)
-                                        ) / 3
-                            )
-                        )
-                    } else {
-                        askType = 8
-                        Utils().convertPrice(
-                            sqrt(
-                                (maxPrice.pow(2.0)
-                                        +highPrice.toDouble().pow(2.0)
-                                        +closePrice.toDouble().pow(2.0)
-                                        +openPrice.toDouble().pow(2.0)
-                                        ) / 4
-                            )
-                        )
-                    }
-                    listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
-                }
-            }
-            Log.d(TAG, "[DEBUG] tacticalToSell Stop a loss $askType - marketId: $marketId " +
+                Log.d(TAG, "[DEBUG] tacticalToSell Stop a loss $askType - marketId: $marketId " +
                         "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
                         "askPrice: ${
                             if (askPrice == null)
-                                null 
+                                null
                             else
                                 TradeFragment.Format.zeroFormat.format(askPrice)} " +
                         "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
@@ -298,33 +302,37 @@ class TradeManager(private val listener: TradeChangedListener) {
                         } " +
                         "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} ")
 
-        } else if(postInfo.getBuyDuration() != null
-            && postInfo.getBuyDuration()!! > TradeFragment.UserParam.monitorTime * 5
-            && tickGap <= getTickThreshold(currentPrice)
-            && postInfo.tickCount!! <= TradeFragment.UserParam.thresholdTick * 1.5
-            && bidAskRate <= TradeFragment.UserParam.thresholdBidAskRate
-            && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate) {
+            }
 
-            //HCO
-            val askPrice = Utils().convertPrice(
-                sqrt(
-                    (highPrice.toDouble().pow(2.0)
-                            + max(closePrice.toDouble().pow(2.0), openPrice.toDouble().pow(2.0))) / 2
+            //Expired
+            postInfo.getBuyDuration() != null
+                    && postInfo.getBuyDuration()!! > TradeFragment.UserParam.monitorTime * 5
+                    && tickGap <= getTickThreshold(currentPrice)
+                    && postInfo.tickCount!! <= TradeFragment.UserParam.thresholdTick * 1.5
+                    && bidAskRate <= TradeFragment.UserParam.thresholdBidAskRate
+                    && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate -> {
+
+                //HCO
+                val askPrice = Utils().convertPrice(
+                    sqrt(
+                        (highPrice.toDouble().pow(2.0)
+                                + max(closePrice.toDouble().pow(2.0), openPrice.toDouble().pow(2.0))) / 2
+                    )
                 )
-            )
-            listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
+                listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
 
-            Log.d(TAG, "[DEBUG] tacticalToSell time expired $type - marketId: $marketId " +
-                    "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
-                    "askPrice: $askPrice " +
-                    "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
-                    "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
-                    "maxProfitRate: ${
-                        TradeFragment.Format.percentFormat.format(
-                            maxProfitRate
-                        )
-                    } " +
-                    "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} ")
+                Log.d(TAG, "[DEBUG] tacticalToSell time expired $type - marketId: $marketId " +
+                        "currentPrice: ${TradeFragment.Format.zeroFormat.format(currentPrice)} " +
+                        "askPrice: $askPrice " +
+                        "volume: ${TradeFragment.Format.zeroFormat.format(volume)} " +
+                        "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
+                        "maxProfitRate: ${
+                            TradeFragment.Format.percentFormat.format(
+                                maxProfitRate
+                            )
+                        } " +
+                        "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} ")
+            }
         }
         return postInfo
     }

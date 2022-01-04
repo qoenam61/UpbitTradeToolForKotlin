@@ -1039,8 +1039,7 @@ class TradeFragment: Fragment() {
 
     private fun checkTotalBidPriceAmount(marketId: String, responseOrder: ResponseOrder) {
         if (!totalBidPrice.containsKey(marketId)) {
-            totalBidPrice[marketId] =
-                responseOrder.price!!.toDouble() * responseOrder.volume!!.toDouble()
+            totalBidPrice[marketId] = responseOrder.price!!.toDouble() * responseOrder.volume!!.toDouble()
             val totalBidPrice = totalBidPrice.values.fold(0.0) {
                     acc:Double, value: Double -> acc + value
             }
