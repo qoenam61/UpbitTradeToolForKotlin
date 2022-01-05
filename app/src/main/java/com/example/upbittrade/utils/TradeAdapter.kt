@@ -151,99 +151,35 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
 
             val price = tradeInfo.closePrice
             if (price != null) {
-                when {
-                    price.toDouble() < 100.0 -> {
-                        holder.tradePrice?.text =
-                            TradeFragment.Format.zeroFormat.format(price.toDouble())
-                    }
-                    price.toDouble() < 10.0 -> {
-                        holder.tradePrice?.text =
-                            TradeFragment.Format.zeroFormat2.format(price.toDouble())
-                    }
-                    price.toDouble() < 1.0 -> {
-                        holder.tradePrice?.text =
-                            TradeFragment.Format.zeroFormat3.format(price.toDouble())
-                    }
-                    else -> {
-                        holder.tradePrice?.text =
-                            TradeFragment.Format.nonZeroFormat.format(price.toDouble())
-                    }
-                }
+                holder.tradePrice?.text = getZeroFormatString(price.toDouble())
             }
 
             holder.tradePriceRate?.text =
                 TradeFragment.Format.percentFormat.format(tradeInfo.dayChangeRate)
-            when {
-                tradeInfo.dayChangeRate!!.compareTo(0.0) > 0 -> {
-                    holder.tradePrice?.setTextColor(Color.RED)
-                    holder.tradePriceRate?.setTextColor(Color.RED)
-                }
-                tradeInfo.dayChangeRate!!.compareTo(0.0) < 0 -> {
-                    holder.tradePrice?.setTextColor(Color.BLUE)
-                    holder.tradePriceRate?.setTextColor(Color.BLUE)
-                }
-                else -> {
-                    holder.tradePrice?.setTextColor(Color.BLACK)
-                    holder.tradePriceRate?.setTextColor(Color.BLACK)
-                }
-            }
+
+            holder.tradePrice?.setTextColor(getColor(tradeInfo.dayChangeRate))
+
+            holder.tradePriceRate?.setTextColor(getColor(tradeInfo.dayChangeRate))
 
             holder.minPriceRate?.text =
                 TradeFragment.Format.percentFormat.format(tradeInfo.getPriceRate())
-            when {
-                tradeInfo.getPriceRate().compareTo(0.0) > 0 -> {
-                    holder.minPriceRate?.setTextColor(Color.RED)
-                }
-                tradeInfo.getPriceRate().compareTo(0.0) < 0 -> {
-                    holder.minPriceRate?.setTextColor(Color.BLUE)
-                }
-                else -> {
-                    holder.minPriceRate?.setTextColor(Color.BLACK)
-                }
-            }
+            holder.minPriceRate?.setTextColor(getColor(tradeInfo.getPriceRate()))
 
             holder.tradeCount?.text =
                 TradeFragment.Format.nonZeroFormat.format(tradeInfo.tickCount)
 
             holder.minPricePerAvgPrice?.text =
                 TradeFragment.Format.percentFormat.format(tradeInfo.getAvgAccVolumeRate())
-            when {
-                tradeInfo.getAvgAccVolumeRate().compareTo(1.0) > 0 -> {
-                    holder.minPricePerAvgPrice?.setTextColor(Color.RED)
-                }
-                tradeInfo.getAvgAccVolumeRate().compareTo(1.0) < 0 -> {
-                    holder.minPricePerAvgPrice?.setTextColor(Color.BLUE)
-                }
-                else -> {
-                    holder.minPricePerAvgPrice?.setTextColor(Color.BLACK)
-                }
-            }
+            holder.minPricePerAvgPrice?.setTextColor(getColor(tradeInfo.getAvgAccVolumeRate(), 1.0))
+
             holder.bidAskRate?.text =
                 TradeFragment.Format.percentFormat.format(tradeInfo.getBidAskRate())
-            when {
-                tradeInfo.getBidAskRate().compareTo(0.5) > 0 -> {
-                    holder.bidAskRate?.setTextColor(Color.RED)
-                }
-                tradeInfo.getBidAskRate().compareTo(0.5) < 0 -> {
-                    holder.bidAskRate?.setTextColor(Color.BLUE)
-                }
-                else -> {
-                    holder.bidAskRate?.setTextColor(Color.BLACK)
-                }
-            }
+            holder.bidAskRate?.setTextColor(getColor(tradeInfo.getBidAskRate(), 0.5))
+
             holder.bidAskPriceRate?.text =
                 TradeFragment.Format.percentFormat.format(tradeInfo.getBidAskPriceRate())
-            when {
-                tradeInfo.getBidAskPriceRate().compareTo(0.5) > 0 -> {
-                    holder.bidAskPriceRate?.setTextColor(Color.RED)
-                }
-                tradeInfo.getBidAskRate().compareTo(0.5) < 0 -> {
-                    holder.bidAskPriceRate?.setTextColor(Color.BLUE)
-                }
-                else -> {
-                    holder.bidAskPriceRate?.setTextColor(Color.BLACK)
-                }
-            }
+            holder.bidAskPriceRate?.setTextColor(getColor(tradeInfo.getBidAskPriceRate(), 0.5))
+
         }
     }
 
@@ -256,93 +192,27 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
             val timeZoneFormat = TradeFragment.Format.timeFormat
             timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
 
-            when (tradeInfo.state) {
-                OrderCoinInfo.State.READY -> {
-                    holder.tradeStatus?.setTextColor(Color.DKGRAY)
-                }
-                OrderCoinInfo.State.BUYING -> {
-                    holder.tradeStatus?.setTextColor(Color.GREEN)
-                }
-                OrderCoinInfo.State.SELLING -> {
-                    holder.tradeStatus?.setTextColor(Color.GREEN)
-                }
-                OrderCoinInfo.State.BUY -> {
-                    holder.tradeStatus?.setTextColor(Color.RED)
-                }
-                OrderCoinInfo.State.SELL -> {
-                    holder.tradeStatus?.setTextColor(Color.BLUE)
-                }
-                OrderCoinInfo.State.DELETE -> {
-                    holder.tradeStatus?.setTextColor(Color.DKGRAY)
-                }
-            }
+            holder.tradeStatus?.setTextColor(getStatusColor(tradeInfo.state))
 
             if (tradeInfo.getProfit() != null) {
-                holder.tradeProfit?.text =
-                    TradeFragment.Format.nonZeroFormat.format(tradeInfo.getProfit())
+                holder.tradeProfit?.text = getZeroFormatString(tradeInfo.getProfit())
             }
 
             if (tradeInfo.getProfitRate() != null) {
                 holder.tradeProfitRate?.text =
                     TradeFragment.Format.percentFormat.format(tradeInfo.getProfitRate())
-
-                when {
-                    tradeInfo.getProfitRate()!!.compareTo(0.0) > 0 -> {
-                        holder.tradeProfitRate?.setTextColor(Color.RED)
-                    }
-                    tradeInfo.getProfitRate()!!.compareTo(0.0) < 0 -> {
-                        holder.tradeProfitRate?.setTextColor(Color.BLUE)
-                    }
-                    else -> {
-                        holder.tradeProfitRate?.setTextColor(Color.BLACK)
-                    }
-                }
+                holder.tradeProfitRate?.setTextColor(getColor(tradeInfo.getProfitRate()))
             }
 
             val price = tradeInfo.currentPrice
             if (price != null) {
-                when {
-                    price.toDouble() < 100.0 -> {
-                        holder.tradePrice?.text =
-                            TradeFragment.Format.zeroFormat.format(price.toDouble())
-                    }
-                    price.toDouble() < 10.0 -> {
-                        holder.tradePrice?.text =
-                            TradeFragment.Format.zeroFormat2.format(price.toDouble())
-                    }
-                    price.toDouble() < 1.0 -> {
-                        holder.tradePrice?.text =
-                            TradeFragment.Format.zeroFormat3.format(price.toDouble())
-                    }
-                    else -> {
-                        holder.tradePrice?.text =
-                            TradeFragment.Format.nonZeroFormat.format(price.toDouble())
-                    }
-                }
+                holder.tradePrice?.text = getZeroFormatString(price)
             }
 
             val bidPrice = tradeInfo.getBidPrice()
             if (bidPrice != null) {
-                when {
-                    bidPrice < 100.0 -> {
-                        holder.tradeBidPrice?.text =
-                            TradeFragment.Format.zeroFormat.format(bidPrice)
-                    }
-                    bidPrice < 10.0 -> {
-                        holder.tradeBidPrice?.text =
-                            TradeFragment.Format.zeroFormat2.format(bidPrice)
-                    }
-                    bidPrice < 1.0 -> {
-                        holder.tradeBidPrice?.text =
-                            TradeFragment.Format.zeroFormat3.format(bidPrice)
-                    }
-                    else -> {
-                        holder.tradeBidPrice?.text =
-                            TradeFragment.Format.nonZeroFormat.format(bidPrice)
-                    }
-                }
+                holder.tradeBidPrice?.text = getZeroFormatString(bidPrice)
             }
-
 
             if (tradeInfo.tradeBidTime != null) {
                 holder.tradeBidTime?.text =
@@ -367,85 +237,26 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
             val timeZoneFormat = TradeFragment.Format.timeFormat
             timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
 
-            when (tradeInfo.state) {
-                OrderCoinInfo.State.READY -> {
-                    holder.tradeStatus?.setTextColor(Color.DKGRAY)
-                }
-                OrderCoinInfo.State.SELLING, OrderCoinInfo.State.BUYING -> {
-                    holder.tradeStatus?.setTextColor(Color.BLACK)
-                }
-                OrderCoinInfo.State.BUY -> {
-                    holder.tradeStatus?.setTextColor(Color.RED)
-                }
-                OrderCoinInfo.State.SELL -> {
-                    holder.tradeStatus?.setTextColor(Color.BLUE)
-                }
-            }
+            holder.tradeStatus?.setTextColor(getStatusColor(tradeInfo.state))
 
             if (tradeInfo.getProfit() != null) {
-                holder.tradeProfit?.text =
-                    TradeFragment.Format.nonZeroFormat.format(tradeInfo.getProfit())
+                holder.tradeProfit?.text = getZeroFormatString(tradeInfo.getProfit())
             }
 
             if (tradeInfo.getProfitRate() != null) {
                 holder.tradeProfitRate?.text =
                     TradeFragment.Format.percentFormat.format(tradeInfo.getProfitRate())
-
-                when {
-                    tradeInfo.getProfitRate()!!.compareTo(0.0) > 0 -> {
-                        holder.tradeProfitRate?.setTextColor(Color.RED)
-                    }
-                    tradeInfo.getProfitRate()!!.compareTo(0.0) < 0 -> {
-                        holder.tradeProfitRate?.setTextColor(Color.BLUE)
-                    }
-                    else -> {
-                        holder.tradeProfitRate?.setTextColor(Color.BLACK)
-                    }
-                }
+                holder.tradeProfitRate?.setTextColor(getColor(tradeInfo.getProfitRate()))
             }
 
             val askPrice = tradeInfo.askPrice
             if (askPrice != null) {
-                when {
-                    askPrice < 100.0 -> {
-                        holder.tradeAskPrice?.text =
-                            TradeFragment.Format.zeroFormat.format(askPrice)
-                    }
-                    askPrice < 10.0 -> {
-                        holder.tradeAskPrice?.text =
-                            TradeFragment.Format.zeroFormat2.format(askPrice)
-                    }
-                    askPrice < 1.0 -> {
-                        holder.tradeAskPrice?.text =
-                            TradeFragment.Format.zeroFormat3.format(askPrice)
-                    }
-                    else -> {
-                        holder.tradeAskPrice?.text =
-                            TradeFragment.Format.nonZeroFormat.format(askPrice)
-                    }
-                }
+                holder.tradeAskPrice?.text = getZeroFormatString(askPrice)
             }
 
             val bidPrice = tradeInfo.getBidPrice()
             if (bidPrice != null) {
-                when {
-                    bidPrice < 100.0 -> {
-                        holder.tradeBidPrice?.text =
-                            TradeFragment.Format.zeroFormat.format(bidPrice)
-                    }
-                    bidPrice < 10.0 -> {
-                        holder.tradeBidPrice?.text =
-                            TradeFragment.Format.zeroFormat2.format(bidPrice)
-                    }
-                    bidPrice < 1.0 -> {
-                        holder.tradeBidPrice?.text =
-                            TradeFragment.Format.zeroFormat3.format(bidPrice)
-                    }
-                    else -> {
-                        holder.tradeBidPrice?.text =
-                            TradeFragment.Format.nonZeroFormat.format(bidPrice)
-                    }
-                }
+                holder.tradeBidPrice?.text = getZeroFormatString(bidPrice)
             }
 
             if (tradeInfo.tradeAskTime != null) {
@@ -460,4 +271,56 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         }
     }
 
+    private fun getStatusColor(state: OrderCoinInfo.State?): Int {
+        state ?: return Color.DKGRAY
+        return when (state) {
+            OrderCoinInfo.State.READY -> {
+                Color.DKGRAY
+            }
+            OrderCoinInfo.State.SELLING, OrderCoinInfo.State.BUYING -> {
+                Color.BLACK
+            }
+            OrderCoinInfo.State.BUY -> {
+                Color.RED
+            }
+            OrderCoinInfo.State.SELL -> {
+                Color.BLUE
+            }
+            else -> Color.DKGRAY
+        }
+    }
+
+    private fun getColor(value: Double?): Int {
+        return getColor(value, 0.0)
+    }
+
+    private fun getColor(value: Double?, threshold: Double): Int {
+        value ?: return Color.DKGRAY
+        return when {
+            value.compareTo(threshold) > 0 -> {
+                Color.RED
+            }
+            value.compareTo(threshold) < 0 -> {
+                Color.BLUE
+            }
+            else -> {
+                Color.BLACK
+            }
+        }
+    }
+
+    private fun getZeroFormatString(value: Double?): String {
+        value ?: return ""
+        return when {
+            value < 100.0 -> {
+                    TradeFragment.Format.zeroFormat.format(value)
+            }
+            value < 1.0 -> {
+                    TradeFragment.Format.zeroFormat2.format(value)
+            }
+            else -> {
+                    TradeFragment.Format.nonZeroFormat.format(value)
+            }
+        }
+    }
 }
