@@ -39,10 +39,10 @@ import kotlin.math.max
 class TradeFragment: Fragment() {
     companion object {
         const val TAG = "TradeFragment"
-        const val LIMIT_AMOUNT = 28000.0
-        const val BID_AMOUNT = 7000.0
+        const val LIMIT_AMOUNT = 500000.0
+        const val BID_AMOUNT = 100000.0
         const val BASE_TIME: Long = 5 * 60 * 1000
-        const val THRESHOLD_RATE = 0.015
+        const val THRESHOLD_RATE = 0.02
         const val THRESHOLD_TICK = 350
         const val THRESHOLD_ACC_PRICE_VOLUME_RATE = 1f
         const val THRESHOLD_BID_ASK_RATE = 0.5f
