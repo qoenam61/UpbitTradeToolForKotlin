@@ -277,8 +277,11 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
             OrderCoinInfo.State.READY -> {
                 Color.DKGRAY
             }
-            OrderCoinInfo.State.SELLING, OrderCoinInfo.State.BUYING -> {
-                Color.BLACK
+            OrderCoinInfo.State.BUYING -> {
+                Color.GREEN
+            }
+            OrderCoinInfo.State.SELLING -> {
+                Color.CYAN
             }
             OrderCoinInfo.State.BUY -> {
                 Color.RED
