@@ -106,9 +106,8 @@ class OrderCoinInfo: TradeCoinInfo {
                         sqrt(
                             (highPrice!!.toDouble().pow(2.0)
                                     + closePrice!!.toDouble().pow(2.0)
-                                    + openPrice!!.toDouble().pow(2.0)
                                     + lowPrice!!.toDouble().pow(2.0)
-                                    ) / 4
+                                    ) / 3
                         )
                     )
                 } else {
