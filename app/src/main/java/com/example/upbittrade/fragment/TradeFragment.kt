@@ -47,6 +47,7 @@ class TradeFragment: Fragment() {
         const val THRESHOLD_ACC_PRICE_VOLUME_RATE = 1f
         const val THRESHOLD_BID_ASK_RATE = 0.5f
         const val THRESHOLD_BID_ASK_PRICE_VOLUME_RATE = 0.5f
+        const val THRESHOLD_BID_ASK_PRICE_VOLUME_RATE_TREND = 0.45
 
         private const val UNIT_REPEAT_MARKET_INFO = 30 * 60 * 1000
         private const val UNIT_REPEAT_MARKET_INFO_SHORT = 10 * 60 * 1000
@@ -66,6 +67,7 @@ class TradeFragment: Fragment() {
         var tradeResponseMapInfo = HashMap<String, ResponseOrder>()
 
         var marketTrend: Double? = null
+        var bidAskTotalRate: Double? = null
     }
 
     object Format {
@@ -221,7 +223,9 @@ class TradeFragment: Fragment() {
 
         tradeManager = TradeManager(object : TradeManager.TradeChangedListener {
             override fun onPostBid(marketId: String, orderCoinInfo: OrderCoinInfo) {
-                if (isInSufficientFunds || marketTrend == null || marketTrend!! < thresholdBidRange * -1) {
+                if (isInSufficientFunds
+                    || marketTrend == null || marketTrend!! < thresholdBidRange * -1
+                    || bidAskTotalRate == null || bidAskTotalRate!! < THRESHOLD_BID_ASK_PRICE_VOLUME_RATE_TREND) {
                     return
                 }
 
@@ -523,25 +527,34 @@ class TradeFragment: Fragment() {
         circleBar?.progress = progress % circleBar!!.max
 
         if (progress % circleBar!!.max == 0) {
+            val bidTotal = tradeMonitorMapInfo.values.fold(0.0) { acc: Double, value: TradeCoinInfo ->
+                acc + value.bidPriceVolume!!.toDouble()
+            }
+            val askTotal = tradeMonitorMapInfo.values.fold(0.0) { acc: Double, value: TradeCoinInfo ->
+                acc + value.askPriceVolume!!.toDouble()
+            }
+            bidAskTotalRate = bidTotal / (bidTotal + askTotal)
+
+            trendRate?.text = Format.percentFormat.format(bidAskTotalRate)
+            if (bidAskTotalRate != null) {
+                when {
+                    bidAskTotalRate!! < 0.5 -> {
+                        trendRate?.setTextColor(Color.BLUE)
+                    }
+                    bidAskTotalRate!! > 0.5 -> {
+                        trendRate?.setTextColor(Color.RED)
+                    }
+                    else -> {
+                        trendRate?.setTextColor(Color.DKGRAY)
+                    }
+                }
+            }
             marketTrend = tradeMapInfo.values.fold(0.0) { acc: Double, value: List<TradeInfo> ->
                 acc + value.last().getDayChangeRate()
             }
             marketTrend = marketTrend!! / tradeMapInfo.size
 
-            trendRate?.text = Format.percentFormat.format(marketTrend)
-            when {
-                marketTrend!! < 0.0 -> {
-                    trendRate?.setTextColor(Color.BLUE)
-                }
-                marketTrend!! > 0.0 -> {
-                    trendRate?.setTextColor(Color.RED)
-                }
-                else -> {
-                    trendRate?.setTextColor(Color.DKGRAY)
-                }
-            }
-
-//            Log.i(TAG,"makeTradeMapInfo - marketTrend: ${Format.percentFormat.format(marketTrend)}")
+            Log.i(TAG,"makeTradeMapInfo - marketTrend: ${Format.percentFormat.format(marketTrend)} bidAskTotalRate: ${Format.percentFormat.format(bidAskTotalRate)}")
 
             circleBar?.setProgressBackgroundColor(
                 when {

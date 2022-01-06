@@ -2,6 +2,7 @@
 <resources>
     <dimen name="text_view_login_height">30dp</dimen>
     <dimen name="small_text_size">12sp</dimen>
+    <dimen name="smallest_text_size">9sp</dimen>
     <dimen name="default_text_size">18sp</dimen>
     <dimen name="large_text_size">22sp</dimen>
     <dimen name="low_text_size">15sp</dimen>
@@ -15,7 +16,7 @@
     <dimen name="larger_margin">33dp</dimen>
     <dimen name="largest_margin">66dp</dimen>
     <dimen name="accounts_coin_list_height">80dp</dimen>
-    <dimen name="progress_circle_bar_margin">18dp</dimen>
+    <dimen name="progress_circle_bar_margin">13dp</dimen>
     <dimen name="evaluation_coin_list_column_height">20dp</dimen>
     <dimen name="coin_list_item_margin">3dp</dimen>
     <dimen name="default_view_height">330dp</dimen>

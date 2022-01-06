@@ -2,6 +2,8 @@ package com.example.upbittrade.utils
 
 import android.util.Log
 import com.example.upbittrade.fragment.TradeFragment
+import com.example.upbittrade.fragment.TradeFragment.Companion.THRESHOLD_BID_ASK_PRICE_VOLUME_RATE_TREND
+import com.example.upbittrade.fragment.TradeFragment.Companion.bidAskTotalRate
 import com.example.upbittrade.fragment.TradeFragment.Companion.marketTrend
 import com.example.upbittrade.fragment.TradeFragment.Companion.tradeMapInfo
 import com.example.upbittrade.model.OrderCoinInfo
@@ -88,6 +90,7 @@ class TradeManager(private val listener: TradeChangedListener) {
                     || tradeCoinInfo.getPriceRangeRate() > TradeFragment.UserParam.thresholdRangeRate)
             && tickGap > getTickThreshold(tradeCoinInfo.closePrice!!.toDouble())
             && marketTrend != null && (dayChangeRate - marketTrend!!) > TradeFragment.UserParam.thresholdRate * 0.66
+            && bidAskTotalRate != null && bidAskTotalRate!! >= THRESHOLD_BID_ASK_PRICE_VOLUME_RATE_TREND
             && tradeCoinInfo.getAvgAccVolumeRate() > TradeFragment.UserParam.thresholdAccPriceVolumeRate
             && tradeCoinInfo.getBidAskRate() > TradeFragment.UserParam.thresholdBidAskRate
             && tradeCoinInfo.getBidAskPriceRate() > TradeFragment.UserParam.thresholdBidAskPriceVolumeRate
