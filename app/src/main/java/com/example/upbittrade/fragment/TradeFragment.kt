@@ -773,7 +773,7 @@ class TradeFragment: Fragment() {
         val tradePostInfo: OrderCoinInfo = tradePostMapInfo[marketId] ?: return false
         if (tradePostInfo.state != OrderCoinInfo.State.DELETE
             && tradePostInfo.getRegisterDuration() != null
-            && tradePostInfo.getRegisterDuration()!! > UserParam.monitorTime) {
+            && tradePostInfo.getRegisterDuration()!! > UserParam.monitorTime * 1.5) {
             Log.d(TAG, "[DEBUG] postOrderDeleteWait - DELETE_ORDER_INFO marketId: $marketId uuid: ${responseOrder.uuid}")
             tradePostInfo.state = OrderCoinInfo.State.DELETE
             tradePostMapInfo[marketId] = tradePostInfo
