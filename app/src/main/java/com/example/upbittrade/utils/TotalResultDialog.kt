@@ -46,9 +46,8 @@ class TotalResultDialog: Dialog {
 
 
         val priceRate = profit / TradeFragment.UserParam.priceToBuy
-        profitPriceRate!!.text = getZeroFormatString(priceRate)
+        profitPriceRate!!.text = TradeFragment.Format.percentFormat.format(priceRate)
         profitPriceRate?.setTextColor(getColor(priceRate))
-
 
         reportAdapter?.reportList = list
         reportAdapter?.notifyDataSetChanged()
