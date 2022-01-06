@@ -41,39 +41,50 @@ class TotalResultDialog: Dialog {
         }
 
         val profit = (askPriceAmount - bidPriceAmount)
-        if (profit < 100.0) {
-            profitPrice?.text = TradeFragment.Format.zeroFormat.format(profit)
-        } else {
-            profitPrice?.text = TradeFragment.Format.nonZeroFormat.format(profit)
-        }
+        profitPrice?.text = getZeroFormatString(profit)
+        profitPrice?.setTextColor(getColor(profit))
 
-        when {
-            profit > 0 -> {
-                profitPrice?.setTextColor(Color.RED)
-            }
-            profit < 0 -> {
-                profitPrice?.setTextColor(Color.BLUE)
-            }
-            else -> {
-                profitPrice?.setTextColor(Color.BLACK)
-            }
-        }
 
-        val priceRate = profit / bidPriceAmount
-        profitPriceRate!!.text = TradeFragment.Format.percentFormat.format(priceRate)
-        when {
-            priceRate > 0 -> {
-                profitPriceRate?.setTextColor(Color.RED)
-            }
-            priceRate < 0 -> {
-                profitPriceRate?.setTextColor(Color.BLUE)
-            }
-            else -> {
-                profitPriceRate?.setTextColor(Color.BLACK)
-            }
-        }
+        val priceRate = profit / TradeFragment.UserParam.priceToBuy
+        profitPriceRate!!.text = getZeroFormatString(priceRate)
+        profitPriceRate?.setTextColor(getColor(priceRate))
+
 
         reportAdapter?.reportList = list
         reportAdapter?.notifyDataSetChanged()
+    }
+
+    private fun getZeroFormatString(value: Double?): String {
+        value ?: return ""
+        return when {
+            value < 100.0 -> {
+                TradeFragment.Format.zeroFormat.format(value)
+            }
+            value < 1.0 -> {
+                TradeFragment.Format.zeroFormat2.format(value)
+            }
+            else -> {
+                TradeFragment.Format.nonZeroFormat.format(value)
+            }
+        }
+    }
+
+    private fun getColor(value: Double?): Int {
+        return getColor(value, 0.0)
+    }
+
+    private fun getColor(value: Double?, threshold: Double): Int {
+        value ?: return Color.DKGRAY
+        return when {
+            value.compareTo(threshold) > 0 -> {
+                Color.RED
+            }
+            value.compareTo(threshold) < 0 -> {
+                Color.BLUE
+            }
+            else -> {
+                Color.BLACK
+            }
+        }
     }
 }
