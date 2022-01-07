@@ -2,7 +2,6 @@ package com.example.upbittrade.utils
 
 import android.util.Log
 import com.example.upbittrade.fragment.TradeFragment
-import com.example.upbittrade.fragment.TradeFragment.Companion.THRESHOLD_BID_ASK_PRICE_VOLUME_RATE_TREND
 import com.example.upbittrade.fragment.TradeFragment.Companion.bidAskTotalAvgRate
 import com.example.upbittrade.fragment.TradeFragment.Companion.marketTrend
 import com.example.upbittrade.fragment.TradeFragment.Companion.tradeMapInfo

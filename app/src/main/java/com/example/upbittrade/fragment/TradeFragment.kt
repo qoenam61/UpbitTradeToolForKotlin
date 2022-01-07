@@ -23,7 +23,7 @@ import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.PostOrderItem
 import com.example.upbittrade.data.TaskItem
-import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdBidRange
+import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdMarketTrend
 import com.example.upbittrade.model.*
 import com.example.upbittrade.utils.*
 import com.example.upbittrade.utils.TradeAdapter.Companion.Type.MONITOR_LIST
@@ -33,7 +33,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
-import kotlin.math.abs
 import kotlin.math.max
 
 class TradeFragment: Fragment() {
@@ -47,7 +46,6 @@ class TradeFragment: Fragment() {
         const val THRESHOLD_ACC_PRICE_VOLUME_RATE = 1f
         const val THRESHOLD_BID_ASK_RATE = 0.5f
         const val THRESHOLD_BID_ASK_PRICE_VOLUME_RATE = 0.5f
-        const val THRESHOLD_BID_ASK_PRICE_VOLUME_RATE_TREND = 0.45
 
         private const val UNIT_REPEAT_MARKET_INFO = 30 * 60 * 1000
         private const val UNIT_REPEAT_MARKET_INFO_SHORT = 10 * 60 * 1000
@@ -55,7 +53,6 @@ class TradeFragment: Fragment() {
         private const val UNIT_MIN_CANDLE_COUNT = 24
         private const val UNIT_MONITOR_TIME: Long = 60 * 1000
         private const val UNIT_TRADE_COUNT = 3000
-        private const val UNIT_PRICE = 1000000
 
         val marketMapInfo = HashMap<String, MarketInfo>()
 
@@ -92,7 +89,7 @@ class TradeFragment: Fragment() {
         var thresholdBidAskRate: Float = THRESHOLD_BID_ASK_RATE
         var thresholdBidAskPriceVolumeRate: Float = THRESHOLD_BID_ASK_PRICE_VOLUME_RATE
         var thresholdTickGap: Double = 5.0 * 1.5
-        var thresholdBidRange: Double = 0.03
+        var thresholdMarketTrend: Double = 0.03
     }
 
     private lateinit var mainActivity: TradePagerActivity
@@ -120,7 +117,7 @@ class TradeFragment: Fragment() {
 
     var isInSufficientFunds = false
 
-    val DEBUG = false
+    private val debug = false
 
     override fun onAttach(activity: Activity) {
         super.onAttach(activity)
@@ -224,8 +221,8 @@ class TradeFragment: Fragment() {
         tradeManager = TradeManager(object : TradeManager.TradeChangedListener {
             override fun onPostBid(marketId: String, orderCoinInfo: OrderCoinInfo) {
                 if (isInSufficientFunds
-                    || marketTrend == null || marketTrend!! < thresholdBidRange * -1
-                    || bidAskTotalAvgRate == null || bidAskTotalAvgRate!! < THRESHOLD_BID_ASK_PRICE_VOLUME_RATE_TREND) {
+                    || marketTrend == null || marketTrend!! < thresholdMarketTrend * -1
+                    || bidAskTotalAvgRate == null || bidAskTotalAvgRate!! < UserParam.thresholdBidAskPriceVolumeRate * 0.9) {
                     return
                 }
 
@@ -397,7 +394,7 @@ class TradeFragment: Fragment() {
                 if ((postInfo.state == OrderCoinInfo.State.BUYING && responseOrder.side.equals("bid"))
                             || (postInfo.state == OrderCoinInfo.State.SELLING && responseOrder.side.equals("ask"))
                 ) {
-                    if (DEBUG) {
+                    if (debug) {
                         Log.i(TAG,"checkOrderInfo marketId: $marketId " +
                                 "state: ${responseOrder.state} " +
                                 "side: ${responseOrder.side} " +
@@ -558,10 +555,10 @@ class TradeFragment: Fragment() {
 
             circleBar?.setProgressBackgroundColor(
                 when {
-                    marketTrend!! > thresholdBidRange -> {
+                    marketTrend!! > thresholdMarketTrend -> {
                         Color.GREEN
                     }
-                    marketTrend!! > thresholdBidRange * -1 && marketTrend!! <= thresholdBidRange -> {
+                    marketTrend!! > thresholdMarketTrend * -1 && marketTrend!! <= thresholdMarketTrend -> {
                         Color.YELLOW
                     }
                     else -> {
@@ -572,10 +569,10 @@ class TradeFragment: Fragment() {
 
             circleBar?.setProgressStartColor(
                 when {
-                    marketTrend!! > thresholdBidRange -> {
+                    marketTrend!! > thresholdMarketTrend -> {
                         Color.BLUE
                     }
-                    marketTrend!! > thresholdBidRange * -1 && marketTrend!! <= thresholdBidRange -> {
+                    marketTrend!! > thresholdMarketTrend * -1 && marketTrend!! <= thresholdMarketTrend -> {
                         Color.BLUE
                     }
                     else -> {
@@ -628,15 +625,15 @@ class TradeFragment: Fragment() {
            Format.timeFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
             val responseOrder: ResponseOrder? = tradeResponseMapInfo[marketId]
             val time: Long = System.currentTimeMillis()
-            val currentPrice = tickersInfo.first().tradePrice?.toDouble()
+            val currentPrice = tickersInfo.first().tradePrice?.toDouble()!!
             postInfo.currentTime = time
             postInfo.currentPrice = currentPrice
 
             val profitRate = postInfo.getProfitRate()!!
             var maxProfitRate = postInfo.maxProfitRate
-            val bidPrice = postInfo.getBidPrice()
-            val tickGap = abs(bidPrice!! - currentPrice!!) / postInfo.getTickPrice()!!
-            val volume = responseOrder?.volume?.toDouble()
+//            val bidPrice = postInfo.getBidPrice()
+//            val tickGap = abs(bidPrice!! - currentPrice!!) / postInfo.getTickPrice()!!
+//            val volume = responseOrder?.volume?.toDouble()
 
             maxProfitRate = max(profitRate, maxProfitRate)
             postInfo.maxProfitRate = maxProfitRate
@@ -683,7 +680,7 @@ class TradeFragment: Fragment() {
         timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
 
         tradePostMapInfo[marketId]!!.currentTime = time
-        if (DEBUG) {
+        if (debug) {
             Log.i(TAG, "makeResponseMapInfo marketId: $marketId state: ${responseOrder.state} " +
                         "side: ${responseOrder.side} " +
                         "price: ${if (price == null) null else Format.zeroFormat.format(price)} " +
@@ -738,7 +735,7 @@ class TradeFragment: Fragment() {
         val volume = responseOrder.volume?.toDouble()
         timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
         tradePostMapInfo[marketId]!!.currentTime = time
-        if (DEBUG) {
+        if (debug) {
             Log.i(TAG, "updateResponseMapInfo marketId: $marketId state: ${responseOrder.state} " +
                         "side: ${responseOrder.side} " +
                         "price: ${if (price == null) null else Format.zeroFormat.format(price)} " +
