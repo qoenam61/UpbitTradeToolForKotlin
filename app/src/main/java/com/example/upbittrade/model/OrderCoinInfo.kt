@@ -116,7 +116,7 @@ class OrderCoinInfo: TradeCoinInfo {
                 }
             }
 
-            body / length > 0.5 && lowTail <= highTail-> {
+            body / length > 0.8 && lowTail <= highTail-> {
                 bidPrice = if (sign) {
                     bidType = 4
                     Utils().convertPrice(

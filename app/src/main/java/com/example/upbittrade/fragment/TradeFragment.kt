@@ -556,13 +556,13 @@ class TradeFragment: Fragment() {
             circleBar?.setProgressBackgroundColor(
                 when {
                     marketTrend!! > thresholdMarketTrend -> {
-                        Color.GREEN
+                        Color.RED
                     }
                     marketTrend!! > thresholdMarketTrend * -1 && marketTrend!! <= thresholdMarketTrend -> {
                         Color.YELLOW
                     }
                     else -> {
-                        Color.RED
+                        Color.BLUE
                     }
                 }
             )
@@ -570,13 +570,27 @@ class TradeFragment: Fragment() {
             circleBar?.setProgressStartColor(
                 when {
                     marketTrend!! > thresholdMarketTrend -> {
-                        Color.BLUE
+                        Color.GREEN
                     }
                     marketTrend!! > thresholdMarketTrend * -1 && marketTrend!! <= thresholdMarketTrend -> {
-                        Color.BLUE
+                        Color.GREEN
                     }
                     else -> {
-                        Color.BLUE
+                        Color.GREEN
+                    }
+                }
+            )
+
+            circleBar?.setProgressEndColor(
+                when {
+                    marketTrend!! > thresholdMarketTrend -> {
+                        Color.CYAN
+                    }
+                    marketTrend!! > thresholdMarketTrend * -1 && marketTrend!! <= thresholdMarketTrend -> {
+                        Color.CYAN
+                    }
+                    else -> {
+                        Color.CYAN
                     }
                 }
             )
