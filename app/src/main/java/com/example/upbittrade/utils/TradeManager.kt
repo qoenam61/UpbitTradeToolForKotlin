@@ -89,11 +89,11 @@ class TradeManager(private val listener: TradeChangedListener) {
                     || tradeCoinInfo.getPriceRangeRate() > TradeFragment.UserParam.thresholdRangeRate)
             && tickGap > getTickThreshold(tradeCoinInfo.closePrice!!.toDouble())
             && tradeCoinInfo.getAvgAccVolumeRate() > TradeFragment.UserParam.thresholdAccPriceVolumeRate
-            && tradeCoinInfo.getBidAskRate() > TradeFragment.UserParam.thresholdBidAskRate
-            && tradeCoinInfo.getBidAskPriceRate() > TradeFragment.UserParam.thresholdBidAskPriceVolumeRate
             && bidAskTotalAvgRate != null && bidAskTotalAvgRate!! >= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate * 0.9
-            && tradeCoinInfo.getBidAskPriceRate() - bidAskTotalAvgRate!! > TradeFragment.UserParam.thresholdRate * 0.66
             && marketTrend != null && (dayChangeRate - marketTrend!!) > TradeFragment.UserParam.thresholdRate * 0.66
+            && ((tradeCoinInfo.getBidAskRate() > TradeFragment.UserParam.thresholdBidAskRate
+                    && tradeCoinInfo.getBidAskPriceRate() > TradeFragment.UserParam.thresholdBidAskPriceVolumeRate)
+                || (tradeCoinInfo.getBidAskPriceRate() - bidAskTotalAvgRate!! > TradeFragment.UserParam.thresholdRate * 0.66))
         ) {
             return true
         }
