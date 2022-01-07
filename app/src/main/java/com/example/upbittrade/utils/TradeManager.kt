@@ -123,7 +123,6 @@ class TradeManager(private val listener: TradeChangedListener) {
             // Take a profit
             profitRate >= 0 && maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
                     && tickGap > getTickThreshold(currentPrice)
-                    && bidAskTotalAvgRate != null
                     && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate * 0.9 -> {
                 val askPrice = Utils().convertPrice(
                     sqrt(
