@@ -67,7 +67,7 @@ class TradeFragment: Fragment() {
         var tradeResponseMapInfo = HashMap<String, ResponseOrder>()
 
         var marketTrend: Double? = null
-        var bidAskTotalRate: Double? = null
+        var bidAskTotalAvgRate: Double? = null
     }
 
     object Format {
@@ -225,7 +225,7 @@ class TradeFragment: Fragment() {
             override fun onPostBid(marketId: String, orderCoinInfo: OrderCoinInfo) {
                 if (isInSufficientFunds
                     || marketTrend == null || marketTrend!! < thresholdBidRange * -1
-                    || bidAskTotalRate == null || bidAskTotalRate!! < THRESHOLD_BID_ASK_PRICE_VOLUME_RATE_TREND) {
+                    || bidAskTotalAvgRate == null || bidAskTotalAvgRate!! < THRESHOLD_BID_ASK_PRICE_VOLUME_RATE_TREND) {
                     return
                 }
 
@@ -533,15 +533,15 @@ class TradeFragment: Fragment() {
             val askTotal = tradeMonitorMapInfo.values.fold(0.0) { acc: Double, value: TradeCoinInfo ->
                 acc + value.askPriceVolume!!.toDouble()
             }
-            bidAskTotalRate = bidTotal / (bidTotal + askTotal)
+            bidAskTotalAvgRate = bidTotal / (bidTotal + askTotal)
 
-            trendRate?.text = Format.percentFormat.format(bidAskTotalRate)
-            if (bidAskTotalRate != null) {
+            trendRate?.text = Format.percentFormat.format(bidAskTotalAvgRate)
+            if (bidAskTotalAvgRate != null) {
                 when {
-                    bidAskTotalRate!! < 0.5 -> {
+                    bidAskTotalAvgRate!! < 0.5 -> {
                         trendRate?.setTextColor(Color.BLUE)
                     }
-                    bidAskTotalRate!! > 0.5 -> {
+                    bidAskTotalAvgRate!! > 0.5 -> {
                         trendRate?.setTextColor(Color.RED)
                     }
                     else -> {
@@ -554,7 +554,7 @@ class TradeFragment: Fragment() {
             }
             marketTrend = marketTrend!! / tradeMapInfo.size
 
-            Log.i(TAG,"makeTradeMapInfo - marketTrend: ${Format.percentFormat.format(marketTrend)} bidAskTotalRate: ${Format.percentFormat.format(bidAskTotalRate)}")
+            Log.i(TAG,"makeTradeMapInfo - marketTrend: ${Format.percentFormat.format(marketTrend)} bidAskTotalRate: ${Format.percentFormat.format(bidAskTotalAvgRate)}")
 
             circleBar?.setProgressBackgroundColor(
                 when {

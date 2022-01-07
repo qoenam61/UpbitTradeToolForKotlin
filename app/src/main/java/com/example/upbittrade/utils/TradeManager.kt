@@ -3,7 +3,7 @@ package com.example.upbittrade.utils
 import android.util.Log
 import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.fragment.TradeFragment.Companion.THRESHOLD_BID_ASK_PRICE_VOLUME_RATE_TREND
-import com.example.upbittrade.fragment.TradeFragment.Companion.bidAskTotalRate
+import com.example.upbittrade.fragment.TradeFragment.Companion.bidAskTotalAvgRate
 import com.example.upbittrade.fragment.TradeFragment.Companion.marketTrend
 import com.example.upbittrade.fragment.TradeFragment.Companion.tradeMapInfo
 import com.example.upbittrade.model.OrderCoinInfo
@@ -89,11 +89,12 @@ class TradeManager(private val listener: TradeChangedListener) {
             && (tradeCoinInfo.getPriceRate() > TradeFragment.UserParam.thresholdRate
                     || tradeCoinInfo.getPriceRangeRate() > TradeFragment.UserParam.thresholdRangeRate)
             && tickGap > getTickThreshold(tradeCoinInfo.closePrice!!.toDouble())
-            && marketTrend != null && (dayChangeRate - marketTrend!!) > TradeFragment.UserParam.thresholdRate * 0.66
-            && bidAskTotalRate != null && bidAskTotalRate!! >= THRESHOLD_BID_ASK_PRICE_VOLUME_RATE_TREND
             && tradeCoinInfo.getAvgAccVolumeRate() > TradeFragment.UserParam.thresholdAccPriceVolumeRate
             && tradeCoinInfo.getBidAskRate() > TradeFragment.UserParam.thresholdBidAskRate
             && tradeCoinInfo.getBidAskPriceRate() > TradeFragment.UserParam.thresholdBidAskPriceVolumeRate
+            && bidAskTotalAvgRate != null && bidAskTotalAvgRate!! >= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate * 0.9
+            && tradeCoinInfo.getBidAskPriceRate() - bidAskTotalAvgRate!! > TradeFragment.UserParam.thresholdRate * 0.66
+            && marketTrend != null && (dayChangeRate - marketTrend!!) > TradeFragment.UserParam.thresholdRate * 0.66
         ) {
             return true
         }
@@ -123,8 +124,9 @@ class TradeManager(private val listener: TradeChangedListener) {
             // Take a profit
             profitRate >= 0 && maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
                     && tickGap > getTickThreshold(currentPrice)
-    //            && bidAskRate <= TradeFragment.UserParam.thresholdBidAskRate
-                    && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate -> {
+                    && bidAskTotalAvgRate != null
+                    && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate * 0.9
+                    && bidAskPriceRate - bidAskTotalAvgRate!! <= TradeFragment.UserParam.thresholdRate * -0.66 -> {
                 val askPrice = Utils().convertPrice(
                     sqrt(
                         (maxPrice.pow(2.0)
@@ -142,7 +144,8 @@ class TradeManager(private val listener: TradeChangedListener) {
                         "volume: ${if (volume == null) null else TradeFragment.Format.zeroFormat.format(volume)} " +
                         "profitRate: ${TradeFragment.Format.percentFormat.format(profitRate)} " +
                         "maxProfitRate: ${TradeFragment.Format.percentFormat.format(maxProfitRate)} " +
-                        "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} "
+                        "tickGap: ${TradeFragment.Format.nonZeroFormat.format(tickGap)} " +
+                        "bidAskTotalAvgRate: ${TradeFragment.Format.percentFormat.format(bidAskTotalAvgRate)} "
                 )
 
                 listener.onPostAsk(marketId!!, postInfo, "limit", askPrice, volume!!)
@@ -154,7 +157,11 @@ class TradeManager(private val listener: TradeChangedListener) {
                     && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate)
             || (profitRate >= 0
                     && bidAskRate <= TradeFragment.UserParam.thresholdBidAskRate
-                    && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate) -> {
+                    && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate)
+            || (bidAskTotalAvgRate != null
+                    && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate * 0.9
+                    && bidAskPriceRate - bidAskTotalAvgRate!! <= TradeFragment.UserParam.thresholdRate * -0.66) -> {
+
                 val highTail: Double = (highPrice.toDouble() - closePrice.toDouble()
                     .coerceAtLeast(openPrice.toDouble()))
 
@@ -313,7 +320,9 @@ class TradeManager(private val listener: TradeChangedListener) {
                     && postInfo.getBuyDuration()!! > TradeFragment.UserParam.monitorTime * 5
                     && tickGap <= getTickThreshold(currentPrice)
                     && postInfo.tickCount!! <= TradeFragment.UserParam.thresholdTick * 1.5
-                    && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate -> {
+                    && bidAskTotalAvgRate != null
+                    && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate * 0.9
+                    && bidAskPriceRate - bidAskTotalAvgRate!! <= TradeFragment.UserParam.thresholdRate * -0.66 -> {
 
                 //HCO
                 val askPrice = Utils().convertPrice(
