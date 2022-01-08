@@ -41,13 +41,12 @@ class TotalResultDialog: Dialog {
         }
 
         val profit = (askPriceAmount - bidPriceAmount)
-        profitPrice?.text = getZeroFormatString(profit)
-        profitPrice?.setTextColor(getColor(profit))
-
+        profitPrice?.text = Utils.getZeroFormatString(profit)
+        profitPrice?.setTextColor(Utils.getTextColor(profit))
 
         val priceRate = profit / TradeFragment.UserParam.priceToBuy
         profitPriceRate!!.text = TradeFragment.Format.percentFormat.format(priceRate)
-        profitPriceRate?.setTextColor(getColor(priceRate))
+        profitPriceRate?.setTextColor(Utils.getTextColor(priceRate))
 
         reportAdapter?.reportList = list
         reportAdapter?.notifyDataSetChanged()
@@ -64,25 +63,6 @@ class TotalResultDialog: Dialog {
             }
             else -> {
                 TradeFragment.Format.nonZeroFormat.format(value)
-            }
-        }
-    }
-
-    private fun getColor(value: Double?): Int {
-        return getColor(value, 0.0)
-    }
-
-    private fun getColor(value: Double?, threshold: Double): Int {
-        value ?: return Color.DKGRAY
-        return when {
-            value.compareTo(threshold) > 0 -> {
-                Color.RED
-            }
-            value.compareTo(threshold) < 0 -> {
-                Color.BLUE
-            }
-            else -> {
-                Color.BLACK
             }
         }
     }

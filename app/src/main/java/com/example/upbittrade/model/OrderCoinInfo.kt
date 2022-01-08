@@ -44,7 +44,7 @@ class OrderCoinInfo: TradeCoinInfo {
         this.currentTime = orderCoinInfo.currentTime
         this.maxProfitRate = orderCoinInfo.maxProfitRate
         this.volume = orderCoinInfo.volume
-        this.currentPrice = orderCoinInfo.currentPrice
+        this.closePrice = orderCoinInfo.closePrice
         this.askPrice = orderCoinInfo.askPrice
     }
 
@@ -57,11 +57,11 @@ class OrderCoinInfo: TradeCoinInfo {
     var currentTime: Long? = null
 
     var maxPrice: Double? = null
+    var minPrice: Double? = null
     var maxProfitRate: Double = 0.0
 
     var volume: Double? = null
 
-    var currentPrice: Double? = null
     var askPrice: Double? = null
     var type: Int? = null
 
@@ -85,7 +85,7 @@ class OrderCoinInfo: TradeCoinInfo {
             body / length == 1.0 -> {
                 bidPrice = if (sign) {
                     bidType = 0
-                    Utils().convertPrice(
+                    Utils.convertPrice(
                         sqrt(
                             (highPrice!!.toDouble().pow(2.0)
                                     + closePrice!!.toDouble().pow(2.0)
@@ -102,7 +102,7 @@ class OrderCoinInfo: TradeCoinInfo {
             body / length > 0.5 && lowTail > highTail-> {
                 bidPrice = if (sign) {
                     bidType = 2
-                    Utils().convertPrice(
+                    Utils.convertPrice(
                         sqrt(
                             (highPrice!!.toDouble().pow(2.0)
                                     + closePrice!!.toDouble().pow(2.0)
@@ -119,7 +119,7 @@ class OrderCoinInfo: TradeCoinInfo {
             body / length > 0.8 && lowTail <= highTail-> {
                 bidPrice = if (sign) {
                     bidType = 4
-                    Utils().convertPrice(
+                    Utils.convertPrice(
                         sqrt(
                             (highPrice!!.toDouble().pow(2.0)
                                     + closePrice!!.toDouble().pow(2.0)
@@ -137,7 +137,7 @@ class OrderCoinInfo: TradeCoinInfo {
             body / length <= 0.5 && lowTail > highTail-> {
                 bidPrice = if (sign) {
                     bidType = 6
-                    Utils().convertPrice(
+                    Utils.convertPrice(
                         sqrt(
                             (highPrice!!.toDouble().pow(2.0)
                                     + closePrice!!.toDouble().pow(2.0)
@@ -163,10 +163,10 @@ class OrderCoinInfo: TradeCoinInfo {
 
     fun getProfit(): Double? {
         val bidPrice = getBidPrice()
-        if (currentPrice == null || bidPrice == null) {
+        if (closePrice == null || bidPrice == null) {
             return null
         }
-        return currentPrice!! - bidPrice
+        return closePrice?.toDouble()!! - bidPrice
     }
 
     fun getProfitRate(): Double? {

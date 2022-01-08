@@ -34,6 +34,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.math.max
+import kotlin.math.min
 
 class TradeFragment: Fragment() {
     companion object {
@@ -534,18 +535,9 @@ class TradeFragment: Fragment() {
 
             trendRate?.text = Format.percentFormat.format(bidAskTotalAvgRate)
             if (bidAskTotalAvgRate != null) {
-                when {
-                    bidAskTotalAvgRate!! < 0.5 -> {
-                        trendRate?.setTextColor(Color.BLUE)
-                    }
-                    bidAskTotalAvgRate!! > 0.5 -> {
-                        trendRate?.setTextColor(Color.RED)
-                    }
-                    else -> {
-                        trendRate?.setTextColor(Color.DKGRAY)
-                    }
-                }
+                trendRate?.setTextColor(Utils.getTextColor(bidAskTotalAvgRate, 0.5))
             }
+
             marketTrend = tradeMapInfo.values.fold(0.0) { acc: Double, value: List<TradeInfo> ->
                 acc + value.last().getDayChangeRate()
             }
@@ -641,7 +633,7 @@ class TradeFragment: Fragment() {
             val time: Long = System.currentTimeMillis()
             val currentPrice = tickersInfo.first().tradePrice?.toDouble()!!
             postInfo.currentTime = time
-            postInfo.currentPrice = currentPrice
+            postInfo.closePrice = currentPrice
 
             val profitRate = postInfo.getProfitRate()!!
             var maxProfitRate = postInfo.maxProfitRate
@@ -656,6 +648,12 @@ class TradeFragment: Fragment() {
                 postInfo.maxPrice = currentPrice
             } else {
                 postInfo.maxPrice = max(currentPrice, postInfo.maxPrice!!)
+            }
+
+            if (postInfo.minPrice == null) {
+                postInfo.minPrice = currentPrice
+            } else {
+                postInfo.minPrice = min(currentPrice, postInfo.minPrice!!)
             }
 
             tradePostMapInfo[marketId!!] = postInfo
@@ -990,7 +988,7 @@ class TradeFragment: Fragment() {
 //                "askPrice: $askPrice")
 
         if (askPrice == null) {
-            tradePostInfo.askPrice = tradePostInfo.currentPrice
+            tradePostInfo.askPrice = tradePostInfo.closePrice?.toDouble()
         }
         tradeReportListInfo.add(tradePostInfo)
         reportPopup?.setList(tradeReportListInfo.toList())

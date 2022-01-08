@@ -11,6 +11,8 @@ import com.example.upbittrade.R
 import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.model.OrderCoinInfo
 import com.example.upbittrade.utils.TradeAdapter.Companion.Type.*
+import com.example.upbittrade.utils.Utils.Companion.getTextColor
+import com.example.upbittrade.utils.Utils.Companion.getZeroFormatString
 import java.util.*
 
 class TradeAdapter(private val context: Context, val type: Type): RecyclerView.Adapter<TradeAdapter.CoinHolder>() {
@@ -157,28 +159,28 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
             holder.tradePriceRate?.text =
                 TradeFragment.Format.percentFormat.format(tradeInfo.dayChangeRate)
 
-            holder.tradePrice?.setTextColor(getColor(tradeInfo.dayChangeRate))
+            holder.tradePrice?.setTextColor(getTextColor(tradeInfo.dayChangeRate))
 
-            holder.tradePriceRate?.setTextColor(getColor(tradeInfo.dayChangeRate))
+            holder.tradePriceRate?.setTextColor(getTextColor(tradeInfo.dayChangeRate))
 
             holder.minPriceRate?.text =
                 TradeFragment.Format.percentFormat.format(tradeInfo.getPriceRate())
-            holder.minPriceRate?.setTextColor(getColor(tradeInfo.getPriceRate()))
+            holder.minPriceRate?.setTextColor(getTextColor(tradeInfo.getPriceRate()))
 
             holder.tradeCount?.text =
                 TradeFragment.Format.nonZeroFormat.format(tradeInfo.tickCount)
 
             holder.minPricePerAvgPrice?.text =
                 TradeFragment.Format.percentFormat.format(tradeInfo.getAvgAccVolumeRate())
-            holder.minPricePerAvgPrice?.setTextColor(getColor(tradeInfo.getAvgAccVolumeRate(), 1.0))
+            holder.minPricePerAvgPrice?.setTextColor(getTextColor(tradeInfo.getAvgAccVolumeRate(), 1.0))
 
             holder.bidAskRate?.text =
                 TradeFragment.Format.percentFormat.format(tradeInfo.getBidAskRate())
-            holder.bidAskRate?.setTextColor(getColor(tradeInfo.getBidAskRate(), 0.5))
+            holder.bidAskRate?.setTextColor(getTextColor(tradeInfo.getBidAskRate(), 0.5))
 
             holder.bidAskPriceRate?.text =
                 TradeFragment.Format.percentFormat.format(tradeInfo.getBidAskPriceRate())
-            holder.bidAskPriceRate?.setTextColor(getColor(tradeInfo.getBidAskPriceRate(), 0.5))
+            holder.bidAskPriceRate?.setTextColor(getTextColor(tradeInfo.getBidAskPriceRate(), 0.5))
 
         }
     }
@@ -201,10 +203,10 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
             if (tradeInfo.getProfitRate() != null) {
                 holder.tradeProfitRate?.text =
                     TradeFragment.Format.percentFormat.format(tradeInfo.getProfitRate())
-                holder.tradeProfitRate?.setTextColor(getColor(tradeInfo.getProfitRate()))
+                holder.tradeProfitRate?.setTextColor(getTextColor(tradeInfo.getProfitRate()))
             }
 
-            val price = tradeInfo.currentPrice
+            val price = tradeInfo.closePrice?.toDouble()
             if (price != null) {
                 holder.tradePrice?.text = getZeroFormatString(price)
             }
@@ -246,7 +248,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
             if (tradeInfo.getProfitRate() != null) {
                 holder.tradeProfitRate?.text =
                     TradeFragment.Format.percentFormat.format(tradeInfo.getProfitRate())
-                holder.tradeProfitRate?.setTextColor(getColor(tradeInfo.getProfitRate()))
+                holder.tradeProfitRate?.setTextColor(getTextColor(tradeInfo.getProfitRate()))
             }
 
             val askPrice = tradeInfo.askPrice
@@ -290,40 +292,6 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 Color.BLUE
             }
             else -> Color.DKGRAY
-        }
-    }
-
-    private fun getColor(value: Double?): Int {
-        return getColor(value, 0.0)
-    }
-
-    private fun getColor(value: Double?, threshold: Double): Int {
-        value ?: return Color.DKGRAY
-        return when {
-            value.compareTo(threshold) > 0 -> {
-                Color.RED
-            }
-            value.compareTo(threshold) < 0 -> {
-                Color.BLUE
-            }
-            else -> {
-                Color.BLACK
-            }
-        }
-    }
-
-    private fun getZeroFormatString(value: Double?): String {
-        value ?: return ""
-        return when {
-            value < 100.0 -> {
-                    TradeFragment.Format.zeroFormat.format(value)
-            }
-            value < 1.0 -> {
-                    TradeFragment.Format.zeroFormat2.format(value)
-            }
-            else -> {
-                    TradeFragment.Format.nonZeroFormat.format(value)
-            }
         }
     }
 }
