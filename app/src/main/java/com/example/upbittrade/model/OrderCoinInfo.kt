@@ -1,6 +1,5 @@
 package com.example.upbittrade.model
 
-import android.util.Log
 import com.example.upbittrade.utils.Utils
 import kotlin.math.abs
 import kotlin.math.pow
@@ -121,11 +120,10 @@ class OrderCoinInfo: TradeCoinInfo {
                     bidType = 4
                     Utils.convertPrice(
                         sqrt(
-                            (highPrice!!.toDouble().pow(2.0)
-                                    + closePrice!!.toDouble().pow(2.0)
+                            (closePrice!!.toDouble().pow(2.0)
                                     + openPrice!!.toDouble().pow(2.0)
                                     + lowPrice!!.toDouble().pow(2.0)
-                                    ) / 4
+                                    ) / 3
                         )
                     )
                 } else {
@@ -139,11 +137,10 @@ class OrderCoinInfo: TradeCoinInfo {
                     bidType = 6
                     Utils.convertPrice(
                         sqrt(
-                            (highPrice!!.toDouble().pow(2.0)
-                                    + closePrice!!.toDouble().pow(2.0)
+                            (closePrice!!.toDouble().pow(2.0)
                                     + openPrice!!.toDouble().pow(2.0)
                                     + lowPrice!!.toDouble().pow(2.0)
-                                    ) / 4
+                                    ) / 3
                         )
                     )
                 } else {
@@ -161,7 +158,7 @@ class OrderCoinInfo: TradeCoinInfo {
         return bidPrice
     }
 
-    fun getProfit(): Double? {
+    fun getProfitPrice(): Double? {
         val bidPrice = getBidPrice()
         if (closePrice == null || bidPrice == null) {
             return null
@@ -170,7 +167,7 @@ class OrderCoinInfo: TradeCoinInfo {
     }
 
     fun getProfitRate(): Double? {
-        val profit = getProfit()
+        val profit = getProfitPrice()
         val bidPrice = getBidPrice()
         if (profit == null || bidPrice == null) {
             return null

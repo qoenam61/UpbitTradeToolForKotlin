@@ -625,7 +625,7 @@ class TradeFragment: Fragment() {
     }
 
     private fun monitorTickerInfo(tickersInfo: List<Ticker>) {
-        val marketId = tickersInfo.first().marketId
+        val marketId = tickersInfo.first().marketId!!
         val postInfo: OrderCoinInfo? = tradePostMapInfo[marketId]
         if (postInfo != null) {
            Format.timeFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
@@ -635,14 +635,16 @@ class TradeFragment: Fragment() {
             postInfo.currentTime = time
             postInfo.closePrice = currentPrice
 
-            val profitRate = postInfo.getProfitRate()!!
+            val profitRate = postInfo.getProfitRate()
             var maxProfitRate = postInfo.maxProfitRate
 //            val bidPrice = postInfo.getBidPrice()
 //            val tickGap = abs(bidPrice!! - currentPrice!!) / postInfo.getTickPrice()!!
 //            val volume = responseOrder?.volume?.toDouble()
 
-            maxProfitRate = max(profitRate, maxProfitRate)
-            postInfo.maxProfitRate = maxProfitRate
+
+            if (profitRate != null) {
+                postInfo.maxProfitRate = max(profitRate, maxProfitRate)
+            }
 
             if (postInfo.maxPrice == null) {
                 postInfo.maxPrice = currentPrice
@@ -656,7 +658,7 @@ class TradeFragment: Fragment() {
                 postInfo.minPrice = min(currentPrice, postInfo.minPrice!!)
             }
 
-            tradePostMapInfo[marketId!!] = postInfo
+            tradePostMapInfo[marketId] = postInfo
 
             if (responseOrder != null) {
 //                Log.i(TAG, "monitorTickerInfo marketId: $marketId  " +

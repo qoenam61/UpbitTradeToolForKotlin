@@ -196,8 +196,8 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
 
             holder.tradeStatus?.setTextColor(getStatusColor(tradeInfo.state))
 
-            if (tradeInfo.getProfit() != null) {
-                holder.tradeProfit?.text = getZeroFormatString(tradeInfo.getProfit())
+            if (tradeInfo.getProfitPrice() != null) {
+                holder.tradeProfit?.text = getZeroFormatString(tradeInfo.getProfitPrice())
             }
 
             if (tradeInfo.getProfitRate() != null) {
@@ -241,8 +241,8 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
 
             holder.tradeStatus?.setTextColor(getStatusColor(tradeInfo.state))
 
-            if (tradeInfo.getProfit() != null) {
-                holder.tradeProfit?.text = getZeroFormatString(tradeInfo.getProfit())
+            if (tradeInfo.getProfitPrice() != null) {
+                holder.tradeProfit?.text = getZeroFormatString(tradeInfo.getProfitPrice())
             }
 
             if (tradeInfo.getProfitRate() != null) {
