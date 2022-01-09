@@ -45,6 +45,7 @@ class OrderCoinInfo: TradeCoinInfo {
         this.maxProfitRate = orderCoinInfo.maxProfitRate
         this.volume = orderCoinInfo.volume
         this.closePrice = orderCoinInfo.closePrice
+        this.bidPrice = orderCoinInfo.bidPrice
         this.askPrice = orderCoinInfo.askPrice
     }
 

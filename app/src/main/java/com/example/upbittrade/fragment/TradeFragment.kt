@@ -173,8 +173,10 @@ class TradeFragment: Fragment() {
                 if (side == "ask") {
                     if (postInfo.state == OrderCoinInfo.State.SELLING) {
                         processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
-                        tradePostMapInfo[marketId]?.state = OrderCoinInfo.State.BUY
-                        tradePostMapInfo[marketId]?.registerTime = null
+                        tradePostMapInfo[marketId] = postInfo.apply {
+                            state = OrderCoinInfo.State.BUY
+                            registerTime = null
+                        }
                         tradeResponseMapInfo[marketId]?.side = "bid"
                         tradeResponseMapInfo[marketId]?.state = "done"
                     }
@@ -246,10 +248,11 @@ class TradeFragment: Fragment() {
                                         "time: ${timeZoneFormat.format(time)} "
                             )
 
-                            orderCoinInfo.state = OrderCoinInfo.State.BUYING
-                            orderCoinInfo.orderTime = time
-
-                            tradePostMapInfo[marketId] = orderCoinInfo
+                            tradePostMapInfo[marketId] = orderCoinInfo.also {
+                                it.state = OrderCoinInfo.State.BUYING
+                                it.orderTime = time
+                                it.volume = volume
+                            }
 
                             processor?.registerProcess(
                                 PostOrderItem(
@@ -298,10 +301,11 @@ class TradeFragment: Fragment() {
                             "time: ${timeZoneFormat.format(time)}"
                     )
 
-                    orderCoinInfo.state = OrderCoinInfo.State.SELLING
-                    orderCoinInfo.orderTime = time
-
-                    tradePostMapInfo[marketId] = orderCoinInfo
+                    tradePostMapInfo[marketId] = orderCoinInfo.also {
+                        it.state = OrderCoinInfo.State.SELLING
+                        it.orderTime = time
+                        it.volume = volume
+                    }
 
                     processor?.registerProcess(
                         PostOrderItem(POST_ORDER_INFO, marketId, "ask", volume, askPrice, orderType, uuid)
@@ -646,10 +650,6 @@ class TradeFragment: Fragment() {
 
             val profitRate = postInfo.getProfitRate()
             var maxProfitRate = postInfo.maxProfitRate
-//            val bidPrice = postInfo.getBidPrice()
-//            val tickGap = abs(bidPrice!! - currentPrice!!) / postInfo.getTickPrice()!!
-//            val volume = responseOrder?.volume?.toDouble()
-
 
             if (profitRate != null) {
                 postInfo.maxProfitRate = max(profitRate, maxProfitRate)
@@ -670,6 +670,9 @@ class TradeFragment: Fragment() {
             tradePostMapInfo[marketId] = postInfo
 
             if (responseOrder != null) {
+//                val bidPrice = postInfo.bidPrice?.price
+//                val tickGap = abs(bidPrice!! - currentPrice) / postInfo.getTickPrice()!!
+//                val volume = responseOrder.volume?.toDouble()
 //                Log.i(TAG, "monitorTickerInfo marketId: $marketId  " +
 //                        "currentPrice: ${Format.zeroFormat.format(currentPrice)} " +
 //                        "volume: ${if (volume == null) null else Format.zeroFormat.format(volume)} " +
@@ -857,7 +860,8 @@ class TradeFragment: Fragment() {
                 unregisterProcess(SEARCH_ORDER_INFO, marketId)
                 unregisterProcess(CHECK_ORDER_INFO, marketId)
             }
-            tradePostMapInfo[marketId]?.apply {
+
+            tradePostMapInfo[marketId] = postInfo.apply {
                 state = OrderCoinInfo.State.BUY
                 orderTime = null
                 registerTime = null
@@ -880,13 +884,14 @@ class TradeFragment: Fragment() {
                     "state: READY -> ${tradePostInfo.state} " +
                     "uuid: ${responseOrder.uuid}")
 
-            tradePostInfo.also {
+
+
+            tradePostMapInfo[marketId] = tradePostInfo.also {
                 it.state = OrderCoinInfo.State.BUYING
                 it.bidPrice = BidPrice(responseOrder.price?.toDouble(), bidType)
+                it.volume = responseOrder.volume?.toDouble()
                 it.registerTime = time
             }
-
-            tradePostMapInfo[marketId] = tradePostInfo
 
             processor?.registerProcess(
                 TaskItem(
@@ -917,15 +922,15 @@ class TradeFragment: Fragment() {
                 unregisterProcess(CHECK_ORDER_INFO, marketId)
             }
 
-            tradePostInfo.apply {
+            tradePostMapInfo[marketId] = tradePostInfo.apply {
                 state = OrderCoinInfo.State.BUY
                 bidPrice = BidPrice(responseOrder.price?.toDouble(), bidType)
+                volume = responseOrder.volume?.toDouble()
                 orderTime = null
                 registerTime = null
                 tradeBidTime = time
             }
 
-            tradePostMapInfo[marketId] = tradePostInfo
             tradeResponseMapInfo[marketId] = responseOrder
 
             checkTotalBidPriceAmount(marketId, responseOrder)
@@ -940,12 +945,12 @@ class TradeFragment: Fragment() {
                     "state: BUY -> ${tradePostInfo.state} " +
                     "uuid: ${responseOrder.uuid}")
 
-            tradePostInfo.apply {
+            tradePostMapInfo[marketId] = tradePostInfo.apply {
                 registerTime = time
                 askPrice = responseOrder.price?.toDouble()
+                volume = responseOrder.volume?.toDouble()
             }
 
-            tradePostMapInfo[marketId] = tradePostInfo
             tradeResponseMapInfo[marketId] = responseOrder
 
             processor?.registerProcess(
