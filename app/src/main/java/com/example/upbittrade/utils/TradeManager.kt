@@ -457,15 +457,14 @@ class TradeManager(private val listener: TradeChangedListener) {
             sqrt(
                 (maxPrice.pow(2.0)
                         + bidPrice.pow(2.0)
-                        + highPrice.pow(2.0)
                         + closePrice.pow(2.0)
-                        ) / 4
+                        ) / 3
             )
         )!!
 
         result = max(highPrice, result)
 
-        Log.d(TAG, "[DEBUG] getTakeProfitPrice - Take a profit marketId: $marketId " +
+        Log.d(TAG, "[DEBUG] getExpiredTimePrice - marketId: $marketId " +
                 "askPrice: ${TradeFragment.Format.zeroFormat.format(result)} " +
                 "currentPrice: ${TradeFragment.Format.zeroFormat.format(closePrice)} " +
                 "maxPrice: ${TradeFragment.Format.zeroFormat.format(maxPrice)} " +
