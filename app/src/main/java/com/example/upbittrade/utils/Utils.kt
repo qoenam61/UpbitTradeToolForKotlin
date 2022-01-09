@@ -195,10 +195,10 @@ class Utils {
         fun getZeroFormatString(value: Double?): String {
             value ?: return ""
             return when {
-                value < 100.0 -> {
+                abs(value) < 100.0 -> {
                     TradeFragment.Format.zeroFormat.format(value)
                 }
-                value < 1.0 -> {
+                abs(value) < 1.0 -> {
                     TradeFragment.Format.zeroFormat2.format(value)
                 }
                 else -> {

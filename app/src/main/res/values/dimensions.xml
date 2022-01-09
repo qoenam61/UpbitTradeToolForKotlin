@@ -21,6 +21,7 @@
     <dimen name="coin_list_item_margin">3dp</dimen>
     <dimen name="default_view_height">330dp</dimen>
     <dimen name="large_view_height">450dp</dimen>
+    <dimen name="largest_view_height">550dp</dimen>
     <dimen name="result_width">150dp</dimen>
 
 </resources>

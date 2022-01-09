@@ -147,6 +147,8 @@ class TradeManager(private val listener: TradeChangedListener) {
                     && (bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate * 0.9
                         || (bidAskTotalAvgRate != null && bidAskPriceRate - bidAskTotalAvgRate!! <= TradeFragment.UserParam.thresholdRate * -0.66)))
             || (profitRate >= 0
+                    && postInfo.getBuyDuration() != null
+                    && postInfo.getBuyDuration()!! > TradeFragment.UserParam.monitorTime * 1.5
                     && bidAskRate <= TradeFragment.UserParam.thresholdBidAskRate * 0.9
                     && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate * 0.9)
             || (profitRate >= 0
@@ -176,13 +178,16 @@ class TradeManager(private val listener: TradeChangedListener) {
                         askPrice = if (sign) {
                             getStopLossLong(marketId, postInfo)
                         } else {
-                            getStopLossMinusLong(marketId, postInfo)
+                            getStopLossMinus(marketId, postInfo)
                         }
                     }
 
                     body / length <= 0.5 -> {
-                        askPrice = getStopLossShort(marketId, postInfo)
-                    }
+                        askPrice = if (sign) {
+                            getStopLossShort(marketId, postInfo)
+                        } else {
+                            getStopLossMinus(marketId, postInfo)
+                        }                    }
 
                     else -> {
                         askPrice = null
@@ -371,7 +376,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         return result
     }
 
-    private fun getStopLossMinusLong(marketId: String?, postInfo: OrderCoinInfo): Double? {
+    private fun getStopLossMinus(marketId: String?, postInfo: OrderCoinInfo): Double? {
         if (marketId == null) {
             return null
         }
@@ -379,7 +384,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         val minPrice = postInfo.minPrice!!
         val bidPrice = postInfo.bidPrice?.price!!
         val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
-//        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice!!.toDouble()
+        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice!!.toDouble()
         val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
         val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
 
@@ -389,7 +394,8 @@ class TradeManager(private val listener: TradeChangedListener) {
                         + highPrice.pow(2.0)
                         + openPrice.pow(2.0)
                         + closePrice.pow(2.0)
-                        ) / 4
+                        + lowPrice.pow(2.0)
+                        ) / 5
             )
         )!!
 
@@ -411,7 +417,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         val minPrice = postInfo.minPrice!!
         val bidPrice = postInfo.bidPrice?.price!!
         val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
-//        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice!!.toDouble()
+        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice!!.toDouble()
         val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
         val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
 
@@ -419,8 +425,8 @@ class TradeManager(private val listener: TradeChangedListener) {
             sqrt(
                 (bidPrice.pow(2.0)
                         + highPrice.pow(2.0)
-                        + openPrice.pow(2.0)
                         + closePrice.pow(2.0)
+                        + openPrice.pow(2.0)
                         ) / 4
             )
         )!!
