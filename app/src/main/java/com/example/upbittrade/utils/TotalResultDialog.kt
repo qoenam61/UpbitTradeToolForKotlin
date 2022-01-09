@@ -2,7 +2,6 @@ package com.example.upbittrade.utils
 
 import android.app.Dialog
 import android.content.Context
-import android.graphics.Color
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -34,9 +33,9 @@ class TotalResultDialog: Dialog {
         var askPriceAmount = 0.0
         var bidPriceAmount = 0.0
         list.forEach {
-            if (it.askPrice != null && it.volume != null) {
+            if (it.askPrice != null && it.bidPrice != null && it.volume != null) {
                 askPriceAmount += it.askPrice!! * it.volume!!
-                bidPriceAmount += it.getBidPrice()!! * it.volume!!
+                bidPriceAmount += it.bidPrice?.price!! * it.volume!!
             }
         }
 

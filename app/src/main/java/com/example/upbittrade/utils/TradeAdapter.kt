@@ -211,7 +211,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 holder.tradePrice?.text = getZeroFormatString(price)
             }
 
-            val bidPrice = tradeInfo.getBidPrice()
+            val bidPrice = tradeInfo.bidPrice?.price
             if (bidPrice != null) {
                 holder.tradeBidPrice?.text = getZeroFormatString(bidPrice)
             }
@@ -256,7 +256,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 holder.tradeAskPrice?.text = getZeroFormatString(askPrice)
             }
 
-            val bidPrice = tradeInfo.getBidPrice()
+            val bidPrice = tradeInfo.bidPrice?.price
             if (bidPrice != null) {
                 holder.tradeBidPrice?.text = getZeroFormatString(bidPrice)
             }

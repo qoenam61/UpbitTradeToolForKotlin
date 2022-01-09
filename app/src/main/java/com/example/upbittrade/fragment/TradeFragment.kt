@@ -40,7 +40,7 @@ class TradeFragment: Fragment() {
     companion object {
         const val TAG = "TradeFragment"
         const val LIMIT_AMOUNT = 500000.0
-        const val BID_AMOUNT = 100000.0
+        const val BID_AMOUNT = 90000.0
         const val BASE_TIME: Long = 5 * 60 * 1000
         const val THRESHOLD_RATE = 0.02
         const val THRESHOLD_TICK = 350
@@ -228,38 +228,47 @@ class TradeFragment: Fragment() {
                 }
 
                 if (!tradePostMapInfo.containsKey(marketId)) {
-                    val bidPrice = orderCoinInfo.getBidPrice()
-                    if (bidPrice != null) {
-                        val volume = (UserParam.priceToBuy / bidPrice)
-                        val uuid = UUID.randomUUID()
-                        val time = System.currentTimeMillis()
-                        val bidType = orderCoinInfo.bidType
+                    val bidPriceObject = orderCoinInfo.bidPrice
+                    if (bidPriceObject != null) {
+                        if (bidPriceObject.price != null) {
+                            val volume = (UserParam.priceToBuy / bidPriceObject.price)
+                            val uuid = UUID.randomUUID()
+                            val time = System.currentTimeMillis()
+                            val timeZoneFormat = Format.timeFormat
+                            timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
+                            Log.d(
+                                TAG, "[DEBUG] onPostBid - key: $marketId " +
+                                        "bidPrice: ${Format.nonZeroFormat.format(bidPriceObject.price)} " +
+                                        "volume: ${Format.zeroFormat.format(volume)} " +
+                                        "bidType: ${bidPriceObject.type} " +
+                                        "PostState: ${orderCoinInfo.state} " +
+                                        "uuid: $uuid" +
+                                        "time: ${timeZoneFormat.format(time)} "
+                            )
 
-                        val timeZoneFormat = Format.timeFormat
-                        timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
-                        Log.d(TAG, "[DEBUG] onPostBid - key: $marketId " +
-                                "bidPrice: ${Format.nonZeroFormat.format(bidPrice)} " +
-                                "volume: ${Format.zeroFormat.format(volume)} " +
-                                "bidType: $bidType " +
-                                "PostState: ${orderCoinInfo.state} " +
-                                "uuid: $uuid" +
-                                "time: ${timeZoneFormat.format(time)} "
-                        )
+                            orderCoinInfo.state = OrderCoinInfo.State.BUYING
+                            orderCoinInfo.orderTime = time
 
-                        orderCoinInfo.state = OrderCoinInfo.State.BUYING
-                        orderCoinInfo.orderTime = time
+                            tradePostMapInfo[marketId] = orderCoinInfo
 
-                        tradePostMapInfo[marketId] = orderCoinInfo
-
-                        processor?.registerProcess(
-                            PostOrderItem(POST_ORDER_INFO, marketId, "bid", volume, bidPrice, "limit", uuid)
-                        )
-                        processor?.registerProcess(
-                            PostOrderItem(CHECK_ORDER_INFO, marketId, "wait", 1, "asc")
-                        )
-                        processor?.registerProcess(
-                            PostOrderItem(CHECK_ORDER_INFO, marketId, "done", 1, "asc")
-                        )
+                            processor?.registerProcess(
+                                PostOrderItem(
+                                    POST_ORDER_INFO,
+                                    marketId,
+                                    "bid",
+                                    volume,
+                                    bidPriceObject.price,
+                                    "limit",
+                                    uuid
+                                )
+                            )
+                            processor?.registerProcess(
+                                PostOrderItem(CHECK_ORDER_INFO, marketId, "wait", 1, "asc")
+                            )
+                            processor?.registerProcess(
+                                PostOrderItem(CHECK_ORDER_INFO, marketId, "done", 1, "asc")
+                            )
+                        }
                     }
                 }
 
@@ -865,12 +874,17 @@ class TradeFragment: Fragment() {
     private fun postOrderBidWait(marketId: String, time: Long, responseOrder: ResponseOrder) {
         val tradePostInfo: OrderCoinInfo = tradePostMapInfo[marketId] ?: return
         val registerTime: Long? = tradePostInfo.registerTime
+        val bidType: Int = tradePostInfo.bidPrice?.type!!
         if (tradePostInfo.state == OrderCoinInfo.State.BUYING && registerTime == null) {
             Log.d(TAG, "[DEBUG] postOrderBidWait marketId: $marketId " +
                     "state: READY -> ${tradePostInfo.state} " +
                     "uuid: ${responseOrder.uuid}")
 
-            tradePostInfo.registerTime = time
+            tradePostInfo.also {
+                it.state = OrderCoinInfo.State.BUYING
+                it.bidPrice = BidPrice(responseOrder.price?.toDouble(), bidType)
+                it.registerTime = time
+            }
 
             tradePostMapInfo[marketId] = tradePostInfo
 
@@ -891,6 +905,7 @@ class TradeFragment: Fragment() {
 
     private fun postOrderBidDone(marketId: String, time: Long, responseOrder: ResponseOrder) {
         val tradePostInfo: OrderCoinInfo = tradePostMapInfo[marketId] ?: return
+        val bidType: Int = tradePostInfo.bidPrice?.type!!
         if (tradePostInfo.state == OrderCoinInfo.State.BUYING) {
             Log.d(TAG, "[DEBUG] postOrderBidDone marketId: $marketId " +
                     "state: ${tradePostInfo.state} -> BUY " +
@@ -904,6 +919,7 @@ class TradeFragment: Fragment() {
 
             tradePostInfo.apply {
                 state = OrderCoinInfo.State.BUY
+                bidPrice = BidPrice(responseOrder.price?.toDouble(), bidType)
                 orderTime = null
                 registerTime = null
                 tradeBidTime = time

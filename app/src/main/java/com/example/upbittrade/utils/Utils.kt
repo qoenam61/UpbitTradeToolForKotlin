@@ -3,8 +3,7 @@ package com.example.upbittrade.utils
 import android.graphics.Color
 import com.example.upbittrade.fragment.TradeFragment
 import java.text.DecimalFormat
-import kotlin.math.floor
-import kotlin.math.roundToInt
+import kotlin.math.*
 
 class Utils {
     companion object {
@@ -81,6 +80,99 @@ class Utils {
             return result?.toDouble()
         }
 
+        fun getBidPriceCalculate(highPrice: Double, lowPrice: Double, openPrice:Double, closePrice:Double): BidPrice {
+            val highTail: Double = (highPrice - closePrice
+                .coerceAtLeast(openPrice))
+
+            val lowTail: Double =
+                (openPrice.coerceAtMost(closePrice) - lowPrice)
+
+            val body: Double = abs(closePrice - openPrice)
+
+            val length: Double = highTail + lowTail + body
+
+            val sign = closePrice - openPrice >= 0.0
+
+            val bidPrice: Double?
+            val bidType: Int?
+            when {
+                body / length == 1.0 -> {
+                    bidPrice = if (sign) {
+                        bidType = 0
+                        convertPrice(
+                            sqrt(
+                                (highPrice.pow(2.0)
+                                        + closePrice.pow(2.0)
+                                        + openPrice.pow(2.0)
+                                        ) / 3
+                            )
+                        )
+                    } else {
+                        bidType = 1
+                        null
+                    }
+                }
+
+                body / length > 0.5 && lowTail > highTail-> {
+                    bidPrice = if (sign) {
+                        bidType = 2
+                        convertPrice(
+                            sqrt(
+                                (highPrice.pow(2.0)
+                                        + closePrice.pow(2.0)
+                                        + lowPrice.pow(2.0)
+                                        ) / 3
+                            )
+                        )
+                    } else {
+                        bidType = 3
+                        null
+                    }
+                }
+
+                body / length > 0.8 && lowTail <= highTail-> {
+                    bidPrice = if (sign) {
+                        bidType = 4
+                        convertPrice(
+                            sqrt(
+                                (closePrice.pow(2.0)
+                                        + openPrice.pow(2.0)
+                                        + lowPrice.pow(2.0)
+                                        ) / 3
+                            )
+                        )
+                    } else {
+                        bidType = 5
+                        null
+                    }
+                }
+
+                body / length <= 0.5 && lowTail > highTail-> {
+                    bidPrice = if (sign) {
+                        bidType = 6
+                        Utils.convertPrice(
+                            sqrt(
+                                (closePrice.pow(2.0)
+                                        + openPrice.pow(2.0)
+                                        + lowPrice.pow(2.0)
+                                        ) / 3
+                            )
+                        )
+                    } else {
+                        bidType = 7
+                        null
+                    }
+                }
+
+                else -> {
+                    bidType = 9
+                    bidPrice = null
+                }
+            }
+
+            return BidPrice(bidPrice, bidType)
+        }
+
         fun getTextColor(value: Double?): Int {
             return getTextColor(value, 0.0)
         }
@@ -116,3 +208,5 @@ class Utils {
         }
     }
 }
+
+class BidPrice(val price: Double?, val type: Int)
