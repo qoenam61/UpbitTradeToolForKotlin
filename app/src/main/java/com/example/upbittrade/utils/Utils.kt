@@ -130,10 +130,10 @@ class Utils {
                     }
                 }
 
-                body / length > 0.8 && lowTail <= highTail-> {
+                body / length <= 0.5 && lowTail > highTail-> {
                     bidPrice = if (sign) {
                         bidType = 4
-                        convertPrice(
+                        Utils.convertPrice(
                             sqrt(
                                 (closePrice.pow(2.0)
                                         + openPrice.pow(2.0)
@@ -147,14 +147,14 @@ class Utils {
                     }
                 }
 
-                body / length <= 0.5 && lowTail > highTail-> {
+                body / length >= 0.75 && lowTail <= highTail-> {
                     bidPrice = if (sign) {
                         bidType = 6
-                        Utils.convertPrice(
+                        convertPrice(
                             sqrt(
-                                (closePrice.pow(2.0)
+                                (highPrice.pow(2.0)
+                                        + closePrice.pow(2.0)
                                         + openPrice.pow(2.0)
-                                        + lowPrice.pow(2.0)
                                         ) / 3
                             )
                         )

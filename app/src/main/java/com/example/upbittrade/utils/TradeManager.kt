@@ -376,6 +376,38 @@ class TradeManager(private val listener: TradeChangedListener) {
         return result
     }
 
+    private fun getStopLossShort(marketId: String?, postInfo: OrderCoinInfo): Double? {
+        if (marketId == null) {
+            return null
+        }
+        val maxPrice = postInfo.maxPrice!!
+        val minPrice = postInfo.minPrice!!
+        val bidPrice = postInfo.bidPrice?.price!!
+        val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
+        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice!!.toDouble()
+        val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
+        val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
+
+        val result = Utils.convertPrice(
+            sqrt(
+                (bidPrice.pow(2.0)
+                        + highPrice.pow(2.0)
+                        + closePrice.pow(2.0)
+                        + openPrice.pow(2.0)
+                        ) / 4
+            )
+        )!!
+
+        Log.d(TAG, "[DEBUG] getStopLossShort - Stop a loss marketId: $marketId " +
+                "askPrice: ${TradeFragment.Format.zeroFormat.format(result)} " +
+                "currentPrice: ${TradeFragment.Format.zeroFormat.format(closePrice)} " +
+                "maxPrice: ${TradeFragment.Format.zeroFormat.format(maxPrice)} " +
+                "minPrice: ${TradeFragment.Format.zeroFormat.format(minPrice)} "
+        )
+
+        return result
+    }
+
     private fun getStopLossMinus(marketId: String?, postInfo: OrderCoinInfo): Double? {
         if (marketId == null) {
             return null
@@ -400,38 +432,6 @@ class TradeManager(private val listener: TradeChangedListener) {
         )!!
 
         Log.d(TAG, "[DEBUG] getStopLossMinusLong - Stop a loss marketId: $marketId " +
-                "askPrice: ${TradeFragment.Format.zeroFormat.format(result)} " +
-                "currentPrice: ${TradeFragment.Format.zeroFormat.format(closePrice)} " +
-                "maxPrice: ${TradeFragment.Format.zeroFormat.format(maxPrice)} " +
-                "minPrice: ${TradeFragment.Format.zeroFormat.format(minPrice)} "
-        )
-
-        return result
-    }
-
-    private fun getStopLossShort(marketId: String?, postInfo: OrderCoinInfo): Double? {
-        if (marketId == null) {
-            return null
-        }
-        val maxPrice = postInfo.maxPrice!!
-        val minPrice = postInfo.minPrice!!
-        val bidPrice = postInfo.bidPrice?.price!!
-        val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
-        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice!!.toDouble()
-        val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
-        val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
-
-        val result = Utils.convertPrice(
-            sqrt(
-                (bidPrice.pow(2.0)
-                        + highPrice.pow(2.0)
-                        + closePrice.pow(2.0)
-                        + openPrice.pow(2.0)
-                        ) / 4
-            )
-        )!!
-
-        Log.d(TAG, "[DEBUG] getStopLossShort - Stop a loss marketId: $marketId " +
                 "askPrice: ${TradeFragment.Format.zeroFormat.format(result)} " +
                 "currentPrice: ${TradeFragment.Format.zeroFormat.format(closePrice)} " +
                 "maxPrice: ${TradeFragment.Format.zeroFormat.format(maxPrice)} " +
