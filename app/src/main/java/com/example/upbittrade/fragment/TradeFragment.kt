@@ -865,10 +865,11 @@ class TradeFragment: Fragment() {
                 state = OrderCoinInfo.State.BUY
                 orderTime = null
                 registerTime = null
-                tradeResponseMapInfo[marketId]?.apply {
-                    side = "bid"
-                    state = "done"
-                }
+            }
+
+            tradeResponseMapInfo[marketId] = responseOrder.apply {
+                side = "bid"
+                state = "done"
             }
 
         }
@@ -883,8 +884,6 @@ class TradeFragment: Fragment() {
             Log.d(TAG, "[DEBUG] postOrderBidWait marketId: $marketId " +
                     "state: READY -> ${tradePostInfo.state} " +
                     "uuid: ${responseOrder.uuid}")
-
-
 
             tradePostMapInfo[marketId] = tradePostInfo.also {
                 it.state = OrderCoinInfo.State.BUYING
@@ -981,7 +980,7 @@ class TradeFragment: Fragment() {
             isInSufficientFunds = false
             setBreakIconVisibility(isInSufficientFunds)
 
-            tradePostInfo.apply {
+            tradePostMapInfo[marketId] = tradePostInfo.apply {
                 state = OrderCoinInfo.State.SELL
                 askPrice = responseOrder.price?.toDouble()
                 volume = responseOrder.volume?.toDouble()
@@ -990,7 +989,6 @@ class TradeFragment: Fragment() {
                 tradeAskTime = time
             }
 
-            tradePostMapInfo[marketId] = tradePostInfo
             tradeResponseMapInfo[marketId] = responseOrder
 
             // Total Result
