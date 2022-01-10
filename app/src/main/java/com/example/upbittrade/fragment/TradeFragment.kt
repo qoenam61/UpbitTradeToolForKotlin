@@ -41,10 +41,10 @@ class TradeFragment: Fragment() {
         const val TAG = "TradeFragment"
         const val LIMIT_AMOUNT = 500000.0
         const val BID_AMOUNT = 90000.0
-        const val BASE_TIME: Long = 5 * 60 * 1000
-        const val THRESHOLD_RATE = 0.02
+        const val BASE_TIME: Long = 6 * 60 * 1000
+        const val THRESHOLD_RATE = 0.03
         const val THRESHOLD_TICK = 300
-        const val THRESHOLD_ACC_PRICE_VOLUME_RATE = 1f
+        const val THRESHOLD_ACC_PRICE_VOLUME_RATE = 1.5f
         const val THRESHOLD_BID_ASK_RATE = 0.5f
         const val THRESHOLD_BID_ASK_PRICE_VOLUME_RATE = 0.5f
 
