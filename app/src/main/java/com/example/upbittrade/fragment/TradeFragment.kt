@@ -43,7 +43,7 @@ class TradeFragment: Fragment() {
         const val BID_AMOUNT = 90000.0
         const val BASE_TIME: Long = 5 * 60 * 1000
         const val THRESHOLD_RATE = 0.02
-        const val THRESHOLD_TICK = 350
+        const val THRESHOLD_TICK = 300
         const val THRESHOLD_ACC_PRICE_VOLUME_RATE = 1f
         const val THRESHOLD_BID_ASK_RATE = 0.5f
         const val THRESHOLD_BID_ASK_PRICE_VOLUME_RATE = 0.5f
@@ -66,6 +66,7 @@ class TradeFragment: Fragment() {
 
         var marketTrend: Double? = null
         var bidAskTotalAvgRate: Double? = null
+        var avgTradeCount: Double? = null
     }
 
     object Format {
@@ -556,7 +557,6 @@ class TradeFragment: Fragment() {
             }
             marketTrend = marketTrend!! / tradeMapInfo.size
 
-            Log.i(TAG,"makeTradeMapInfo - marketTrend: ${Format.percentFormat.format(marketTrend)} bidAskTotalRate: ${Format.percentFormat.format(bidAskTotalAvgRate)}")
 
             circleBar?.setProgressBackgroundColor(
                 when {
@@ -599,12 +599,24 @@ class TradeFragment: Fragment() {
                     }
                 }
             )
+
+            val totalTradeCount = tradeMapInfo.values.fold(0.0) {
+                acc: Double, value: List<TradeInfo> -> acc + value.size
+            }
+            avgTradeCount = totalTradeCount / tradeMapInfo.size
+
+            Log.i(TAG,"makeTradeMapInfo - marketTrend: ${Format.percentFormat.format(marketTrend)} " +
+                    "bidAskTotalRate: ${Format.percentFormat.format(bidAskTotalAvgRate)} " +
+                    "avgTradeCount: ${Format.zeroFormat.format(avgTradeCount)}")
+
         }
 
         // thresholdTick , thresholdAccPriceVolumeRate
         monitorKeyList = (tradeMonitorMapInfo.filter {
-            (it.value.tickCount!! > UserParam.thresholdTick
-                    && it.value.getAvgAccVolumeRate() > UserParam.thresholdAccPriceVolumeRate)
+            avgTradeCount != null
+                    && (it.value.tickCount!! > avgTradeCount!! + UserParam.thresholdTick
+                        || it.value.tickCount!! > avgTradeCount!! * 2)
+                    && it.value.getAvgAccVolumeRate() > UserParam.thresholdAccPriceVolumeRate
         } as HashMap<String, TradeCoinInfo>)
             .toSortedMap(compareByDescending { sortedMapList(it) }).keys.toList()
 
