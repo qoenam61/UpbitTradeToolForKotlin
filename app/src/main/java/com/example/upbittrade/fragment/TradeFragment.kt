@@ -865,7 +865,7 @@ class TradeFragment: Fragment() {
             tradePostMapInfo.remove(marketId)
             tradeResponseMapInfo.remove(marketId)
             totalBidPrice.remove(marketId)
-            processor?.apply {
+            processor = processor?.apply {
                 unregisterProcess(TICKER_INFO, marketId)
                 unregisterProcess(SEARCH_ORDER_INFO, marketId)
                 unregisterProcess(CHECK_ORDER_INFO, marketId)
@@ -874,7 +874,7 @@ class TradeFragment: Fragment() {
 
         if (postInfo.state == OrderCoinInfo.State.DELETE
             && responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
-            processor?.apply {
+            processor = processor?.apply {
                 unregisterProcess(SEARCH_ORDER_INFO, marketId)
                 unregisterProcess(CHECK_ORDER_INFO, marketId)
             }
@@ -933,7 +933,7 @@ class TradeFragment: Fragment() {
                     "state: ${tradePostInfo.state} -> BUY " +
                     "uuid: ${responseOrder.uuid}")
 
-            processor?.apply {
+            processor = processor?.apply {
                 unregisterProcess(SEARCH_ORDER_INFO, marketId)
                 registerProcess(TaskItem(TICKER_INFO, marketId))
                 unregisterProcess(CHECK_ORDER_INFO, marketId)
@@ -989,7 +989,7 @@ class TradeFragment: Fragment() {
                     "state: ${tradePostInfo.state} -> SELL " +
                     "uuid: ${responseOrder.uuid}")
 
-            processor?.apply {
+            processor = processor?.apply {
                 unregisterProcess(SEARCH_ORDER_INFO, marketId)
                 unregisterProcess(TICKER_INFO, marketId)
                 unregisterProcess(CHECK_ORDER_INFO, marketId)
