@@ -706,6 +706,13 @@ class TradeFragment: Fragment() {
                     && (responseOrder.side.equals("bid") || responseOrder.side.equals("Bid"))
                     && responseOrder.state.equals("done")) {
 
+                    Log.d(TAG, "[DEBUG] monitorTickerInfo - marketId: ${postInfo.marketId} " +
+                            "highPrice: ${Utils.getZeroFormatString(postInfo.highPrice!!.toDouble())} " +
+                            "lowPrice: ${Utils.getZeroFormatString(postInfo.lowPrice!!.toDouble())} " +
+                            "openPrice: ${Utils.getZeroFormatString(postInfo.openPrice!!.toDouble())} " +
+                            "closePrice: ${Utils.getZeroFormatString(postInfo.closePrice!!.toDouble())} "
+                    )
+
                     tradePostMapInfo[marketId] = tradeManager.tacticalToSell(tradePostMapInfo[marketId]!!, responseOrder)
 
                 }
