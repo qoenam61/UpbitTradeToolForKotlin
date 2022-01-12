@@ -39,12 +39,12 @@ import kotlin.math.min
 class TradeFragment: Fragment() {
     companion object {
         const val TAG = "TradeFragment"
-        const val LIMIT_AMOUNT = 500000.0
-        const val BID_AMOUNT = 90000.0
+        const val LIMIT_AMOUNT = 100000.0
+        const val BID_AMOUNT = 10000.0
         const val BASE_TIME: Long = 6 * 60 * 1000
-        const val THRESHOLD_RATE = 0.03
+        const val THRESHOLD_RATE = 0.02
         const val THRESHOLD_TICK = 300
-        const val THRESHOLD_ACC_PRICE_VOLUME_RATE = 1.5f
+        const val THRESHOLD_ACC_PRICE_VOLUME_RATE = 1.0f
         const val THRESHOLD_BID_ASK_RATE = 0.5f
         const val THRESHOLD_BID_ASK_PRICE_VOLUME_RATE = 0.5f
 
@@ -651,35 +651,41 @@ class TradeFragment: Fragment() {
 
     private fun monitorTickerInfo(tickersInfo: List<Ticker>) {
         val marketId = tickersInfo.first().marketId!!
-        val postInfo: OrderCoinInfo? = tradePostMapInfo[marketId]
+        var postInfo: OrderCoinInfo? = tradePostMapInfo[marketId]
         if (postInfo != null) {
            Format.timeFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
             val responseOrder: ResponseOrder? = tradeResponseMapInfo[marketId]
             val time: Long = System.currentTimeMillis()
             val currentPrice = tickersInfo.first().tradePrice?.toDouble()!!
-            postInfo.currentTime = time
-            postInfo.closePrice = currentPrice
 
-            val profitRate = postInfo.getProfitRate()
-            var maxProfitRate = postInfo.maxProfitRate
-
-            if (profitRate != null) {
-                postInfo.maxProfitRate = max(profitRate, maxProfitRate)
+            val currentTradeMonitorInfo = tradeMonitorMapInfo[marketId]!!
+            postInfo = postInfo.apply {
+                currentTime = time
+                highPrice = max(currentPrice, currentTradeMonitorInfo.highPrice!!.toDouble())
+                lowPrice = min(currentPrice, currentTradeMonitorInfo.lowPrice!!.toDouble())
+                openPrice = currentTradeMonitorInfo.openPrice!!
+                closePrice = currentPrice
             }
 
-            if (postInfo.maxPrice == null) {
-                postInfo.maxPrice = currentPrice
-            } else {
-                postInfo.maxPrice = max(currentPrice, postInfo.maxPrice!!)
-            }
+            tradePostMapInfo[marketId] = postInfo.apply {
+                maxProfitRate = if (maxProfitRate == null) {
+                    getProfitRate(highPrice!!.toDouble())
+                } else {
+                    max(getProfitRate(highPrice!!.toDouble()), maxProfitRate!!)
+                }
 
-            if (postInfo.minPrice == null) {
-                postInfo.minPrice = currentPrice
-            } else {
-                postInfo.minPrice = min(currentPrice, postInfo.minPrice!!)
-            }
+                maxPrice = if (maxPrice == null) {
+                    highPrice!!.toDouble()
+                } else {
+                    max(highPrice!!.toDouble(), maxPrice!!)
+                }
 
-            tradePostMapInfo[marketId] = postInfo
+                minPrice = if (minPrice == null) {
+                    lowPrice!!.toDouble()
+                } else {
+                    min(lowPrice!!.toDouble(), minPrice!!)
+                }
+            }
 
             if (responseOrder != null) {
 //                val bidPrice = postInfo.bidPrice?.price
@@ -700,7 +706,7 @@ class TradeFragment: Fragment() {
                     && (responseOrder.side.equals("bid") || responseOrder.side.equals("Bid"))
                     && responseOrder.state.equals("done")) {
 
-                    tradePostMapInfo[marketId] = tradeManager.tacticalToSell(postInfo, responseOrder)
+                    tradePostMapInfo[marketId] = tradeManager.tacticalToSell(tradePostMapInfo[marketId]!!, responseOrder)
 
                 }
             }

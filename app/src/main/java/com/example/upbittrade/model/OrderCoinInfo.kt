@@ -59,7 +59,7 @@ class OrderCoinInfo: TradeCoinInfo {
 
     var maxPrice: Double? = null
     var minPrice: Double? = null
-    var maxProfitRate: Double = 0.0
+    var maxProfitRate: Double? = null
 
     var volume: Double? = null
 
@@ -68,20 +68,22 @@ class OrderCoinInfo: TradeCoinInfo {
 
     var bidPrice: BidPrice? = null
 
-    fun getProfitPrice(): Double? {
-        val bidPrice = bidPrice?.price
-        if (closePrice == null || bidPrice == null) {
-            return null
-        }
-        return closePrice?.toDouble()!! - bidPrice
+    fun getProfitPrice(): Double {
+        return getProfitPrice(closePrice?.toDouble()!!)
     }
 
-    fun getProfitRate(): Double? {
-        val profit = getProfitPrice()
-        val bidPrice = bidPrice?.price
-        if (profit == null || bidPrice == null) {
-            return null
-        }
+    fun getProfitPrice(price: Double): Double {
+        val bidPrice = bidPrice?.price!!
+        return price - bidPrice
+    }
+
+    fun getProfitRate(): Double {
+        return getProfitRate(closePrice?.toDouble()!!)
+    }
+
+    fun getProfitRate(price: Double): Double {
+        val profit = getProfitPrice(price)
+        val bidPrice = bidPrice?.price!!
         return profit / bidPrice
     }
 

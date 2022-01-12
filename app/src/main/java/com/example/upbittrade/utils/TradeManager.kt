@@ -113,11 +113,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         val marketId = postInfo.marketId
         val volume = responseOrder.volume?.toDouble()
         val profitRate = postInfo.getProfitRate()
-        val maxProfitRate = postInfo.maxProfitRate
-
-        if (profitRate == null) {
-            return postInfo
-        }
+        val maxProfitRate = postInfo.maxProfitRate!!
 
         val currentPrice = postInfo.closePrice?.toDouble()!!
         val bidPrice = postInfo.bidPrice?.price!!
@@ -127,10 +123,10 @@ class TradeManager(private val listener: TradeChangedListener) {
         val bidAskPriceRate = TradeFragment.tradeMonitorMapInfo[marketId]?.getBidAskPriceRate()!!
         var askPrice: Double? = null
 
-        val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice!!
-        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice!!
-        val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice!!
-        val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice!!
+        val highPrice = postInfo.highPrice!!
+        val lowPrice = postInfo.lowPrice!!
+        val openPrice = postInfo.openPrice!!
+        val closePrice = postInfo.closePrice!!
         val sign: Boolean = closePrice.toDouble() - openPrice.toDouble() >= 0.0
 
         val highTail: Double = (highPrice.toDouble() - closePrice.toDouble()
