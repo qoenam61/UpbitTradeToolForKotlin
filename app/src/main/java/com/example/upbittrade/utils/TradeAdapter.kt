@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
@@ -87,6 +88,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
     }
 
     inner class CoinHolder : RecyclerView.ViewHolder {
+        var monitorLayout: LinearLayout? = null
         var marketId: TextView? = null
         var tradePrice: TextView? = null
 
@@ -111,6 +113,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         constructor(itemView: View, type: Type) : super(itemView) {
             when(type) {
                 MONITOR_LIST -> {
+                    monitorLayout = itemView.findViewById(R.id.coin_list_item)
                     marketId = itemView.findViewById(R.id.market_id)
                     tradePrice = itemView.findViewById(R.id.trade_price)
                     tradePriceRate = itemView.findViewById(R.id.trade_price_rate)
@@ -149,6 +152,13 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         val marketId = monitorKeyList?.get(position)
         val tradeInfo = TradeFragment.tradeMonitorMapInfo[marketId]
         if (tradeInfo != null) {
+
+            if (tradeKeyList != null && tradeKeyList!!.contains(marketId)) {
+                holder.monitorLayout?.setBackgroundColor(Color.YELLOW)
+            } else {
+                holder.monitorLayout?.setBackgroundColor(Color.WHITE)
+            }
+
             holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
 
             val price = tradeInfo.closePrice
