@@ -305,6 +305,7 @@ class TradeFragment: Fragment() {
                     tradePostMapInfo[marketId] = orderCoinInfo.also {
                         it.state = OrderCoinInfo.State.SELLING
                         it.orderTime = time
+                        it.askPrice = askPrice
                         it.volume = volume
                     }
 
