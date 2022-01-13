@@ -272,6 +272,9 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                     paidFee?.run {
                         profitPriceVolume -= this
                     }
+                    reservedFee?.run {
+                        profitPriceVolume -= this
+                    }
                     holder.tradeProfit?.text = getZeroFormatString(profitPriceVolume)
                 }
 

@@ -40,6 +40,9 @@ class TotalResultDialog: Dialog {
                 it.paidFee?.run {
                     paidFeeAmount += this
                 }
+                it.reservedFee?.run {
+                    paidFeeAmount += this
+                }
             }
         }
 
