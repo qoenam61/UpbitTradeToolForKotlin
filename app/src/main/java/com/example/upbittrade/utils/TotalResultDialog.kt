@@ -58,7 +58,7 @@ class TotalResultDialog: Dialog {
     private fun getZeroFormatString(value: Double?): String {
         value ?: return ""
         return when {
-            value < 100.0 -> {
+            value >= 1.0 && value < 100.0 -> {
                 TradeFragment.Format.zeroFormat.format(value)
             }
             value < 1.0 -> {
