@@ -39,9 +39,9 @@ import kotlin.math.min
 class TradeFragment: Fragment() {
     companion object {
         const val TAG = "TradeFragment"
-        const val LIMIT_AMOUNT = 100000.0
-        const val BID_AMOUNT = 10000.0
-        const val BASE_TIME: Long = 6 * 60 * 1000
+        const val LIMIT_AMOUNT = 400000.0
+        const val BID_AMOUNT = 100000.0
+        const val BASE_TIME: Long = 5 * 60 * 1000
         const val THRESHOLD_RATE = 0.02
         const val THRESHOLD_TICK = 300
         const val THRESHOLD_ACC_PRICE_VOLUME_RATE = 1.0f
