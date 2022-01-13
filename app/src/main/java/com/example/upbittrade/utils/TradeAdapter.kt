@@ -66,7 +66,9 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
     }
 
     override fun getItemViewType(position: Int): Int {
-        if (tradeKeyList != null && tradeKeyList!!.contains(monitorKeyList?.get(position)!!)) {
+        if (tradeKeyList != null && monitorKeyList != null
+            && monitorKeyList?.get(position) != null
+            && tradeKeyList!!.contains(monitorKeyList?.get(position))) {
             return TYPE_B
         }
         return TYPE_A
