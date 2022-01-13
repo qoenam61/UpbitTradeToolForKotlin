@@ -24,6 +24,9 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
             TRADE_LIST,
             REPORT_LIST
         }
+
+        private const val TYPE_A = 0
+        private const val TYPE_B = 1
     }
 
     var monitorKeyList: List<String>? = null
@@ -33,7 +36,9 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CoinHolder {
         var view = when (type) {
             MONITOR_LIST -> {
-                LayoutInflater.from(context).inflate(R.layout.coin_monitor_item, parent, false)
+                LayoutInflater.from(context).inflate(
+                    if (viewType == TYPE_A) R.layout.coin_monitor_item else R.layout.coin_monitor_item_selected,
+                    parent, false)
             }
             TRADE_LIST -> {
                 LayoutInflater.from(context).inflate(R.layout.coin_trade_item, parent, false)
@@ -57,6 +62,13 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 reportList(holder, position)
             }
         }
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        if (tradeKeyList != null && tradeKeyList!!.contains(monitorKeyList?.get(position)!!)) {
+            return TYPE_B
+        }
+        return TYPE_A
     }
 
     override fun getItemCount(): Int {
@@ -88,7 +100,6 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
     }
 
     inner class CoinHolder : RecyclerView.ViewHolder {
-        var monitorLayout: LinearLayout? = null
         var marketId: TextView? = null
         var tradePrice: TextView? = null
 
@@ -113,7 +124,6 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         constructor(itemView: View, type: Type) : super(itemView) {
             when(type) {
                 MONITOR_LIST -> {
-                    monitorLayout = itemView.findViewById(R.id.coin_list_item)
                     marketId = itemView.findViewById(R.id.market_id)
                     tradePrice = itemView.findViewById(R.id.trade_price)
                     tradePriceRate = itemView.findViewById(R.id.trade_price_rate)
@@ -152,13 +162,6 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         val marketId = monitorKeyList?.get(position)
         val tradeInfo = TradeFragment.tradeMonitorMapInfo[marketId]
         if (tradeInfo != null) {
-
-            if (tradeKeyList != null && tradeKeyList!!.contains(marketId)) {
-                holder.monitorLayout?.setBackgroundColor(Color.YELLOW)
-            } else {
-                holder.monitorLayout?.setBackgroundColor(Color.WHITE)
-            }
-
             holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
 
             val price = tradeInfo.closePrice
