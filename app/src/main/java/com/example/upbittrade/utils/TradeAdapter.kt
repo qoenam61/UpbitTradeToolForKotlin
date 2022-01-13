@@ -218,7 +218,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
 
                 if (volume != null) {
                     var profitPriceVolume = getProfitPrice() * volume!!
-                    paidFee?.run {
+                    reservedFee?.run {
                         profitPriceVolume -= this
                     }
                     holder.tradeProfit?.text = getZeroFormatString(profitPriceVolume)
