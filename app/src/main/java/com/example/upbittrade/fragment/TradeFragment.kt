@@ -920,9 +920,10 @@ class TradeFragment: Fragment() {
                     "uuid: ${responseOrder.uuid}")
 
             tradePostMapInfo[marketId] = tradePostInfo.apply {
-                this.state = OrderCoinInfo.State.BUYING
-                this.bidPrice = BidPrice(responseOrder.price?.toDouble(), bidType)
-                this.volume = responseOrder.volume?.toDouble()
+                state = OrderCoinInfo.State.BUYING
+                bidPrice = BidPrice(responseOrder.price?.toDouble(), bidType)
+                volume = responseOrder.volume?.toDouble()
+                reservedFee = responseOrder.reservedFee?.toDouble()
                 this.registerTime = time
             }
 
@@ -959,6 +960,7 @@ class TradeFragment: Fragment() {
                 state = OrderCoinInfo.State.BUY
                 bidPrice = BidPrice(responseOrder.price?.toDouble(), bidType)
                 volume = responseOrder.volume?.toDouble()
+                reservedFee = responseOrder.reservedFee?.toDouble()
                 orderTime = null
                 registerTime = null
                 tradeBidTime = time
@@ -982,6 +984,7 @@ class TradeFragment: Fragment() {
                 registerTime = time
                 askPrice = responseOrder.price?.toDouble()
                 volume = responseOrder.volume?.toDouble()
+                reservedFee = responseOrder.reservedFee?.toDouble()
             }
 
             tradeResponseMapInfo[marketId] = responseOrder
@@ -1018,6 +1021,7 @@ class TradeFragment: Fragment() {
                 state = OrderCoinInfo.State.SELL
                 askPrice = responseOrder.price?.toDouble()
                 volume = responseOrder.volume?.toDouble()
+                paidFee = responseOrder.paidFee?.toDouble()
                 orderTime = null
                 registerTime = null
                 tradeAskTime = time

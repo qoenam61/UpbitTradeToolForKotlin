@@ -47,6 +47,7 @@ class OrderCoinInfo: TradeCoinInfo {
         this.closePrice = orderCoinInfo.closePrice
         this.bidPrice = orderCoinInfo.bidPrice
         this.askPrice = orderCoinInfo.askPrice
+        this.paidFee = orderCoinInfo.paidFee
     }
 
     var state: State = State.READY
@@ -67,6 +68,9 @@ class OrderCoinInfo: TradeCoinInfo {
     var type: Int? = null
 
     var bidPrice: BidPrice? = null
+
+    var reservedFee: Double? = null
+    var paidFee: Double? = null
 
     fun getProfitPrice(): Double {
         return getProfitPrice(closePrice?.toDouble()!!)

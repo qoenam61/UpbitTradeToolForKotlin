@@ -64,7 +64,6 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
             }
         }
     }
-
     override fun getItemViewType(position: Int): Int {
         if (type == MONITOR_LIST) {
             if (tradeKeyList != null && monitorKeyList != null) {
@@ -218,7 +217,11 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 holder.tradeStatus?.setTextColor(getStatusColor(state))
 
                 if (volume != null) {
-                    holder.tradeProfit?.text = getZeroFormatString(getProfitPrice()* volume!!)
+                    var profitPriceVolume = getProfitPrice() * volume!!
+                    paidFee?.run {
+                        profitPriceVolume -= this
+                    }
+                    holder.tradeProfit?.text = getZeroFormatString(profitPriceVolume)
                 }
 
                 holder.tradeProfitRate?.text =
@@ -265,7 +268,11 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
                 holder.tradeStatus?.setTextColor(getStatusColor(state))
 
                 if (volume != null) {
-                    holder.tradeProfit?.text = getZeroFormatString(getProfitPrice() * volume!!)
+                    var profitPriceVolume = getProfitPrice() * volume!!
+                    paidFee?.run {
+                        profitPriceVolume -= this
+                    }
+                    holder.tradeProfit?.text = getZeroFormatString(profitPriceVolume)
                 }
 
                 holder.tradeProfitRate?.text =

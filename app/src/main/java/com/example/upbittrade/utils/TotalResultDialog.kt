@@ -32,14 +32,18 @@ class TotalResultDialog: Dialog {
     fun setList(list: List<OrderCoinInfo>) {
         var askPriceAmount = 0.0
         var bidPriceAmount = 0.0
+        var paidFeeAmount = 0.0
         list.forEach {
             if (it.askPrice != null && it.bidPrice != null && it.volume != null) {
                 askPriceAmount += it.askPrice!! * it.volume!!
                 bidPriceAmount += it.bidPrice?.price!! * it.volume!!
+                it.paidFee?.run {
+                    paidFeeAmount += this
+                }
             }
         }
 
-        val profit = (askPriceAmount - bidPriceAmount)
+        val profit = (askPriceAmount - bidPriceAmount) - paidFeeAmount
         profitPrice?.text = Utils.getZeroFormatString(profit)
         profitPrice?.setTextColor(Utils.getTextColor(profit))
 
