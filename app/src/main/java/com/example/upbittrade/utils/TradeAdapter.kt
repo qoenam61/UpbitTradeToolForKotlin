@@ -5,11 +5,12 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
 import com.example.upbittrade.fragment.TradeFragment
+import com.example.upbittrade.fragment.TradeFragment.Companion.marketMapInfo
+import com.example.upbittrade.fragment.TradeFragment.Companion.tradeMonitorMapInfo
 import com.example.upbittrade.model.OrderCoinInfo
 import com.example.upbittrade.utils.TradeAdapter.Companion.Type.*
 import com.example.upbittrade.utils.Utils.Companion.getTextColor
@@ -34,7 +35,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
     var reportList: List<OrderCoinInfo>? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CoinHolder {
-        var view = when (type) {
+        val view = when (type) {
             MONITOR_LIST -> {
                 LayoutInflater.from(context).inflate(
                     if (viewType == TYPE_A) R.layout.coin_monitor_item else R.layout.coin_monitor_item_selected,
@@ -99,7 +100,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         return count
     }
 
-    inner class CoinHolder : RecyclerView.ViewHolder {
+    inner class CoinHolder(itemView: View, type: Type) : RecyclerView.ViewHolder(itemView) {
         var marketId: TextView? = null
         var tradePrice: TextView? = null
 
@@ -121,7 +122,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         var tradeAskTime: TextView? = null
 
 
-        constructor(itemView: View, type: Type) : super(itemView) {
+        init {
             when(type) {
                 MONITOR_LIST -> {
                     marketId = itemView.findViewById(R.id.market_id)
@@ -160,41 +161,42 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
 
     private fun monitorList(holder: CoinHolder, position: Int) {
         val marketId = monitorKeyList?.get(position)
-        val tradeInfo = TradeFragment.tradeMonitorMapInfo[marketId]
+        val tradeInfo = tradeMonitorMapInfo[marketId]
         if (tradeInfo != null) {
-            holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
+            holder.marketId?.text = marketMapInfo[marketId]!!.koreanName
 
-            val price = tradeInfo.closePrice
-            if (price != null) {
-                holder.tradePrice?.text = getZeroFormatString(price.toDouble())
+            with(tradeInfo) {
+                val price = closePrice
+                if (price != null) {
+                    holder.tradePrice?.text = getZeroFormatString(price.toDouble())
+                }
+                holder.tradePriceRate?.text =
+                    TradeFragment.Format.percentFormat.format(dayChangeRate)
+
+                holder.tradePrice?.setTextColor(getTextColor(dayChangeRate))
+
+                holder.tradePriceRate?.setTextColor(getTextColor(dayChangeRate))
+
+                holder.minPriceRate?.text =
+                    TradeFragment.Format.percentFormat.format(getPriceRate())
+                holder.minPriceRate?.setTextColor(getTextColor(getPriceRate()))
+
+                holder.tradeCount?.text =
+                    TradeFragment.Format.nonZeroFormat.format(tickCount)
+
+                holder.minPricePerAvgPrice?.text =
+                    TradeFragment.Format.percentFormat.format(getAvgAccVolumeRate())
+                holder.minPricePerAvgPrice?.setTextColor(getTextColor(getAvgAccVolumeRate(), 1.0))
+
+                holder.bidAskRate?.text =
+                    TradeFragment.Format.percentFormat.format(getBidAskRate())
+                holder.bidAskRate?.setTextColor(getTextColor(getBidAskRate(), 0.5))
+
+                holder.bidAskPriceRate?.text =
+                    TradeFragment.Format.percentFormat.format(getBidAskPriceRate())
+                holder.bidAskPriceRate?.setTextColor(getTextColor(getBidAskPriceRate(), 0.5))
+
             }
-
-            holder.tradePriceRate?.text =
-                TradeFragment.Format.percentFormat.format(tradeInfo.dayChangeRate)
-
-            holder.tradePrice?.setTextColor(getTextColor(tradeInfo.dayChangeRate))
-
-            holder.tradePriceRate?.setTextColor(getTextColor(tradeInfo.dayChangeRate))
-
-            holder.minPriceRate?.text =
-                TradeFragment.Format.percentFormat.format(tradeInfo.getPriceRate())
-            holder.minPriceRate?.setTextColor(getTextColor(tradeInfo.getPriceRate()))
-
-            holder.tradeCount?.text =
-                TradeFragment.Format.nonZeroFormat.format(tradeInfo.tickCount)
-
-            holder.minPricePerAvgPrice?.text =
-                TradeFragment.Format.percentFormat.format(tradeInfo.getAvgAccVolumeRate())
-            holder.minPricePerAvgPrice?.setTextColor(getTextColor(tradeInfo.getAvgAccVolumeRate(), 1.0))
-
-            holder.bidAskRate?.text =
-                TradeFragment.Format.percentFormat.format(tradeInfo.getBidAskRate())
-            holder.bidAskRate?.setTextColor(getTextColor(tradeInfo.getBidAskRate(), 0.5))
-
-            holder.bidAskPriceRate?.text =
-                TradeFragment.Format.percentFormat.format(tradeInfo.getBidAskPriceRate())
-            holder.bidAskPriceRate?.setTextColor(getTextColor(tradeInfo.getBidAskPriceRate(), 0.5))
-
         }
     }
 
@@ -202,42 +204,43 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         val marketId = tradeKeyList?.get(position)
         val tradeInfo = TradeFragment.tradePostMapInfo[marketId]
         if (tradeInfo != null) {
-            holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
-            holder.tradeStatus?.text = tradeInfo.state.name
-            val timeZoneFormat = TradeFragment.Format.timeFormat
-            timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
+            holder.marketId?.text = marketMapInfo[marketId]!!.koreanName
+            with(tradeInfo) {
+                holder.tradeStatus?.text = state.name
+                val timeZoneFormat = TradeFragment.Format.timeFormat
+                timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
 
-            holder.tradeStatus?.setTextColor(getStatusColor(tradeInfo.state))
+                holder.tradeStatus?.setTextColor(getStatusColor(state))
 
-            if (tradeInfo.getProfitPrice() != null && tradeInfo.volume != null) {
-                holder.tradeProfit?.text = getZeroFormatString(tradeInfo.getProfitPrice()!! * tradeInfo.volume!!)
-            }
+                if (volume != null) {
+                    holder.tradeProfit?.text = getZeroFormatString(getProfitPrice()* volume!!)
+                }
 
-            if (tradeInfo.getProfitRate() != null) {
                 holder.tradeProfitRate?.text =
-                    TradeFragment.Format.percentFormat.format(tradeInfo.getProfitRate())
-                holder.tradeProfitRate?.setTextColor(getTextColor(tradeInfo.getProfitRate()))
+                    TradeFragment.Format.percentFormat.format(getProfitRate())
+                holder.tradeProfitRate?.setTextColor(getTextColor(getProfitRate()))
+
+                val price = closePrice?.toDouble()
+                if (price != null) {
+                    holder.tradePrice?.text = getZeroFormatString(price)
+                }
+
+                val bidPrice = bidPrice?.price
+                if (bidPrice != null) {
+                    holder.tradeBidPrice?.text = getZeroFormatString(bidPrice)
+                }
+
+                if (tradeBidTime != null) {
+                    holder.tradeBidTime?.text =
+                        timeZoneFormat.format(tradeBidTime)
+                }
+
+                if (getBuyDuration() != null) {
+                    holder.tradeBuyDuration?.text =
+                        TradeFragment.Format.durationFormat.format(getBuyDuration())
+                }
             }
 
-            val price = tradeInfo.closePrice?.toDouble()
-            if (price != null) {
-                holder.tradePrice?.text = getZeroFormatString(price)
-            }
-
-            val bidPrice = tradeInfo.bidPrice?.price
-            if (bidPrice != null) {
-                holder.tradeBidPrice?.text = getZeroFormatString(bidPrice)
-            }
-
-            if (tradeInfo.tradeBidTime != null) {
-                holder.tradeBidTime?.text =
-                    timeZoneFormat.format(tradeInfo.tradeBidTime)
-            }
-
-            if (tradeInfo.getBuyDuration() != null) {
-                holder.tradeBuyDuration?.text =
-                    TradeFragment.Format.durationFormat.format(tradeInfo.getBuyDuration())
-            }
         }
     }
 
@@ -246,42 +249,43 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
         val marketId = tradeInfo?.marketId
 
         if (tradeInfo != null) {
-            holder.marketId?.text = TradeFragment.marketMapInfo[marketId]!!.koreanName
-            holder.tradeStatus?.text = tradeInfo.state.name
+            holder.marketId?.text = marketMapInfo[marketId]!!.koreanName
 
-            val timeZoneFormat = TradeFragment.Format.timeFormat
-            timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
+            with(tradeInfo) {
+                holder.tradeStatus?.text = state.name
 
-            holder.tradeStatus?.setTextColor(getStatusColor(tradeInfo.state))
+                val timeZoneFormat = TradeFragment.Format.timeFormat
+                timeZoneFormat.timeZone = TimeZone.getTimeZone("Asia/Seoul")
 
-            if (tradeInfo.getProfitPrice() != null && tradeInfo.volume != null) {
-                holder.tradeProfit?.text = getZeroFormatString(tradeInfo.getProfitPrice()!! * tradeInfo.volume!!)
-            }
+                holder.tradeStatus?.setTextColor(getStatusColor(state))
 
-            if (tradeInfo.getProfitRate() != null) {
+                if (volume != null) {
+                    holder.tradeProfit?.text = getZeroFormatString(getProfitPrice() * volume!!)
+                }
+
                 holder.tradeProfitRate?.text =
-                    TradeFragment.Format.percentFormat.format(tradeInfo.getProfitRate())
-                holder.tradeProfitRate?.setTextColor(getTextColor(tradeInfo.getProfitRate()))
-            }
+                    TradeFragment.Format.percentFormat.format(getProfitRate())
+                holder.tradeProfitRate?.setTextColor(getTextColor(getProfitRate()))
 
-            val askPrice = tradeInfo.askPrice
-            if (askPrice != null) {
-                holder.tradeAskPrice?.text = getZeroFormatString(askPrice)
-            }
+                val askPrice = askPrice
+                if (askPrice != null) {
+                    holder.tradeAskPrice?.text = getZeroFormatString(askPrice)
+                }
 
-            val bidPrice = tradeInfo.bidPrice?.price
-            if (bidPrice != null) {
-                holder.tradeBidPrice?.text = getZeroFormatString(bidPrice)
-            }
+                val bidPrice = bidPrice?.price
+                if (bidPrice != null) {
+                    holder.tradeBidPrice?.text = getZeroFormatString(bidPrice)
+                }
 
-            if (tradeInfo.tradeAskTime != null) {
-                holder.tradeAskTime?.text =
-                    timeZoneFormat.format(tradeInfo.tradeAskTime)
-            }
+                if (tradeAskTime != null) {
+                    holder.tradeAskTime?.text =
+                        timeZoneFormat.format(tradeAskTime)
+                }
 
-            if (tradeInfo.tradeBidTime != null) {
-                holder.tradeBidTime?.text =
-                    timeZoneFormat.format(tradeInfo.tradeBidTime)
+                if (tradeBidTime != null) {
+                    holder.tradeBidTime?.text =
+                        timeZoneFormat.format(tradeBidTime)
+                }
             }
         }
     }

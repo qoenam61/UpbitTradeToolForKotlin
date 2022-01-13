@@ -2,9 +2,17 @@ package com.example.upbittrade.utils
 
 import android.util.Log
 import com.example.upbittrade.fragment.TradeFragment
+import com.example.upbittrade.fragment.TradeFragment.Companion.avgTradeCount
 import com.example.upbittrade.fragment.TradeFragment.Companion.bidAskTotalAvgRate
 import com.example.upbittrade.fragment.TradeFragment.Companion.marketTrend
 import com.example.upbittrade.fragment.TradeFragment.Companion.tradeMapInfo
+import com.example.upbittrade.fragment.TradeFragment.Companion.tradeMonitorMapInfo
+import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdAccPriceVolumeRate
+import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdBidAskPriceVolumeRate
+import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdBidAskRate
+import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdRangeRate
+import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdRate
+import com.example.upbittrade.fragment.TradeFragment.UserParam.thresholdTick
 import com.example.upbittrade.model.OrderCoinInfo
 import com.example.upbittrade.model.ResponseOrder
 import com.example.upbittrade.model.TradeCoinInfo
@@ -42,7 +50,7 @@ class TradeManager(private val listener: TradeChangedListener) {
             super.run()
             val filteredList = when(type) {
                 Type.POST_BID -> {
-                    marketIdList?.filter { filterBuyingList(TradeFragment.tradeMonitorMapInfo[it])}
+                    marketIdList?.filter { filterBuyingList(tradeMonitorMapInfo[it])}
                 }
 
                 Type.POST_ASK -> {
@@ -55,7 +63,7 @@ class TradeManager(private val listener: TradeChangedListener) {
 
             filteredList!!.forEach {
                 if (!TradeFragment.tradePostMapInfo.containsKey(it)) {
-                    val orderCoinInfo = OrderCoinInfo(TradeFragment.tradeMonitorMapInfo[it]!!)
+                    val orderCoinInfo = OrderCoinInfo(tradeMonitorMapInfo[it]!!)
                     orderCoinInfo.bidPrice = Utils.getBidPriceCalculate(
                         orderCoinInfo.highPrice!!.toDouble(),
                         orderCoinInfo.lowPrice!!.toDouble(),
@@ -77,7 +85,7 @@ class TradeManager(private val listener: TradeChangedListener) {
             return false
         }
 
-        if (TradeFragment.avgTradeCount == null) {
+        if (avgTradeCount == null) {
             return false
         }
 
@@ -92,20 +100,23 @@ class TradeManager(private val listener: TradeChangedListener) {
         // getPriceVolumeRate() > thresholdAvgMinPerAvgDayPriceVolumeRate
         // getBidAskRate() > thresholdBidAskRate
         // getBidAskPriceRate() > thresholdBidAskPriceRate
-        if ((tradeCoinInfo.tickCount!! > TradeFragment.avgTradeCount!! + TradeFragment.UserParam.thresholdTick
-                    || tradeCoinInfo.tickCount!! > TradeFragment.avgTradeCount!! * 2)
-            && (tradeCoinInfo.getPriceRate() > TradeFragment.UserParam.thresholdRate
-                    || tradeCoinInfo.getPriceRangeRate() > TradeFragment.UserParam.thresholdRangeRate
-                    || tickGap > getTickThreshold(tradeCoinInfo.closePrice!!.toDouble()))
-            && tradeCoinInfo.getAvgAccVolumeRate() > TradeFragment.UserParam.thresholdAccPriceVolumeRate
-            && bidAskTotalAvgRate != null && bidAskTotalAvgRate!! > TradeFragment.UserParam.thresholdBidAskPriceVolumeRate * 0.9
-            && marketTrend != null && (dayChangeRate - marketTrend!!) > TradeFragment.UserParam.thresholdRate * 0.66
-            && ((tradeCoinInfo.getBidAskRate() > TradeFragment.UserParam.thresholdBidAskRate
-                    && tradeCoinInfo.getBidAskPriceRate() > TradeFragment.UserParam.thresholdBidAskPriceVolumeRate)
-                || (tradeCoinInfo.getBidAskPriceRate() - bidAskTotalAvgRate!! > TradeFragment.UserParam.thresholdRate * 0.66))
-        ) {
-            return true
+        with(tradeCoinInfo) {
+            if ((tickCount!! > avgTradeCount!! + thresholdTick
+                        || tickCount!! > avgTradeCount!! * 2)
+                && (getPriceRate() > thresholdRate
+                        || getPriceRangeRate() > thresholdRangeRate
+                        || tickGap > getTickThreshold(closePrice!!.toDouble()))
+                && getAvgAccVolumeRate() > thresholdAccPriceVolumeRate
+                && bidAskTotalAvgRate != null && bidAskTotalAvgRate!! > thresholdBidAskPriceVolumeRate * 0.9
+                && marketTrend != null && (dayChangeRate - marketTrend!!) > thresholdRate * 0.66
+                && ((getBidAskRate() > thresholdBidAskRate
+                        && getBidAskPriceRate() > thresholdBidAskPriceVolumeRate)
+                        || (getBidAskPriceRate() - bidAskTotalAvgRate!! > thresholdRate * 0.66))
+            ) {
+                return true
+            }
         }
+
         return false
     }
 
@@ -119,8 +130,8 @@ class TradeManager(private val listener: TradeChangedListener) {
         val bidPrice = postInfo.bidPrice?.price!!
         val tickGap = abs(bidPrice - currentPrice) / postInfo.getTickPrice()!!
 
-        val bidAskRate = TradeFragment.tradeMonitorMapInfo[marketId]?.getBidAskRate()!!
-        val bidAskPriceRate = TradeFragment.tradeMonitorMapInfo[marketId]?.getBidAskPriceRate()!!
+        val bidAskRate = tradeMonitorMapInfo[marketId]?.getBidAskRate()!!
+        val bidAskPriceRate = tradeMonitorMapInfo[marketId]?.getBidAskPriceRate()!!
         var askPrice: Double? = null
 
         val highPrice = postInfo.highPrice!!
@@ -142,32 +153,32 @@ class TradeManager(private val listener: TradeChangedListener) {
 
         when {
             // Take a profit
-            (profitRate >= TradeFragment.UserParam.thresholdRate * 0.66
-                    && maxProfitRate - profitRate > TradeFragment.UserParam.thresholdRate * 0.66
+            (profitRate >= thresholdRate * 0.66
+                    && maxProfitRate - profitRate > thresholdRate * 0.66
                     && tickGap > getTickThreshold(currentPrice)
-                    && (bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate * 0.9
-                        || (bidAskTotalAvgRate != null && bidAskPriceRate - bidAskTotalAvgRate!! <= TradeFragment.UserParam.thresholdRate * -0.66))) -> {
+                    && (bidAskPriceRate <= thresholdBidAskPriceVolumeRate * 0.9
+                        || (bidAskTotalAvgRate != null && bidAskPriceRate - bidAskTotalAvgRate!! <= thresholdRate * -0.66))) -> {
                 askPrice = getTakeProfitPrice(marketId, postInfo)
             }
 
             (profitRate >= 0
                     && postInfo.getBuyDuration() != null
                     && postInfo.getBuyDuration()!! > TradeFragment.UserParam.monitorTime * 1.5
-                    && bidAskRate <= TradeFragment.UserParam.thresholdBidAskRate * 0.9
-                    && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate * 0.9)
+                    && bidAskRate <= thresholdBidAskRate * 0.9
+                    && bidAskPriceRate <= thresholdBidAskPriceVolumeRate * 0.9)
             || (profitRate >= 0
                     && bidAskTotalAvgRate != null
-                    && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate * 0.9
-                    && bidAskPriceRate - bidAskTotalAvgRate!! <= TradeFragment.UserParam.thresholdRate * -0.66) -> {
+                    && bidAskPriceRate <= thresholdBidAskPriceVolumeRate * 0.9
+                    && bidAskPriceRate - bidAskTotalAvgRate!! <= thresholdRate * -0.66) -> {
 
                 askPrice = getStopLossPrice(marketId, postInfo, lowTail >= highTail)
 
             }
 
             // Stop a loss
-            (profitRate < TradeFragment.UserParam.thresholdRate * -0.66
+            (profitRate < thresholdRate * -0.66
                     && tickGap > getTickThreshold(currentPrice)
-                    && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate * 0.9) -> {
+                    && bidAskPriceRate <= thresholdBidAskPriceVolumeRate * 0.9) -> {
 
                 when {
                     body / length == 1.0 -> {
@@ -205,8 +216,8 @@ class TradeManager(private val listener: TradeChangedListener) {
                     && postInfo.getBuyDuration()!! > TradeFragment.UserParam.monitorTime * 5
                     && tickGap <= getTickThreshold(currentPrice)
                     && bidAskTotalAvgRate != null
-                    && bidAskPriceRate <= TradeFragment.UserParam.thresholdBidAskPriceVolumeRate * 0.9
-                    && bidAskPriceRate - bidAskTotalAvgRate!! <= TradeFragment.UserParam.thresholdRate * -0.66 -> {
+                    && bidAskPriceRate <= thresholdBidAskPriceVolumeRate * 0.9
+                    && bidAskPriceRate - bidAskTotalAvgRate!! <= thresholdRate * -0.66 -> {
 
                 askPrice = getExpiredTimePrice(marketId, postInfo, lowTail >= highTail)
             }
@@ -231,7 +242,7 @@ class TradeManager(private val listener: TradeChangedListener) {
 
     private fun getTickThreshold(price: Double): Double {
         val baseTick = TradeFragment.UserParam.thresholdTickGap
-        val rate = TradeFragment.UserParam.thresholdRate * 100 * 0.66
+        val rate = thresholdRate * 100 * 0.66
         val result: Double
          when {
              price < 0.1 -> {
@@ -290,12 +301,12 @@ class TradeManager(private val listener: TradeChangedListener) {
         }
         val maxPrice = postInfo.maxPrice!!
         val minPrice = postInfo.minPrice!!
-        val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
+        val highPrice = tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
 //        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice!!.toDouble()
 //        val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
-        val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
+        val closePrice = tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
 
-        var result = Utils.convertPrice(
+        val result = Utils.convertPrice(
             sqrt(
                 (maxPrice.pow(2.0)
                         + highPrice.pow(2.0)
@@ -322,9 +333,9 @@ class TradeManager(private val listener: TradeChangedListener) {
         val minPrice = postInfo.minPrice!!
         val bidPrice = postInfo.bidPrice?.price!!
 //        val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
-        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice!!.toDouble()
-        val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
-        val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
+//        val lowPrice = tradeMonitorMapInfo[marketId]?.lowPrice!!.toDouble()
+        val openPrice = tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
+        val closePrice = tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
 
         var result: Double? = null
 
@@ -357,10 +368,10 @@ class TradeManager(private val listener: TradeChangedListener) {
         val maxPrice = postInfo.maxPrice!!
         val minPrice = postInfo.minPrice!!
         val bidPrice = postInfo.bidPrice?.price!!
-        val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
+        val highPrice = tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
 //        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice!!.toDouble()
-        val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
-        val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
+//        val openPrice = tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
+        val closePrice = tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
 
         val result = Utils.convertPrice(
             sqrt(
@@ -395,10 +406,10 @@ class TradeManager(private val listener: TradeChangedListener) {
         val maxPrice = postInfo.maxPrice!!
         val minPrice = postInfo.minPrice!!
         val bidPrice = postInfo.bidPrice?.price!!
-        val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
-        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice!!.toDouble()
-        val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
-        val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
+        val highPrice = tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
+//        val lowPrice = tradeMonitorMapInfo[marketId]?.lowPrice!!.toDouble()
+        val openPrice = tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
+        val closePrice = tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
 
         val result = Utils.convertPrice(
             sqrt(
@@ -433,10 +444,10 @@ class TradeManager(private val listener: TradeChangedListener) {
         val maxPrice = postInfo.maxPrice!!
         val minPrice = postInfo.minPrice!!
         val bidPrice = postInfo.bidPrice?.price!!
-        val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
-        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice!!.toDouble()
-        val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
-        val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
+        val highPrice = tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
+//        val lowPrice = tradeMonitorMapInfo[marketId]?.lowPrice!!.toDouble()
+        val openPrice = tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
+        val closePrice = tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
 
         val result = Utils.convertPrice(
             sqrt(
@@ -471,12 +482,12 @@ class TradeManager(private val listener: TradeChangedListener) {
         val maxPrice = postInfo.maxPrice!!
         val minPrice = postInfo.minPrice!!
         val bidPrice = postInfo.bidPrice?.price!!
-        val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
+        val highPrice = tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
 //        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice!!.toDouble()
-        val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
-        val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
+//        val openPrice = tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
+        val closePrice = tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
 
-        var result = Utils.convertPrice(
+        val result = Utils.convertPrice(
             sqrt(
                 max(closePrice.pow(2.0),
                     if (lowLonger) {
@@ -509,12 +520,12 @@ class TradeManager(private val listener: TradeChangedListener) {
         val maxPrice = postInfo.maxPrice!!
         val minPrice = postInfo.minPrice!!
         val bidPrice = postInfo.bidPrice?.price!!
-        val highPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
+        val highPrice = tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
 //        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice!!.toDouble()
-        val openPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
-        val closePrice = TradeFragment.tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
+        val openPrice = tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
+        val closePrice = tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
 
-        var result = Utils.convertPrice(
+        val result = Utils.convertPrice(
             sqrt(
                 max(closePrice.pow(2.0),
                     if (lowLonger) {

@@ -249,29 +249,31 @@ class TradeFragment: Fragment() {
                                         "time: ${timeZoneFormat.format(time)} "
                             )
 
-                            tradePostMapInfo[marketId] = orderCoinInfo.also {
-                                it.state = OrderCoinInfo.State.BUYING
-                                it.orderTime = time
-                                it.volume = volume
+                            tradePostMapInfo[marketId] = orderCoinInfo.apply {
+                                this.state = OrderCoinInfo.State.BUYING
+                                this.orderTime = time
+                                this.volume = volume
                             }
 
-                            processor?.registerProcess(
-                                PostOrderItem(
-                                    POST_ORDER_INFO,
-                                    marketId,
-                                    "bid",
-                                    volume,
-                                    bidPriceObject.price,
-                                    "limit",
-                                    uuid
+                            with(processor) {
+                                this?.registerProcess(
+                                    PostOrderItem(
+                                        POST_ORDER_INFO,
+                                        marketId,
+                                        "bid",
+                                        volume,
+                                        bidPriceObject.price,
+                                        "limit",
+                                        uuid
+                                    )
                                 )
-                            )
-                            processor?.registerProcess(
-                                PostOrderItem(CHECK_ORDER_INFO, marketId, "wait", 1, "asc")
-                            )
-                            processor?.registerProcess(
-                                PostOrderItem(CHECK_ORDER_INFO, marketId, "done", 1, "asc")
-                            )
+                                this?.registerProcess(
+                                    PostOrderItem(CHECK_ORDER_INFO, marketId, "wait", 1, "asc")
+                                )
+                                this?.registerProcess(
+                                    PostOrderItem(CHECK_ORDER_INFO, marketId, "done", 1, "asc")
+                                )
+                            }
                         }
                     }
                 }
@@ -302,22 +304,24 @@ class TradeFragment: Fragment() {
                             "time: ${timeZoneFormat.format(time)}"
                     )
 
-                    tradePostMapInfo[marketId] = orderCoinInfo.also {
-                        it.state = OrderCoinInfo.State.SELLING
-                        it.orderTime = time
-                        it.askPrice = askPrice
-                        it.volume = volume
+                    tradePostMapInfo[marketId] = orderCoinInfo.apply {
+                        this.state = OrderCoinInfo.State.SELLING
+                        this.orderTime = time
+                        this.askPrice = askPrice
+                        this.volume = volume
                     }
 
-                    processor?.registerProcess(
-                        PostOrderItem(POST_ORDER_INFO, marketId, "ask", volume, askPrice, orderType, uuid)
-                    )
-                    processor?.registerProcess(
-                        PostOrderItem(CHECK_ORDER_INFO, marketId, "wait", 1, "asc")
-                    )
-                    processor?.registerProcess(
-                        PostOrderItem(CHECK_ORDER_INFO, marketId, "done", 1, "asc")
-                    )
+                    with(processor) {
+                        this?.registerProcess(
+                            PostOrderItem(POST_ORDER_INFO, marketId, "ask", volume, askPrice, orderType, uuid)
+                        )
+                        this?.registerProcess(
+                            PostOrderItem(CHECK_ORDER_INFO, marketId, "wait", 1, "asc")
+                        )
+                        this?.registerProcess(
+                            PostOrderItem(CHECK_ORDER_INFO, marketId, "done", 1, "asc")
+                        )
+                    }
                 }
                 tradeAdapter?.tradeKeyList = tradePostMapInfo.keys.toList()
                 activity?.runOnUiThread {
@@ -451,8 +455,10 @@ class TradeFragment: Fragment() {
 
         circleBar?.max = marketMapInfo.size
         circleBar?.progress = 0
-        processor?.registerProcess(extTaskItemList)
-        processor?.registerProcess(taskItemList)
+        with(processor) {
+            this?.registerProcess(extTaskItemList)
+            this?.registerProcess(taskItemList)
+        }
     }
 
     private fun makeCandleMapInfo(minCandlesInfo: List<Candle>) {
@@ -811,8 +817,10 @@ class TradeFragment: Fragment() {
             } else if (responseOrder.state.equals("cancel")) {
                 tradePostMapInfo.remove(marketId)
                 tradeResponseMapInfo.remove(marketId)
-                processor?.unregisterProcess(TICKER_INFO, marketId)
-                processor?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+                with(processor) {
+                    this?.unregisterProcess(TICKER_INFO, marketId)
+                    this?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+                }
             }
         }
 
@@ -873,18 +881,18 @@ class TradeFragment: Fragment() {
             tradePostMapInfo.remove(marketId)
             tradeResponseMapInfo.remove(marketId)
             totalBidPrice.remove(marketId)
-            processor = processor?.apply {
-                unregisterProcess(TICKER_INFO, marketId)
-                unregisterProcess(SEARCH_ORDER_INFO, marketId)
-                unregisterProcess(CHECK_ORDER_INFO, marketId)
+            with(processor) {
+                this?.unregisterProcess(TICKER_INFO, marketId)
+                this?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+                this?.unregisterProcess(CHECK_ORDER_INFO, marketId)
             }
         }
 
         if (postInfo.state == OrderCoinInfo.State.DELETE
             && responseOrder.side.equals("ask") || responseOrder.side.equals("ASK")) {
-            processor = processor?.apply {
-                unregisterProcess(SEARCH_ORDER_INFO, marketId)
-                unregisterProcess(CHECK_ORDER_INFO, marketId)
+            with(processor) {
+                this?.unregisterProcess(SEARCH_ORDER_INFO, marketId)
+                this?.unregisterProcess(CHECK_ORDER_INFO, marketId)
             }
 
             tradePostMapInfo[marketId] = postInfo.apply {
@@ -911,11 +919,11 @@ class TradeFragment: Fragment() {
                     "state: READY -> ${tradePostInfo.state} " +
                     "uuid: ${responseOrder.uuid}")
 
-            tradePostMapInfo[marketId] = tradePostInfo.also {
-                it.state = OrderCoinInfo.State.BUYING
-                it.bidPrice = BidPrice(responseOrder.price?.toDouble(), bidType)
-                it.volume = responseOrder.volume?.toDouble()
-                it.registerTime = time
+            tradePostMapInfo[marketId] = tradePostInfo.apply {
+                this.state = OrderCoinInfo.State.BUYING
+                this.bidPrice = BidPrice(responseOrder.price?.toDouble(), bidType)
+                this.volume = responseOrder.volume?.toDouble()
+                this.registerTime = time
             }
 
             processor?.registerProcess(
