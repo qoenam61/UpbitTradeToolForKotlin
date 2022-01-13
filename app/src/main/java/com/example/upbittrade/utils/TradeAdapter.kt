@@ -216,13 +216,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
 
                 holder.tradeStatus?.setTextColor(getStatusColor(state))
 
-                if (volume != null) {
-                    var profitPriceVolume = getProfitPrice() * volume!!
-                    reservedFee?.run {
-                        profitPriceVolume -= this
-                    }
-                    holder.tradeProfit?.text = getZeroFormatString(profitPriceVolume)
-                }
+                holder.tradeProfit?.text = getZeroFormatString(getProfit())
 
                 holder.tradeProfitRate?.text =
                     TradeFragment.Format.percentFormat.format(getProfitRate())
@@ -267,16 +261,7 @@ class TradeAdapter(private val context: Context, val type: Type): RecyclerView.A
 
                 holder.tradeStatus?.setTextColor(getStatusColor(state))
 
-                if (volume != null) {
-                    var profitPriceVolume = getProfitPrice() * volume!!
-                    paidFee?.run {
-                        profitPriceVolume -= this
-                    }
-                    reservedFee?.run {
-                        profitPriceVolume -= this
-                    }
-                    holder.tradeProfit?.text = getZeroFormatString(profitPriceVolume)
-                }
+                holder.tradeProfit?.text = getZeroFormatString(getProfit())
 
                 holder.tradeProfitRate?.text =
                     TradeFragment.Format.percentFormat.format(getProfitRate())

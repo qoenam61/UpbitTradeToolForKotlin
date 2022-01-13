@@ -1,10 +1,6 @@
 package com.example.upbittrade.model
 
 import com.example.upbittrade.utils.BidPrice
-import com.example.upbittrade.utils.Utils
-import kotlin.math.abs
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 class OrderCoinInfo: TradeCoinInfo {
     companion object {
@@ -73,16 +69,31 @@ class OrderCoinInfo: TradeCoinInfo {
     var reservedFee: Double? = null
     var paidFee: Double? = null
 
-    fun getProfitPrice(): Double {
+    fun getProfit(): Double {
+        if (volume == null) {
+            return 0.0
+        }
         askPrice?.run {
-            return getProfitPrice(this)
+            return getProfit(this * volume!!)
         }
         return 0.0
     }
 
-    fun getProfitPrice(price: Double): Double {
-        val bidPrice = bidPrice?.price!!
-        return price - bidPrice
+    fun getProfit(priceVolume: Double): Double {
+        if (volume == null) {
+            return 0.0
+        }
+        val bidPriceVolume = bidPrice?.price!! * volume!!
+
+        var result = priceVolume - bidPriceVolume
+
+        reservedFee?.run {
+            result -= this
+        }
+        paidFee?.run {
+            result -= this
+        }
+        return result
     }
 
     fun getProfitRate(): Double {
@@ -92,10 +103,13 @@ class OrderCoinInfo: TradeCoinInfo {
         return 0.0
     }
 
-    fun getProfitRate(price: Double): Double {
-        val profit = getProfitPrice(price)
-        val bidPrice = bidPrice?.price!!
-        return profit / bidPrice
+    fun getProfitRate(priceVolume: Double): Double {
+        if (volume == null) {
+            return 0.0
+        }
+        val profit = getProfit(priceVolume)
+        val bidPriceVolume = bidPrice?.price!! * volume!!
+        return profit / bidPriceVolume
     }
 
     fun getRegisterDuration(): Long? {
