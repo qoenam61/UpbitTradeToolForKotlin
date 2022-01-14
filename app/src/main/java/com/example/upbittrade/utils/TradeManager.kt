@@ -418,8 +418,13 @@ class TradeManager(private val listener: TradeChangedListener) {
                             ) / 4
                 } else {
                     (highPrice.pow(2.0) + bidPrice.pow(2.0)
+<<<<<<< HEAD
                             + closePrice.pow(2.0)
                             ) / 3
+=======
+                            + closePrice.pow(2.0) + openPrice.pow(2.0)
+                            ) / 4
+>>>>>>> 10bda48326dee5e6817e5bf33a40127fac9cda4e
                 }
             )
         )!!
@@ -450,12 +455,21 @@ class TradeManager(private val listener: TradeChangedListener) {
         val result = Utils.convertPrice(
             sqrt(
                 if (lowLonger) {
+<<<<<<< HEAD
                     (bidPrice.pow(2.0) + closePrice.pow(2.0) + openPrice.pow(2.0)
                             + highPrice.pow(2.0)
                             ) / 4
                 } else {
                     (bidPrice.pow(2.0) + closePrice.pow(2.0) + openPrice.pow(2.0)
                             ) / 3
+=======
+                    (highPrice.pow(2.0) + closePrice.pow(2.0)
+                            + bidPrice.pow(2.0)
+                            ) / 3
+                } else {
+                    (closePrice.pow(2.0) + bidPrice.pow(2.0)
+                            ) / 2
+>>>>>>> 10bda48326dee5e6817e5bf33a40127fac9cda4e
                 }
             )
         )!!
@@ -486,12 +500,21 @@ class TradeManager(private val listener: TradeChangedListener) {
             sqrt(
                 if (lowLonger) {
                     (maxPrice.pow(2.0) + highPrice.pow(2.0)
+<<<<<<< HEAD
                             + bidPrice.pow(2.0) + closePrice.pow(2.0)
                             ) / 4
                 } else {
                     (highPrice.pow(2.0)
                             + bidPrice.pow(2.0) + closePrice.pow(2.0)
                             ) / 3
+=======
+                            + bidPrice.pow(2.0) + closePrice.pow(2.0) + openPrice.pow(2.0)
+                            ) / 5
+                } else {
+                    (highPrice.pow(2.0)
+                            + bidPrice.pow(2.0) + closePrice.pow(2.0) + openPrice.pow(2.0)
+                            ) / 4
+>>>>>>> 10bda48326dee5e6817e5bf33a40127fac9cda4e
                 }
             )
         )!!
@@ -522,12 +545,21 @@ class TradeManager(private val listener: TradeChangedListener) {
             sqrt(
                 if (lowLonger) {
                     (highPrice.pow(2.0)
+<<<<<<< HEAD
                             + bidPrice.pow(2.0) + closePrice.pow(2.0) + openPrice.pow(2.0)
                             ) / 4
                 } else {
                     (highPrice.pow(2.0)
                             + bidPrice.pow(2.0) + closePrice.pow(2.0) + openPrice.pow(2.0)
                             ) / 4
+=======
+                            + bidPrice.pow(2.0) + closePrice.pow(2.0)
+                            ) / 3
+                } else {
+                    (highPrice.pow(2.0)
+                            + bidPrice.pow(2.0) + closePrice.pow(2.0)
+                            ) / 3
+>>>>>>> 10bda48326dee5e6817e5bf33a40127fac9cda4e
                 }
             )
         )!!
