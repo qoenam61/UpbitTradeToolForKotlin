@@ -98,7 +98,7 @@ class OrderCoinInfo: TradeCoinInfo {
 
     fun getProfitRate(): Double {
         askPrice?.run {
-            return getProfitRate(this)
+            return getProfitRate(this * volume!!)
         }
         return 0.0
     }
