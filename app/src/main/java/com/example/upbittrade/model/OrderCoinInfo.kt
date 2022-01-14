@@ -73,8 +73,8 @@ class OrderCoinInfo: TradeCoinInfo {
         if (volume == null) {
             return 0.0
         }
-        askPrice?.run {
-            return getProfit(this * volume!!)
+        askPrice?.let {
+            return getProfit(it * volume!!)
         }
         return 0.0
     }
@@ -87,18 +87,18 @@ class OrderCoinInfo: TradeCoinInfo {
 
         var result = priceVolume - bidPriceVolume
 
-        reservedFee?.run {
-            result -= this
+        reservedFee?.let {
+            result -= it
         }
-        paidFee?.run {
-            result -= this
+        paidFee?.let {
+            result -= it
         }
         return result
     }
 
     fun getProfitRate(): Double {
-        askPrice?.run {
-            return getProfitRate(this * volume!!)
+        askPrice?.let {
+            return getProfitRate(it * volume!!)
         }
         return 0.0
     }

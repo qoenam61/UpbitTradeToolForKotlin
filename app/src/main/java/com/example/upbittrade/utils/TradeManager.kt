@@ -122,11 +122,11 @@ class TradeManager(private val listener: TradeChangedListener) {
 
     fun tacticalToSell(postInfo: OrderCoinInfo, responseOrder: ResponseOrder): OrderCoinInfo {
         val marketId = postInfo.marketId
+        val currentPrice = postInfo.closePrice?.toDouble()!!
         val volume = responseOrder.volume?.toDouble()
-        val profitRate = postInfo.getProfitRate()
+        val profitRate = postInfo.getProfitRate(currentPrice * volume!!)
         val maxProfitRate = postInfo.maxProfitRate!!
 
-        val currentPrice = postInfo.closePrice?.toDouble()!!
         val bidPrice = postInfo.bidPrice?.price!!
         val tickGap = abs(bidPrice - currentPrice) / postInfo.getTickPrice()!!
 

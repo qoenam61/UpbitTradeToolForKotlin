@@ -676,9 +676,9 @@ class TradeFragment: Fragment() {
 
             tradePostMapInfo[marketId] = postInfo.apply {
                 maxProfitRate = if (maxProfitRate == null) {
-                    getProfitRate(highPrice!!.toDouble())
+                    getProfitRate(highPrice!!.toDouble() * volume!!)
                 } else {
-                    max(getProfitRate(highPrice!!.toDouble()), maxProfitRate!!)
+                    max(getProfitRate(highPrice!!.toDouble() * volume!!), maxProfitRate!!)
                 }
 
                 maxPrice = if (maxPrice == null) {
