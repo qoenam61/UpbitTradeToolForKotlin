@@ -17,7 +17,6 @@ import com.example.upbittrade.model.OrderCoinInfo
 import com.example.upbittrade.model.ResponseOrder
 import com.example.upbittrade.model.TradeCoinInfo
 import kotlin.math.abs
-import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -187,7 +186,7 @@ class TradeManager(private val listener: TradeChangedListener) {
                 when {
                     body / length == 1.0 -> {
                         askPrice = if (sign) {
-                            getStopLossLong(marketId, postInfo, lowTail >= highTail)
+                            getStopLossLongPlus(marketId, postInfo, lowTail >= highTail)
                         } else {
                             getStopLossMarket(marketId, postInfo, volume!!)
                         }
@@ -195,7 +194,7 @@ class TradeManager(private val listener: TradeChangedListener) {
 
                     body / length > 0.5 -> {
                         askPrice = if (sign) {
-                            getStopLossLong(marketId, postInfo, lowTail >= highTail)
+                            getStopLossLongPlus(marketId, postInfo, lowTail >= highTail)
                         } else {
                             getStopLossMinus(marketId, postInfo, lowTail >= highTail)
                         }
@@ -362,7 +361,7 @@ class TradeManager(private val listener: TradeChangedListener) {
         return result
     }
 
-    private fun getStopLossLong(marketId: String?, postInfo: OrderCoinInfo, lowLonger: Boolean): Double? {
+    private fun getStopLossLongPlus(marketId: String?, postInfo: OrderCoinInfo, lowLonger: Boolean): Double? {
         if (marketId == null) {
             return null
         }
@@ -378,12 +377,12 @@ class TradeManager(private val listener: TradeChangedListener) {
             sqrt(
                 if (lowLonger) {
                     (maxPrice.pow(2.0) + highPrice.pow(2.0)
-                            + bidPrice.pow(2.0) + closePrice.pow(2.0)
-                            ) / 4
-                } else {
-                    (highPrice.pow(2.0)
-                            + bidPrice.pow(2.0) + closePrice.pow(2.0)
+                            + bidPrice.pow(2.0)
                             ) / 3
+                } else {
+                    (maxPrice.pow(2.0) + highPrice.pow(2.0)
+                            + closePrice.pow(2.0) + bidPrice.pow(2.0)
+                            ) / 4
                 }
             )
         )!!
@@ -414,12 +413,12 @@ class TradeManager(private val listener: TradeChangedListener) {
             sqrt(
                 if (lowLonger) {
                     (maxPrice.pow(2.0) + highPrice.pow(2.0)
-                            + bidPrice.pow(2.0) + closePrice.pow(2.0)
-                            ) / 4
-                } else {
-                    (highPrice.pow(2.0) + bidPrice.pow(2.0)
-                            + closePrice.pow(2.0)
+                            + bidPrice.pow(2.0)
                             ) / 3
+                } else {
+                    (maxPrice.pow(2.0) + highPrice.pow(2.0)
+                            + closePrice.pow(2.0) + bidPrice.pow(2.0)
+                            ) / 4
                 }
             )
         )!!
@@ -450,12 +449,13 @@ class TradeManager(private val listener: TradeChangedListener) {
         val result = Utils.convertPrice(
             sqrt(
                 if (lowLonger) {
-                    (bidPrice.pow(2.0) + closePrice.pow(2.0) + openPrice.pow(2.0)
-                            + highPrice.pow(2.0)
+                    (maxPrice.pow(2.0) + highPrice.pow(2.0)
+                            + openPrice.pow(2.0) + bidPrice.pow(2.0)
                             ) / 4
                 } else {
-                    (bidPrice.pow(2.0) + closePrice.pow(2.0) + openPrice.pow(2.0)
-                            ) / 3
+                    (maxPrice.pow(2.0) + highPrice.pow(2.0)
+                            + closePrice.pow(2.0) + openPrice.pow(2.0) + bidPrice.pow(2.0)
+                            ) / 5
                 }
             )
         )!!
@@ -479,19 +479,18 @@ class TradeManager(private val listener: TradeChangedListener) {
         val bidPrice = postInfo.bidPrice?.price!!
         val highPrice = tradeMonitorMapInfo[marketId]?.highPrice!!.toDouble()
 //        val lowPrice = TradeFragment.tradeMonitorMapInfo[marketId]?.lowPrice!!.toDouble()
-        val openPrice = tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
+//        val openPrice = tradeMonitorMapInfo[marketId]?.openPrice!!.toDouble()
         val closePrice = tradeMonitorMapInfo[marketId]?.closePrice!!.toDouble()
 
         val result = Utils.convertPrice(
             sqrt(
                 if (lowLonger) {
                     (maxPrice.pow(2.0) + highPrice.pow(2.0)
-                            + bidPrice.pow(2.0) + closePrice.pow(2.0)
-                            ) / 4
+                            + closePrice.pow(2.0)) / 3
                 } else {
-                    (highPrice.pow(2.0)
-                            + bidPrice.pow(2.0) + closePrice.pow(2.0)
-                            ) / 3
+                    (maxPrice.pow(2.0) + highPrice.pow(2.0)
+                            + closePrice.pow(2.0) + bidPrice.pow(2.0)
+                            ) / 4
                 }
             )
         )!!
@@ -521,13 +520,13 @@ class TradeManager(private val listener: TradeChangedListener) {
         val result = Utils.convertPrice(
             sqrt(
                 if (lowLonger) {
-                    (highPrice.pow(2.0)
-                            + bidPrice.pow(2.0) + closePrice.pow(2.0) + openPrice.pow(2.0)
+                    (maxPrice.pow(2.0) + highPrice.pow(2.0)
+                            + openPrice.pow(2.0) + bidPrice.pow(2.0)
                             ) / 4
                 } else {
-                    (highPrice.pow(2.0)
-                            + bidPrice.pow(2.0) + closePrice.pow(2.0) + openPrice.pow(2.0)
-                            ) / 4
+                    (maxPrice.pow(2.0) + highPrice.pow(2.0)
+                            + closePrice.pow(2.0) + openPrice.pow(2.0) + bidPrice.pow(2.0)
+                            ) / 5
                 }
             )
         )!!
@@ -557,13 +556,12 @@ class TradeManager(private val listener: TradeChangedListener) {
         val result = Utils.convertPrice(
             sqrt(
                 if (lowLonger) {
-                    (highPrice.pow(2.0)
-                            + bidPrice.pow(2.0) + closePrice.pow(2.0)
-                            ) / 3
+                    (maxPrice.pow(2.0) + highPrice.pow(2.0)
+                            + closePrice.pow(2.0)) / 3
                 } else {
-                    (bidPrice.pow(2.0)
-                            + closePrice.pow(2.0)
-                            ) / 2
+                    (maxPrice.pow(2.0) + highPrice.pow(2.0)
+                            + closePrice.pow(2.0) + bidPrice.pow(2.0)
+                            ) / 4
                 }
             )
         )!!
