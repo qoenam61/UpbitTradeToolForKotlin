@@ -76,6 +76,9 @@ class OrderCoinInfo: TradeCoinInfo {
         askPrice?.let {
             return getProfit(it * volume!!)
         }
+        closePrice?.let {
+            return getProfit(it.toDouble() * volume!!)
+        }
         return 0.0
     }
 
@@ -99,6 +102,9 @@ class OrderCoinInfo: TradeCoinInfo {
     fun getProfitRate(): Double {
         askPrice?.let {
             return getProfitRate(it * volume!!)
+        }
+        closePrice?.let {
+            return getProfitRate(it.toDouble() * volume!!)
         }
         return 0.0
     }
