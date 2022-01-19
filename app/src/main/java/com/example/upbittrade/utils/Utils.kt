@@ -118,8 +118,8 @@ class Utils {
                         bidType = 2
                         convertPrice(
                             sqrt(
-                                (highPrice.pow(2.0)
-                                        + closePrice.pow(2.0)
+                                (closePrice.pow(2.0)
+                                        + openPrice.pow(2.0)
                                         + lowPrice.pow(2.0)
                                         ) / 3
                             )
@@ -133,7 +133,7 @@ class Utils {
                 body / length <= 0.5 && lowTail > highTail-> {
                     bidPrice = if (sign) {
                         bidType = 4
-                        Utils.convertPrice(
+                        convertPrice(
                             sqrt(
                                 (closePrice.pow(2.0)
                                         + openPrice.pow(2.0)
@@ -152,9 +152,9 @@ class Utils {
                         bidType = 6
                         convertPrice(
                             sqrt(
-                                (highPrice.pow(2.0)
-                                        + closePrice.pow(2.0)
+                                (closePrice.pow(2.0)
                                         + openPrice.pow(2.0)
+                                        + lowPrice.pow(2.0)
                                         ) / 3
                             )
                         )
