@@ -1,6 +1,5 @@
 package com.example.upbittrade.api
 
-import android.util.Log
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
 import okhttp3.Interceptor

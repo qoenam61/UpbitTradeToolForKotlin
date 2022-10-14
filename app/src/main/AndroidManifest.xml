@@ -19,7 +19,12 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.TradePagerActivity"
-            android:windowSoftInputMode="adjustResize|adjustPan"/>
+            android:windowSoftInputMode="adjustResize|adjustPan">
+<!--            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>-->
+        </activity>
     </application>
 
 </manifest>

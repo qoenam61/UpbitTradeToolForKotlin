@@ -1,6 +1,5 @@
 package com.example.upbittrade.model
 
-import android.util.Log
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 import kotlin.math.max

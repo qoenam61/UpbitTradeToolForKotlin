@@ -4,12 +4,10 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.example.upbittrade.R
 import com.example.upbittrade.fragment.TradeFragment
-import com.example.upbittrade.model.TradeViewModel
 import com.example.upbittrade.utils.PreferenceUtil
 
 @Suppress("PrivatePropertyName")
@@ -32,7 +30,7 @@ class TradePagerActivity : FragmentActivity() {
         ACCOUNTS_INFO,
         CHANCE_INFO,
         TICKER_INFO,
-        TRADE_INFO,
+        SEARCH_TRADE_INFO,
         SEARCH_ORDER_INFO,
         CHECK_ORDER_INFO
     }

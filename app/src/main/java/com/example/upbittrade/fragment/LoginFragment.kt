@@ -1,7 +1,6 @@
 package com.example.upbittrade.fragment
 
 import android.app.Activity
-import android.app.Application
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -17,7 +16,6 @@ import com.example.upbittrade.activity.LoginActivity
 import com.example.upbittrade.activity.LoginActivity.Companion.ACCESS_KEY
 import com.example.upbittrade.activity.LoginActivity.Companion.SECRET_KEY
 import com.example.upbittrade.model.DefaultViewModel
-import com.example.upbittrade.utils.PreferenceUtil
 
 class LoginFragment: Fragment() {
     companion object {

@@ -1,6 +1,5 @@
 package com.example.upbittrade.api
 
-import android.util.Log
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import java.math.BigInteger

@@ -2,7 +2,7 @@ package com.example.upbittrade.model
 
 import android.app.Application
 import android.content.Intent
-import android.content.Intent.*
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -12,7 +12,6 @@ import com.example.upbittrade.activity.LoginActivity.Companion.ACCESS_KEY
 import com.example.upbittrade.activity.LoginActivity.Companion.SECRET_KEY
 import com.example.upbittrade.activity.TradePagerActivity
 import com.example.upbittrade.api.UpbitFetcher
-import com.example.upbittrade.fragment.LoginFragment
 import com.example.upbittrade.utils.PreferenceUtil
 
 open class DefaultViewModel(application: Application): AndroidViewModel(application) {

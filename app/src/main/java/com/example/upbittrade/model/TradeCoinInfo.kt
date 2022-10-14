@@ -1,9 +1,5 @@
 package com.example.upbittrade.model
 
-import java.text.DecimalFormat
-import kotlin.math.floor
-import kotlin.math.roundToInt
-
 open class TradeCoinInfo {
     var marketId: String? = null
     var tickCount: Int? = null

@@ -1,7 +1,6 @@
 package com.example.upbittrade.model
 
 import com.google.gson.annotations.SerializedName
-import java.util.*
 
 class ResponseOrder {
     @SerializedName("uuid")
