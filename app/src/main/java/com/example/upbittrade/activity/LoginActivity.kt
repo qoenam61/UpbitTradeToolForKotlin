@@ -1,6 +1,7 @@
 package com.example.upbittrade.activity
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
@@ -50,8 +51,19 @@ class LoginActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        viewModel.resultAppKeyListInfo?.observe(this) {
-            Log.d(TAG, "onStart: $it")
+        viewModel.resultAppKeyListInfo?.observe(this) {Keys ->
+            val pref = PreferenceUtil(this)
+
+            val accessKey = findViewById<EditText>(R.id.edit_access_key)
+            val secretKey = findViewById<EditText>(R.id.edit_secret_key)
+            pref.setString(PreferenceUtil.ACCESS_KEY, accessKey.text.toString())
+            pref.setString(PreferenceUtil.SECRET_KEY, secretKey.text.toString())
+
+            val intent = Intent(this, TradePagerActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            finish()
         }
     }
 
@@ -70,6 +82,11 @@ class LoginActivity : AppCompatActivity() {
 
         val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(accessKey.windowToken, 0)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG, "onDestroy: ")
     }
 }
 

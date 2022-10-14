@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.upbittrade.model.APIKey
-import com.example.upbittrade.model.Accounts
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -31,11 +30,15 @@ class UpbitFetcher() {
         makeRetrofit(keys[0], keys[1])
         val result = MutableLiveData<List<APIKey>>()
         val call: Call<List<APIKey?>?>? = accountRetrofit?.getUpBitApi()?.checkAPIKey()
+
+        Log.d(TAG, "getAPIKeyList: $keys request: ${call.toString()}")
         call!!.enqueue(object : Callback<List<APIKey?>?> {
             override fun onResponse(call: Call<List<APIKey?>?>, response: Response<List<APIKey?>?>) {
                 Log.d(TAG, "onResponse: ${response.isSuccessful} body: ${response.body()}")
 
-                result.value = response.body() as List<APIKey>
+                if (response.isSuccessful) {
+                    result.value = response.body() as List<APIKey>
+                }
             }
 
             override fun onFailure(p0: Call<List<APIKey?>?>, p1: Throwable) {
