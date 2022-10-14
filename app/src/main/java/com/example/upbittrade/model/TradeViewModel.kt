@@ -21,6 +21,8 @@ class TradeViewModel: AndroidViewModel {
         upbitFetcher?.makeRetrofit(
             TradePagerActivity.ACCESS_KEY.toString(),
             TradePagerActivity.SECRET_KEY.toString())
+
+
     }
 
     val searchMarketsInfo = MutableLiveData<Boolean>()

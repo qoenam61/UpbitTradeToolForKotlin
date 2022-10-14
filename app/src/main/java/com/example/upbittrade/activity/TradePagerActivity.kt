@@ -1,13 +1,21 @@
 package com.example.upbittrade.activity
 
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
+import android.util.Log
 import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.example.upbittrade.R
 import com.example.upbittrade.fragment.TradeFragment
+import com.example.upbittrade.service.TradeService
 import com.example.upbittrade.utils.PreferenceUtil
 
 @Suppress("PrivatePropertyName")
@@ -35,6 +43,9 @@ class TradePagerActivity : FragmentActivity() {
         CHECK_ORDER_INFO
     }
 
+    private lateinit var serviceConnection: ServiceConnection
+    private lateinit var tradeService: TradeService
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_trade_pager)
@@ -46,6 +57,41 @@ class TradePagerActivity : FragmentActivity() {
         val viewPager = findViewById<ViewPager2>(R.id.pager)
         viewPager.adapter = ScreenSlidePagerAdapter(this, TradeFragment())
         viewPager.setPageTransformer(ZoomOutPageTransformer())
+
+        startService()
+
+        serviceConnection = object : ServiceConnection {
+            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+                val serv = service as TradeService.TradeServiceBinder
+                tradeService = serv.getService()
+            }
+
+            override fun onServiceDisconnected(name: ComponentName?) {
+
+            }
+
+        }
+    }
+
+    private fun startService() {
+        Log.d(TAG, "startService: ")
+        val intent = Intent(this, TradeService::class.java)
+        ContextCompat.startForegroundService(this, intent)
+    }
+
+    private fun stopService() {
+        Log.d(TAG, "stopService: ")
+        val intent = Intent(this, TradeService::class.java)
+        stopService(intent)
+    }
+
+    private fun bindingService() {
+        val intent = Intent(this, TradeService::class.java)
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+    }
+
+    private fun unBindingService() {
+        unbindService(serviceConnection)
     }
 
     inner class ScreenSlidePagerAdapter(activity: TradePagerActivity, private val tradeFragment: TradeFragment): FragmentStateAdapter(activity) {
@@ -58,9 +104,7 @@ class TradePagerActivity : FragmentActivity() {
                 0 -> tradeFragment
                 else -> tradeFragment
             }
-
         }
-
     }
 
    inner class ZoomOutPageTransformer: ViewPager2.PageTransformer {
