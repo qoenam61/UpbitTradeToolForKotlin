@@ -1,6 +1,7 @@
 package com.example.upbittrade.model
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -24,6 +25,7 @@ class TradeViewModel: AndroidViewModel {
     }
 
     val searchMarketsInfo = MutableLiveData<Boolean>()
+    val searchAccountsInfo = MutableLiveData<Boolean>()
     val searchMinCandleInfo = MutableLiveData<ExtendCandleItem>()
     val searchDayCandleInfo = MutableLiveData<ExtendCandleItem>()
     val searchWeekCandleInfo = MutableLiveData<CandleItem>()
@@ -39,6 +41,11 @@ class TradeViewModel: AndroidViewModel {
     var resultMarketsInfo: LiveData<List<MarketInfo>>? = Transformations.switchMap(searchMarketsInfo) {
         input -> upbitFetcher?.getMarketInfo(input)
     }
+
+    val resultAccountsInfo: LiveData<List<Accounts>>? =
+        Transformations.switchMap(searchAccountsInfo) {
+                input -> upbitFetcher?.getAccounts(input)
+        }
 
     var resultDayCandleInfo: LiveData<List<DayCandle>>? =  Transformations.switchMap(searchDayCandleInfo) {
         input -> upbitFetcher?.getDayCandleInfo(input)

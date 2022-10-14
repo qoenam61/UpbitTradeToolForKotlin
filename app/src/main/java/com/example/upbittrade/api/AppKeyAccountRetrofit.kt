@@ -4,7 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import java.util.*
 
-class AccountRetrofit(accessKey: String, secretKey: String) : DefaultRetrofit(accessKey, secretKey) {
+class AppKeyAccountRetrofit(accessKey: String, secretKey: String) : DefaultRetrofit(accessKey, secretKey) {
     override fun getAuthToken(): String {
         val algorithm: Algorithm =
             Algorithm.HMAC256(secretKey)

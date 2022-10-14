@@ -5,6 +5,9 @@ import retrofit2.Call
 import retrofit2.http.*
 
 interface UpbitApi {
+    @GET("/v1/api_keys")
+    fun checkAPIKey(): Call<List<APIKey?>?>?
+
     @GET("/v1/accounts")
     fun getAccounts(): Call<List<Accounts?>?>?
 

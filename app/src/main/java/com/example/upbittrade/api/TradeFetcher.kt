@@ -25,6 +25,7 @@ class TradeFetcher(val listener: PostOrderListener) {
 
     var tradeInfoRetrofit: TradeInfoRetrofit? = null
     var postOrderRetrofit: PostOrderRetrofit? = null
+    var accountRetrofit: AppKeyAccountRetrofit? = null
 
 
     fun makeRetrofit(accessKey: String, secretKey: String) {
@@ -57,6 +58,22 @@ class TradeFetcher(val listener: PostOrderListener) {
 
             override fun onFailure(call: Call<List<MarketInfo?>?>, t: Throwable) {
                 Log.w(TAG, "onFailure: $t")
+            }
+        })
+        return result
+    }
+
+    fun getAccounts(isLogIn: Boolean): LiveData<List<Accounts>> {
+        val result = MutableLiveData<List<Accounts>>()
+        val call: Call<List<Accounts?>?>? = accountRetrofit?.getUpBitApi()?.getAccounts()
+        call!!.enqueue(object : Callback<List<Accounts?>?> {
+            override fun onResponse(call: Call<List<Accounts?>?>, response: Response<List<Accounts?>?>) {
+
+            }
+
+            override fun onFailure(p0: Call<List<Accounts?>?>, p1: Throwable) {
+                Log.w(UpbitFetcher.TAG, "onFailure - isLogIn: $isLogIn")
+
             }
         })
         return result

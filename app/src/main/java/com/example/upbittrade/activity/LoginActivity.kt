@@ -7,8 +7,9 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.example.upbittrade.R
-import com.example.upbittrade.fragment.LoginFragment
+import com.example.upbittrade.model.DefaultViewModel
 import com.example.upbittrade.utils.PreferenceUtil
 
 
@@ -19,15 +20,17 @@ class LoginActivity : AppCompatActivity() {
         var SECRET_KEY : String? = null
     }
 
+    private lateinit var viewModel: DefaultViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        viewModel = ViewModelProvider(this).get(DefaultViewModel::class.java)
+
         val preferenceUtil = PreferenceUtil(this)
         ACCESS_KEY = preferenceUtil.getString(PreferenceUtil.ACCESS_KEY, "")
         SECRET_KEY = preferenceUtil.getString(PreferenceUtil.SECRET_KEY, "")
-
 
         if (!ACCESS_KEY.isNullOrEmpty()) {
             val accessKey = findViewById<EditText>(R.id.edit_access_key)
@@ -42,15 +45,29 @@ class LoginActivity : AppCompatActivity() {
         loginButton?.setOnClickListener {
             onLoginButton()
         }
+    }
 
+    override fun onStart() {
+        super.onStart()
+
+        viewModel.resultAppKeyListInfo?.observe(this) {
+            Log.d(TAG, "onStart: $it")
+        }
     }
 
     private fun onLoginButton() {
-        if (ACCESS_KEY.isNullOrEmpty() || SECRET_KEY.isNullOrEmpty()) {
-            Log.d(LoginFragment.TAG, "onLoginButton: null")
+        Log.d(TAG, "onLoginButton: ")
+        val accessKey = findViewById<EditText>(R.id.edit_access_key)
+        val secretKey = findViewById<EditText>(R.id.edit_secret_key)
+
+        if (accessKey.text.isNullOrEmpty() || secretKey.text.isNullOrEmpty()) {
+            return
         }
 
-        val accessKey = findViewById<EditText>(R.id.edit_access_key)
+        Log.d(TAG, "onLoginButton: ${accessKey.text} , ${secretKey.text}")
+
+        viewModel.searchAppKeyListInfo.value = arrayOf(accessKey.text.toString(), secretKey.text.toString())
+
         val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(accessKey.windowToken, 0)
     }
