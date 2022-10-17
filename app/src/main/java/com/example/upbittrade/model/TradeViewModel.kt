@@ -15,14 +15,14 @@ import java.util.*
 class TradeViewModel: AndroidViewModel {
 
     private var upbitFetcher: TradeFetcher? = null
-
+    val repository : Repository
     constructor(application: Application, listener: TradeFetcher.PostOrderListener) : super(application) {
         upbitFetcher = TradeFetcher(listener)
         upbitFetcher?.makeRetrofit(
             TradePagerActivity.ACCESS_KEY.toString(),
             TradePagerActivity.SECRET_KEY.toString())
 
-
+        repository = Repository(application)
     }
 
     val searchMarketsInfo = MutableLiveData<Boolean>()

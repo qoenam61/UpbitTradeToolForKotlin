@@ -6,6 +6,8 @@ import com.example.upbittrade.service.TradeService
 
 class Repository {
 
+    var marketMapInfo : HashMap<String, MarketInfo>? = null
+
     constructor(application: Application) {
     }
 

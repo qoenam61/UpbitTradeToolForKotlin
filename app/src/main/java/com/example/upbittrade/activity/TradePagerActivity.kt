@@ -16,9 +16,11 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.example.upbittrade.R
 import com.example.upbittrade.fragment.TradeFragment
+import com.example.upbittrade.model.MarketInfo
 import com.example.upbittrade.model.TradeViewModel
 import com.example.upbittrade.service.TradeService
 import com.example.upbittrade.utils.PreferenceUtil
+import java.util.HashMap
 
 @Suppress("PrivatePropertyName")
 class TradePagerActivity : FragmentActivity() {
@@ -45,8 +47,8 @@ class TradePagerActivity : FragmentActivity() {
         CHECK_ORDER_INFO
     }
 
-    private lateinit var viewModel: TradeViewModel
-    private lateinit var bindService: BindServiceCallBack
+    lateinit var viewModel: TradeViewModel
+    lateinit var bindService: BindServiceCallBack
 
     private lateinit var serviceConnection: ServiceConnection
     private lateinit var tradeService: TradeService
@@ -66,7 +68,7 @@ class TradePagerActivity : FragmentActivity() {
         viewModel = ViewModelProvider(this).get(TradeViewModel::class.java)
         bindService = BindServiceCallBack(viewModel)
 
-//        startService()
+        startService()
         startBindService()
 
         serviceConnection = object : ServiceConnection {
@@ -96,7 +98,7 @@ class TradePagerActivity : FragmentActivity() {
 
     private fun startBindService() {
         val intent = Intent(this, TradeService::class.java)
-        bindService(intent, serviceConnection, Context.BIND_NOT_FOREGROUND)
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
     }
 
     private fun unBindingService() {
@@ -105,6 +107,7 @@ class TradePagerActivity : FragmentActivity() {
 
     inner class BindServiceCallBack(viewModel: TradeViewModel) {
         val tradeViewModel = viewModel
+        var marketMapInfo : HashMap<String, MarketInfo>? = null
     }
 
     inner class ScreenSlidePagerAdapter(activity: TradePagerActivity, private val tradeFragment: TradeFragment): FragmentStateAdapter(activity) {

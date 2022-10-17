@@ -8,17 +8,21 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.LifecycleService
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
+import com.example.upbittrade.model.MarketInfo
 
-class TradeService : Service() {
-
+class TradeService : LifecycleService() {
 
     private val SC = "MyService"
     private val binder = TradeServiceBinder()
     private lateinit var bindService: TradePagerActivity.BindServiceCallBack
 
+    private lateinit var marketListInfo : List<MarketInfo>
+
     override fun onBind(intent: Intent?): IBinder {
+        super.onBind(intent)
         return binder
     }
 
@@ -39,6 +43,8 @@ class TradeService : Service() {
 
     fun setRegisterCallBack(bindService: TradePagerActivity.BindServiceCallBack) {
         this.bindService = bindService
+
+        bindService.tradeViewModel.searchMarketsInfo.value = false
     }
 
     inner class TradeServiceBinder : Binder() {
@@ -47,5 +53,15 @@ class TradeService : Service() {
         }
     }
 
+    override fun onCreate() {
+        super.onCreate()
 
+    }
+
+
+    private fun observeLiveData() {
+//        bindService.tradeViewModel.resultMarketsInfo?.observe(this) {
+//            marketsInfo -> marketListInfo = marketsInfo
+//        }
+    }
 }

@@ -38,12 +38,14 @@ class TradeFragment: Fragment() {
 
     private lateinit var mainActivity: TradePagerActivity
 
-    private var viewModel: TradeViewModel? = null
+    lateinit var viewModel: TradeViewModel
 
     override fun onAttach(activity: Activity) {
         super.onAttach(activity)
         mainActivity = activity as TradePagerActivity
-        viewModel = TradeViewModel(application = activity.application, object : TradeFetcher.PostOrderListener {
+        viewModel = mainActivity.viewModel
+
+/*        viewModel = TradeViewModel(application = activity.application, object : TradeFetcher.PostOrderListener {
             override fun onInSufficientFunds(marketId: String, side: String, errorCode:Int, uuid: UUID) {
                 Log.d(TAG, "[DEBUG] onInSufficientFunds marketId: $marketId side: $side errorCode: $errorCode uuid: $uuid")
                 if (side == "ask" && errorCode == 400) {
@@ -65,7 +67,7 @@ class TradeFragment: Fragment() {
 
                 }
             }
-        })
+        })*/
     }
 
     override fun onCreateView(
@@ -82,35 +84,35 @@ class TradeFragment: Fragment() {
         super.onStart()
 //        Log.i(TAG, "onStart: ")
         val viewCycleOwner = viewLifecycleOwner
-        viewModel?.resultMarketsInfo?.observe(viewCycleOwner) {
+        viewModel.resultMarketsInfo?.observe(viewCycleOwner) {
                 marketsInfo ->
             makeMarketMapInfo(marketsInfo)
         }
 
-        viewModel?.resultMinCandleInfo?.observe(viewCycleOwner) {
+        viewModel.resultMinCandleInfo?.observe(viewCycleOwner) {
                 minCandlesInfo ->
         }
 
-        viewModel?.resultTradeInfo?.observe(viewCycleOwner) {
+        viewModel.resultTradeInfo?.observe(viewCycleOwner) {
                 tradesInfo ->
         }
 
-        viewModel?.resultTickerInfo?.observe(viewCycleOwner) {
+        viewModel.resultTickerInfo?.observe(viewCycleOwner) {
                 tickersInfo ->
         }
 
-        viewModel?.resultPostOrderInfo?.observe(viewCycleOwner) {
+        viewModel.resultPostOrderInfo?.observe(viewCycleOwner) {
                 responseOrder ->
         }
 
-        viewModel?.resultSearchOrderInfo?.observe(viewCycleOwner) {
+        viewModel.resultSearchOrderInfo?.observe(viewCycleOwner) {
                 responseOrder ->
         }
 
-        viewModel?.resultDeleteOrderInfo?.observe(viewCycleOwner) {
+        viewModel.resultDeleteOrderInfo?.observe(viewCycleOwner) {
                 responseOrder ->
         }
-        viewModel?.resultCheckOrderInfo?.observe(viewCycleOwner) {
+        viewModel.resultCheckOrderInfo?.observe(viewCycleOwner) {
                 responseOrder ->
             checkOrderInfo(responseOrder)
         }
@@ -147,6 +149,7 @@ class TradeFragment: Fragment() {
                 Log.i(TAG, "resultMarketsInfo - marketId: $marketId")
             }
         }
+        viewModel.repository.marketMapInfo = marketMapInfo
     }
 
 }
