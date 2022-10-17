@@ -11,10 +11,12 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.example.upbittrade.R
 import com.example.upbittrade.fragment.TradeFragment
+import com.example.upbittrade.model.TradeViewModel
 import com.example.upbittrade.service.TradeService
 import com.example.upbittrade.utils.PreferenceUtil
 
@@ -43,6 +45,9 @@ class TradePagerActivity : FragmentActivity() {
         CHECK_ORDER_INFO
     }
 
+    private lateinit var viewModel: TradeViewModel
+    private lateinit var bindService: BindServiceCallBack
+
     private lateinit var serviceConnection: ServiceConnection
     private lateinit var tradeService: TradeService
 
@@ -58,16 +63,20 @@ class TradePagerActivity : FragmentActivity() {
         viewPager.adapter = ScreenSlidePagerAdapter(this, TradeFragment())
         viewPager.setPageTransformer(ZoomOutPageTransformer())
 
-        startService()
+        viewModel = ViewModelProvider(this).get(TradeViewModel::class.java)
+        bindService = BindServiceCallBack(viewModel)
+
+//        startService()
+        startBindService()
 
         serviceConnection = object : ServiceConnection {
             override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
                 val serv = service as TradeService.TradeServiceBinder
                 tradeService = serv.getService()
+                tradeService.setRegisterCallBack(bindService)
             }
 
             override fun onServiceDisconnected(name: ComponentName?) {
-
             }
 
         }
@@ -85,13 +94,17 @@ class TradePagerActivity : FragmentActivity() {
         stopService(intent)
     }
 
-    private fun bindingService() {
+    private fun startBindService() {
         val intent = Intent(this, TradeService::class.java)
-        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+        bindService(intent, serviceConnection, Context.BIND_NOT_FOREGROUND)
     }
 
     private fun unBindingService() {
         unbindService(serviceConnection)
+    }
+
+    inner class BindServiceCallBack(viewModel: TradeViewModel) {
+        val tradeViewModel = viewModel
     }
 
     inner class ScreenSlidePagerAdapter(activity: TradePagerActivity, private val tradeFragment: TradeFragment): FragmentStateAdapter(activity) {

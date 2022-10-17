@@ -9,16 +9,18 @@ import android.os.Binder
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.example.upbittrade.R
+import com.example.upbittrade.activity.TradePagerActivity
 
 class TradeService : Service() {
 
 
-    val SC = "MyService"
+    private val SC = "MyService"
+    private val binder = TradeServiceBinder()
+    private lateinit var bindService: TradePagerActivity.BindServiceCallBack
 
     override fun onBind(intent: Intent?): IBinder {
         return binder
     }
-
 
     private fun notification() {
         val nc = NotificationChannel(SC, "Trade Service", NotificationManager.IMPORTANCE_DEFAULT)
@@ -35,12 +37,15 @@ class TradeService : Service() {
         return super.onStartCommand(intent, flags, startId)
     }
 
-    val binder = TradeServiceBinder()
+    fun setRegisterCallBack(bindService: TradePagerActivity.BindServiceCallBack) {
+        this.bindService = bindService
+    }
 
     inner class TradeServiceBinder : Binder() {
         fun getService() : TradeService {
             return this@TradeService
         }
     }
+
 
 }
