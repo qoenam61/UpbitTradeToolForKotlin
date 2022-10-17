@@ -11,10 +11,12 @@ import androidx.fragment.app.Fragment
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
 import com.example.upbittrade.api.TradeFetcher
+import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.TaskItem
 import com.example.upbittrade.model.MarketInfo
 import com.example.upbittrade.model.ResponseOrder
 import com.example.upbittrade.model.TradeViewModel
+import kotlinx.coroutines.*
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -25,6 +27,11 @@ class TradeFragment: Fragment() {
 
         val marketMapInfo = HashMap<String, MarketInfo>()
     }
+
+
+    private val UNIT_PERIODIC_GAP = 100L
+    private val UNIT_MIN_CANDLE = 60
+    private val UNIT_MIN_CANDLE_COUNT = 24
 
     object Format {
         var nonZeroFormat = DecimalFormat("###,###,###,###")
@@ -152,4 +159,15 @@ class TradeFragment: Fragment() {
         viewModel.repository.marketMapInfo = marketMapInfo
     }
 
+    fun worksInSerial() : Job {
+        val job = GlobalScope.launch {
+
+            for (marketId in TradeFragment.marketMapInfo.keys) {
+                viewModel.searchMinCandleInfo.value = ExtendCandleItem(TradePagerActivity.PostType.MIN_CANDLE_INFO, UNIT_MIN_CANDLE.toString(), marketId, UNIT_MIN_CANDLE_COUNT)
+                delay(UNIT_PERIODIC_GAP)
+            }
+
+        }
+        return job
+    }
 }

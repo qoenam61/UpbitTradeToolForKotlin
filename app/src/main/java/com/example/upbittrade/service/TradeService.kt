@@ -11,7 +11,15 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
+import com.example.upbittrade.data.ExtendCandleItem
+import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.model.MarketInfo
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.system.measureTimeMillis
+import kotlin.time.measureTime
 
 class TradeService : LifecycleService() {
 
@@ -58,10 +66,4 @@ class TradeService : LifecycleService() {
 
     }
 
-
-    private fun observeLiveData() {
-//        bindService.tradeViewModel.resultMarketsInfo?.observe(this) {
-//            marketsInfo -> marketListInfo = marketsInfo
-//        }
-    }
 }

@@ -79,6 +79,7 @@ class TradeFetcher(val listener: PostOrderListener) {
         return result
     }
 
+    @Synchronized
     fun getMinCandleInfo(item: ExtendCandleItem): LiveData<List<Candle>> {
         val unit = item.unit
         val marketId = item.marketId
