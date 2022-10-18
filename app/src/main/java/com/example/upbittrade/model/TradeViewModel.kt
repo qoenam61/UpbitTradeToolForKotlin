@@ -12,17 +12,17 @@ import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.PostOrderItem
 import java.util.*
 
-class TradeViewModel: AndroidViewModel {
+class TradeViewModel(application: Application): AndroidViewModel(application) {
 
     private var upbitFetcher: TradeFetcher? = null
-    val repository : Repository
-    constructor(application: Application, listener: TradeFetcher.PostOrderListener) : super(application) {
-        upbitFetcher = TradeFetcher(listener)
+
+    val repository : Repository = Repository()
+
+    init {
+        upbitFetcher = TradeFetcher()
         upbitFetcher?.makeRetrofit(
             TradePagerActivity.ACCESS_KEY.toString(),
             TradePagerActivity.SECRET_KEY.toString())
-
-        repository = Repository(application)
     }
 
     val searchMarketsInfo = MutableLiveData<Boolean>()
@@ -48,12 +48,12 @@ class TradeViewModel: AndroidViewModel {
                 input -> upbitFetcher?.getAccounts(input)
         }
 
-    var resultDayCandleInfo: LiveData<List<DayCandle>>? =  Transformations.switchMap(searchDayCandleInfo) {
-        input -> upbitFetcher?.getDayCandleInfo(input)
+    var resultMinCandleInfo: LiveData<List<Candle>>? = Transformations.switchMap(searchMinCandleInfo) {
+            input -> upbitFetcher?.getMinCandleInfo(input)
     }
 
-    var resultMinCandleInfo: LiveData<List<Candle>>? = Transformations.switchMap(searchMinCandleInfo) {
-        input -> upbitFetcher?.getMinCandleInfo(input)
+    var resultDayCandleInfo: LiveData<List<DayCandle>>? =  Transformations.switchMap(searchDayCandleInfo) {
+        input -> upbitFetcher?.getDayCandleInfo(input)
     }
 
     val resultTradeInfo: LiveData<List<TradeInfo>>? = Transformations.switchMap(searchTradeInfo) {

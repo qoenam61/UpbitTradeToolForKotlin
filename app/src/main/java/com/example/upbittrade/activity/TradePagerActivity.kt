@@ -20,7 +20,6 @@ import com.example.upbittrade.model.MarketInfo
 import com.example.upbittrade.model.TradeViewModel
 import com.example.upbittrade.service.TradeService
 import com.example.upbittrade.utils.PreferenceUtil
-import java.util.HashMap
 
 @Suppress("PrivatePropertyName")
 class TradePagerActivity : FragmentActivity() {
@@ -65,7 +64,7 @@ class TradePagerActivity : FragmentActivity() {
         viewPager.adapter = ScreenSlidePagerAdapter(this, TradeFragment())
         viewPager.setPageTransformer(ZoomOutPageTransformer())
 
-        viewModel = ViewModelProvider(this).get(TradeViewModel::class.java)
+        viewModel = ViewModelProvider(this)[TradeViewModel::class.java]
         bindService = BindServiceCallBack(viewModel)
 
         startService()

@@ -13,7 +13,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.util.*
 
-class TradeFetcher(val listener: PostOrderListener) {
+class TradeFetcher {
     companion object {
         const val TAG = "TradeFetcher"
     }
@@ -79,7 +79,6 @@ class TradeFetcher(val listener: PostOrderListener) {
         return result
     }
 
-    @Synchronized
     fun getMinCandleInfo(item: ExtendCandleItem): LiveData<List<Candle>> {
         val unit = item.unit
         val marketId = item.marketId
@@ -261,7 +260,7 @@ class TradeFetcher(val listener: PostOrderListener) {
                                 + " jObjError: " + (jObjError ?: "NULL")
                     )
 
-                    val errorObj = jObjError["error"] as JSONObject
+/*                    val errorObj = jObjError["error"] as JSONObject
                     if (response.code() == 400 && errorObj != null
                         && errorObj["name"] != null
                         && errorObj["name"] == "insufficient_funds_ask") {
@@ -281,7 +280,7 @@ class TradeFetcher(val listener: PostOrderListener) {
                         && errorObj["name"] != null
                         && errorObj["name"] == "invalid_price_bid") {
                         listener.onError(marketId, side, response.code(), identifier!!)
-                    }
+                    }*/
                 }
             }
 

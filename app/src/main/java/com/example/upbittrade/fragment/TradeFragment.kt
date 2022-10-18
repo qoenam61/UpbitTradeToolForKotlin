@@ -3,16 +3,12 @@ package com.example.upbittrade.fragment
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
-import com.example.upbittrade.api.TradeFetcher
-import com.example.upbittrade.data.ExtendCandleItem
-import com.example.upbittrade.data.TaskItem
 import com.example.upbittrade.model.MarketInfo
 import com.example.upbittrade.model.ResponseOrder
 import com.example.upbittrade.model.TradeViewModel
@@ -27,11 +23,6 @@ class TradeFragment: Fragment() {
 
         val marketMapInfo = HashMap<String, MarketInfo>()
     }
-
-
-    private val UNIT_PERIODIC_GAP = 100L
-    private val UNIT_MIN_CANDLE = 60
-    private val UNIT_MIN_CANDLE_COUNT = 24
 
     object Format {
         var nonZeroFormat = DecimalFormat("###,###,###,###")
@@ -93,7 +84,6 @@ class TradeFragment: Fragment() {
         val viewCycleOwner = viewLifecycleOwner
         viewModel.resultMarketsInfo?.observe(viewCycleOwner) {
                 marketsInfo ->
-            makeMarketMapInfo(marketsInfo)
         }
 
         viewModel.resultMinCandleInfo?.observe(viewCycleOwner) {
@@ -142,32 +132,4 @@ class TradeFragment: Fragment() {
         createdTime = date?.time
     }
 
-    private fun makeMarketMapInfo(marketsInfo: List<MarketInfo>) {
-        marketMapInfo.clear()
-        val extTaskItemList = ArrayList<TaskItem>()
-        val taskItemList = ArrayList<TaskItem>()
-        val iterator = marketsInfo.iterator()
-        while (iterator.hasNext()) {
-            val marketInfo: MarketInfo = iterator.next()
-            val marketId = marketInfo.market
-            if (marketId?.contains("KRW-") == true
-                && marketInfo.marketWarning?.contains("CAUTION") == false) {
-                marketMapInfo[marketId] = marketInfo
-                Log.i(TAG, "resultMarketsInfo - marketId: $marketId")
-            }
-        }
-        viewModel.repository.marketMapInfo = marketMapInfo
-    }
-
-    fun worksInSerial() : Job {
-        val job = GlobalScope.launch {
-
-            for (marketId in TradeFragment.marketMapInfo.keys) {
-                viewModel.searchMinCandleInfo.value = ExtendCandleItem(TradePagerActivity.PostType.MIN_CANDLE_INFO, UNIT_MIN_CANDLE.toString(), marketId, UNIT_MIN_CANDLE_COUNT)
-                delay(UNIT_PERIODIC_GAP)
-            }
-
-        }
-        return job
-    }
 }
