@@ -79,10 +79,12 @@ class TradeService : LifecycleService() {
 
     }
 
-    val mutex = Mutex()
 
     private fun observeLiveData() {
         val viewModel = bindService.tradeViewModel
+
+        val mutexMinCandle = Mutex()
+        val mutexDayCandle = Mutex()
 
         viewModel.resultMarketsInfo.observe(this) {
             makeMarketMapInfo(it)
@@ -92,7 +94,7 @@ class TradeService : LifecycleService() {
                     var time = SystemClock.uptimeMillis()
                     for (marketId in marketMapInfo.keys) {
                         Log.d(TAG, "resultMarketsInfo - marketId: $marketId")
-                        mutex.withLock {
+                        mutexMinCandle.withLock {
                             viewModel.searchMinCandleInfo.postValue(ExtendCandleItem(
                                 TradePagerActivity.PostType.MIN_CANDLE_INFO,
                                 UNIT_MIN_CANDLE.toString(),
@@ -100,28 +102,35 @@ class TradeService : LifecycleService() {
                                 UNIT_MIN_CANDLE_COUNT
                             ))
                         }
-                        mutex.lock()
-//                        delay(UNIT_PERIODIC_GAP)
+                        mutexMinCandle.lock()
                     }
                     Log.d(TAG, "resultMarketsInfo - duration: ${(SystemClock.uptimeMillis() - time)}")
                 }
             }
         }
 
+        var minCandleCount = 0
+        var minCandleSendTime = 0L
         viewModel.resultMinCandleInfo.observe(this) {
             for (candle in it) {
-                Log.d(TAG, "onStart: " + candle)
+                Log.d(TAG, "resultMinCandleInfo: " + candle)
+            }
+
+            if (minCandleCount == 0) {
+                minCandleSendTime = SystemClock.uptimeMillis()
+            }
+            minCandleCount++
+
+            var delayTime = 0L
+            if (minCandleCount % 10 == 0) {
+                delayTime =  1000 - (SystemClock.uptimeMillis() - minCandleSendTime)
+                minCandleCount = 0
             }
 
             CoroutineScope(Dispatchers.Default).launch {
-                if (it.isNullOrEmpty()) {
-                    Log.d(TAG, "observeLiveData - unlock: UNIT_PERIODIC_GAP")
-                    delay(UNIT_PERIODIC_GAP)
-                } else {
-                    Log.d(TAG, "observeLiveData - unlock")
-//                    delay(UNIT_PERIODIC_GAP)
-                }
-                mutex.unlock()
+                Log.d(TAG, "observeLiveData - unlock : $delayTime")
+                delay(delayTime)
+                mutexMinCandle.unlock()
             }
         }
     }
