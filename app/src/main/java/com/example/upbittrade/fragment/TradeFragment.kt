@@ -20,18 +20,6 @@ import java.util.*
 class TradeFragment: Fragment() {
     companion object {
         const val TAG = "TradeFragment"
-
-        val marketMapInfo = HashMap<String, MarketInfo>()
-    }
-
-    object Format {
-        var nonZeroFormat = DecimalFormat("###,###,###,###")
-        var zeroFormat = DecimalFormat("###,###,###,###.##")
-        var zeroFormat2 = DecimalFormat("###,###,###,###.####")
-        var percentFormat = DecimalFormat("###.##" + "%")
-        var timeFormat = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
-        @SuppressLint("SimpleDateFormat")
-        var durationFormat = SimpleDateFormat("HH:mm:ss")
     }
 
     private lateinit var mainActivity: TradePagerActivity
@@ -42,30 +30,6 @@ class TradeFragment: Fragment() {
         super.onAttach(activity)
         mainActivity = activity as TradePagerActivity
         viewModel = mainActivity.viewModel
-
-/*        viewModel = TradeViewModel(application = activity.application, object : TradeFetcher.PostOrderListener {
-            override fun onInSufficientFunds(marketId: String, side: String, errorCode:Int, uuid: UUID) {
-                Log.d(TAG, "[DEBUG] onInSufficientFunds marketId: $marketId side: $side errorCode: $errorCode uuid: $uuid")
-                if (side == "ask" && errorCode == 400) {
-
-                }
-
-                if (side == "bid" && errorCode == 400) {
-
-                }
-            }
-
-            override fun onError(marketId: String, side: String?, errorCode: Int, uuid: UUID) {
-                Log.d(TAG, "[DEBUG] onError marketId: $marketId side: $side errorCode: $errorCode uuid: $uuid")
-                if (side == "bid") {
-
-                }
-
-                if (side == "ask") {
-
-                }
-            }
-        })*/
     }
 
     override fun onCreateView(
@@ -82,34 +46,34 @@ class TradeFragment: Fragment() {
         super.onStart()
 //        Log.i(TAG, "onStart: ")
         val viewCycleOwner = viewLifecycleOwner
-        viewModel.resultMarketsInfo?.observe(viewCycleOwner) {
+        viewModel.resultMarketsInfo.observe(viewCycleOwner) {
                 marketsInfo ->
         }
 
-        viewModel.resultMinCandleInfo?.observe(viewCycleOwner) {
+        viewModel.resultMinCandleInfo.observe(viewCycleOwner) {
                 minCandlesInfo ->
         }
 
-        viewModel.resultTradeInfo?.observe(viewCycleOwner) {
+        viewModel.resultTradeInfo.observe(viewCycleOwner) {
                 tradesInfo ->
         }
 
-        viewModel.resultTickerInfo?.observe(viewCycleOwner) {
+        viewModel.resultTickerInfo.observe(viewCycleOwner) {
                 tickersInfo ->
         }
 
-        viewModel.resultPostOrderInfo?.observe(viewCycleOwner) {
+        viewModel.resultPostOrderInfo.observe(viewCycleOwner) {
                 responseOrder ->
         }
 
-        viewModel.resultSearchOrderInfo?.observe(viewCycleOwner) {
+        viewModel.resultSearchOrderInfo.observe(viewCycleOwner) {
                 responseOrder ->
         }
 
-        viewModel.resultDeleteOrderInfo?.observe(viewCycleOwner) {
+        viewModel.resultDeleteOrderInfo.observe(viewCycleOwner) {
                 responseOrder ->
         }
-        viewModel.resultCheckOrderInfo?.observe(viewCycleOwner) {
+        viewModel.resultCheckOrderInfo.observe(viewCycleOwner) {
                 responseOrder ->
             checkOrderInfo(responseOrder)
         }

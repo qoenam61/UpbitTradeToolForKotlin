@@ -14,13 +14,12 @@ import java.util.*
 
 class TradeViewModel(application: Application): AndroidViewModel(application) {
 
-    private var upbitFetcher: TradeFetcher? = null
+    private val upbitFetcher: TradeFetcher = TradeFetcher()
 
     val repository : Repository = Repository()
 
     init {
-        upbitFetcher = TradeFetcher()
-        upbitFetcher?.makeRetrofit(
+        upbitFetcher.makeRetrofit(
             TradePagerActivity.ACCESS_KEY.toString(),
             TradePagerActivity.SECRET_KEY.toString())
     }
@@ -39,44 +38,58 @@ class TradeViewModel(application: Application): AndroidViewModel(application) {
     val checkOrderInfo = MutableLiveData<PostOrderItem>()
 
 
-    var resultMarketsInfo: LiveData<List<MarketInfo>>? = Transformations.switchMap(searchMarketsInfo) {
+    var resultMarketsInfo: LiveData<List<MarketInfo>> = Transformations.switchMap(searchMarketsInfo) {
         input -> upbitFetcher?.getMarketInfo(input)
     }
 
-    val resultAccountsInfo: LiveData<List<Accounts>>? =
+//    val resultMarketsInfo = searchMarketsInfo.switchMap {
+//        liveData<List<MarketInfo>> {
+//            emit(upbitFetcher?.getMarketInfo(it))
+//        }
+//    }
+
+    val resultAccountsInfo: LiveData<List<Accounts>> =
         Transformations.switchMap(searchAccountsInfo) {
                 input -> upbitFetcher?.getAccounts(input)
         }
 
-    var resultMinCandleInfo: LiveData<List<Candle>>? = Transformations.switchMap(searchMinCandleInfo) {
+    var resultMinCandleInfo: LiveData<List<Candle>> =
+        Transformations.switchMap(searchMinCandleInfo) {
             input -> upbitFetcher?.getMinCandleInfo(input)
     }
 
-    var resultDayCandleInfo: LiveData<List<DayCandle>>? =  Transformations.switchMap(searchDayCandleInfo) {
+    var resultDayCandleInfo: LiveData<List<DayCandle>>? =
+        Transformations.switchMap(searchDayCandleInfo) {
         input -> upbitFetcher?.getDayCandleInfo(input)
     }
 
-    val resultTradeInfo: LiveData<List<TradeInfo>>? = Transformations.switchMap(searchTradeInfo) {
+    val resultTradeInfo: LiveData<List<TradeInfo>> =
+        Transformations.switchMap(searchTradeInfo) {
             input -> upbitFetcher?.getTradeInfo(input)
     }
 
-    val resultTickerInfo: LiveData<List<Ticker>>? = Transformations.switchMap(searchTickerInfo) {
+    val resultTickerInfo: LiveData<List<Ticker>> =
+        Transformations.switchMap(searchTickerInfo) {
             input -> upbitFetcher?.getTickerInfo(input)
     }
 
-    val resultPostOrderInfo: LiveData<ResponseOrder>? = Transformations.switchMap(postOrderInfo) {
+    val resultPostOrderInfo: LiveData<ResponseOrder> =
+        Transformations.switchMap(postOrderInfo) {
             input -> upbitFetcher?.postOrderInfo(input)
     }
 
-    val resultSearchOrderInfo: LiveData<ResponseOrder>? = Transformations.switchMap(searchOrderInfo) {
+    val resultSearchOrderInfo: LiveData<ResponseOrder> =
+        Transformations.switchMap(searchOrderInfo) {
             input -> upbitFetcher?.searchOrderInfo(input)
     }
 
-    val resultDeleteOrderInfo: LiveData<ResponseOrder>? = Transformations.switchMap(deleteOrderInfo) {
+    val resultDeleteOrderInfo: LiveData<ResponseOrder> =
+        Transformations.switchMap(deleteOrderInfo) {
             input -> upbitFetcher?.deleteOrderInfo(input)
     }
 
-    val resultCheckOrderInfo: LiveData<List<ResponseOrder>>? = Transformations.switchMap(checkOrderInfo) {
+    val resultCheckOrderInfo: LiveData<List<ResponseOrder>> =
+        Transformations.switchMap(checkOrderInfo) {
             input -> upbitFetcher?.checkOrderInfo(input)
     }
 

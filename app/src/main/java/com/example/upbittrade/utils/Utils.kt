@@ -1,8 +1,11 @@
 package com.example.upbittrade.utils
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import com.example.upbittrade.fragment.TradeFragment
 import java.text.DecimalFormat
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.math.*
 
 class Utils {
@@ -196,16 +199,26 @@ class Utils {
             value ?: return ""
             return when {
                 abs(value) < 100.0 && abs(value) >= 1.0-> {
-                    TradeFragment.Format.zeroFormat.format(value)
+                    Format.zeroFormat.format(value)
                 }
                 abs(value) < 1.0 -> {
-                    TradeFragment.Format.zeroFormat2.format(value)
+                    Format.zeroFormat2.format(value)
                 }
                 else -> {
-                    TradeFragment.Format.nonZeroFormat.format(value)
+                    Format.nonZeroFormat.format(value)
                 }
             }
         }
+    }
+
+    object Format {
+        var nonZeroFormat = DecimalFormat("###,###,###,###")
+        var zeroFormat = DecimalFormat("###,###,###,###.##")
+        var zeroFormat2 = DecimalFormat("###,###,###,###.####")
+        var percentFormat = DecimalFormat("###.##" + "%")
+        var timeFormat = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
+        @SuppressLint("SimpleDateFormat")
+        var durationFormat = SimpleDateFormat("HH:mm:ss")
     }
 }
 
