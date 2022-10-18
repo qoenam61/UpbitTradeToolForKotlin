@@ -135,6 +135,7 @@ class TradeFetcher {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as List<DayCandle>
                 } else {
+                    result.value = ArrayList()
                     Log.w(TAG, "getDayCandleInfo"
                             + " call: " + call.request()
                             + " code: " + response.code()

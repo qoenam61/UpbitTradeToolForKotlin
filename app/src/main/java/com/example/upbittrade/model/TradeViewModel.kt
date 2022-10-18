@@ -59,7 +59,7 @@ class TradeViewModel(application: Application): AndroidViewModel(application) {
             input -> upbitFetcher.getMinCandleInfo(input)
     }
 
-    var resultDayCandleInfo: LiveData<List<DayCandle>>? =
+    var resultDayCandleInfo: LiveData<List<DayCandle>> =
         Transformations.switchMap(searchDayCandleInfo) {
         input -> upbitFetcher.getDayCandleInfo(input)
     }

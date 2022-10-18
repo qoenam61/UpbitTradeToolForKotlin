@@ -88,12 +88,14 @@ class TradeService : LifecycleService() {
 
         viewModel.resultMarketsInfo.observe(this) {
             makeMarketMapInfo(it)
+
+            val marketMapInfo = viewModel.repository.marketMapInfo
+
             CoroutineScope(Dispatchers.Default).launch {
-                val marketMapInfo = viewModel.repository.marketMapInfo
                 while (true) {
                     var time = SystemClock.uptimeMillis()
                     for (marketId in marketMapInfo.keys) {
-                        Log.d(TAG, "resultMarketsInfo - marketId: $marketId")
+//                        Log.d(TAG, "resultMarketsInfo - marketId: $marketId")
                         mutexMinCandle.withLock {
                             viewModel.searchMinCandleInfo.postValue(ExtendCandleItem(
                                 TradePagerActivity.PostType.MIN_CANDLE_INFO,
@@ -104,7 +106,26 @@ class TradeService : LifecycleService() {
                         }
                         mutexMinCandle.lock()
                     }
-                    Log.d(TAG, "resultMarketsInfo - duration: ${(SystemClock.uptimeMillis() - time)}")
+//                    Log.d(TAG, "resultMarketsInfo - duration: ${(SystemClock.uptimeMillis() - time)}")
+                }
+            }
+
+            CoroutineScope(Dispatchers.Default).launch {
+                while (true) {
+                    var time = SystemClock.uptimeMillis()
+                    for (marketId in marketMapInfo.keys) {
+//                        Log.d(TAG, "resultMarketsInfo - marketId: $marketId")
+                        mutexDayCandle.withLock {
+                            viewModel.searchDayCandleInfo.postValue(ExtendCandleItem(
+                                TradePagerActivity.PostType.DAY_CANDLE_INFO,
+                                marketId,
+                                UNIT_MIN_CANDLE_COUNT,
+                                "KRW"
+                            ))
+                        }
+                        mutexDayCandle.lock()
+                    }
+//                    Log.d(TAG, "resultMarketsInfo - duration: ${(SystemClock.uptimeMillis() - time)}")
                 }
             }
         }
@@ -113,7 +134,7 @@ class TradeService : LifecycleService() {
         var minCandleSendTime = 0L
         viewModel.resultMinCandleInfo.observe(this) {
             for (candle in it) {
-                Log.d(TAG, "resultMinCandleInfo: " + candle)
+                Log.d(TAG, "resultMinCandleInfo: $candle")
             }
 
             if (minCandleCount == 0) {
@@ -128,9 +149,38 @@ class TradeService : LifecycleService() {
             }
 
             CoroutineScope(Dispatchers.Default).launch {
-                Log.d(TAG, "observeLiveData - unlock : $delayTime")
-                delay(delayTime)
+                Log.d(TAG, "observeLiveData(min) - unlock : $delayTime")
+                if (delayTime > 0) {
+                    delay(delayTime)
+                }
                 mutexMinCandle.unlock()
+            }
+        }
+
+        var dayCandleCount = 0
+        var dayCandleSendTime = 0L
+        viewModel.resultDayCandleInfo.observe(this) {
+            for (candle in it) {
+                Log.d(TAG, "resultDayCandleInfo: $candle")
+            }
+
+            if (dayCandleCount == 0) {
+                dayCandleSendTime = SystemClock.uptimeMillis()
+            }
+            dayCandleCount++
+
+            var delayTime = 0L
+            if (dayCandleCount % 10 == 0) {
+                delayTime =  1000 - (SystemClock.uptimeMillis() - dayCandleSendTime)
+                dayCandleCount = 0
+            }
+
+            CoroutineScope(Dispatchers.Default).launch {
+                Log.d(TAG, "observeLiveData(day) - unlock : $delayTime")
+                if (delayTime > 0) {
+                    delay(delayTime)
+                }
+                mutexDayCandle.unlock()
             }
         }
     }
