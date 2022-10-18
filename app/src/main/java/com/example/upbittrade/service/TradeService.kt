@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
+import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.TaskItem
 import com.example.upbittrade.fragment.TradeFragment
@@ -128,6 +129,14 @@ class TradeService : LifecycleService() {
 //                    Log.d(TAG, "resultMarketsInfo - duration: ${(SystemClock.uptimeMillis() - time)}")
                 }
             }
+
+            CoroutineScope(Dispatchers.Default).launch {
+                viewModel.searchTradeInfo.postValue(CandleItem(
+                    TradePagerActivity.PostType.TRADE_INFO,
+                    "KRW-BTC",
+                    30
+                ))
+            }
         }
 
         var minCandleCount = 0
@@ -181,6 +190,12 @@ class TradeService : LifecycleService() {
                     delay(delayTime)
                 }
                 mutexDayCandle.unlock()
+            }
+        }
+
+        viewModel.resultTradeInfo.observe(this) {
+            for (candle in it) {
+                Log.d(TAG, "resultTradeInfo: $candle")
             }
         }
     }

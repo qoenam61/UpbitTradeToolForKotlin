@@ -41,6 +41,7 @@ class TradePagerActivity : FragmentActivity() {
         ACCOUNTS_INFO,
         CHANCE_INFO,
         TICKER_INFO,
+        TRADE_INFO,
         SEARCH_TRADE_INFO,
         SEARCH_ORDER_INFO,
         CHECK_ORDER_INFO

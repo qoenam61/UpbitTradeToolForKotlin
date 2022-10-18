@@ -1,5 +1,6 @@
 package com.example.upbittrade.model
 
+import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 
 class TradeInfo {
@@ -43,5 +44,10 @@ class TradeInfo {
         }
         val diff = tradePrice!!.toDouble() - prevClosingPrice!!.toDouble()
         return diff / prevClosingPrice!!.toDouble()
+    }
+
+    override fun toString(): String {
+        val gson = Gson()
+        return gson.toJson(this)
     }
 }
