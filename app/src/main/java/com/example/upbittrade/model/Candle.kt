@@ -1,5 +1,6 @@
 package com.example.upbittrade.model
 
+import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 import kotlin.math.max
@@ -85,5 +86,10 @@ open class Candle: Serializable, Comparable<Candle> {
                 0
             }
         }
+    }
+
+    override fun toString(): String {
+        val gson = Gson()
+        return gson.toJson(this)
     }
 }

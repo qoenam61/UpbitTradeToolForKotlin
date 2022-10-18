@@ -7,11 +7,13 @@ import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.PostOrderItem
 import com.example.upbittrade.model.*
+import kotlinx.coroutines.sync.Mutex
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.util.*
+import kotlin.collections.ArrayList
 
 class TradeFetcher {
     companion object {
@@ -26,7 +28,6 @@ class TradeFetcher {
     var tradeInfoRetrofit: TradeInfoRetrofit? = null
     var postOrderRetrofit: PostOrderRetrofit? = null
     var accountRetrofit: AppKeyAccountRetrofit? = null
-
 
     fun makeRetrofit(accessKey: String, secretKey: String) {
         Log.d(TAG, "makeRetrofit - accessKey: $accessKey secretKey: $secretKey")
@@ -88,7 +89,6 @@ class TradeFetcher {
 
         val result = MutableLiveData<List<Candle>>()
         val call: Call<List<Candle?>?>? = tradeInfoRetrofit?.getUpBitApi()?.getMinCandleInfo(unit, marketId, to, count)
-
         call!!.enqueue(object : Callback<List<Candle?>?> {
             override fun onResponse(
                 call: Call<List<Candle?>?>,
@@ -97,6 +97,7 @@ class TradeFetcher {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as List<Candle>
                 } else {
+                    result.value = ArrayList()
                     Log.w(TAG, "getMinCandleInfo"
                             + " call: " + call.request()
                             + " code: " + response.code()

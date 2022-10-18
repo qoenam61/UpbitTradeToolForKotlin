@@ -69,18 +69,6 @@ class TradePagerActivity : FragmentActivity() {
 
         startService()
         startBindService()
-
-        serviceConnection = object : ServiceConnection {
-            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-                val serv = service as TradeService.TradeServiceBinder
-                tradeService = serv.getService()
-                tradeService.setRegisterCallBack(bindService)
-            }
-
-            override fun onServiceDisconnected(name: ComponentName?) {
-            }
-
-        }
     }
 
     private fun startService() {
@@ -96,6 +84,18 @@ class TradePagerActivity : FragmentActivity() {
     }
 
     private fun startBindService() {
+        serviceConnection = object : ServiceConnection {
+            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+                val serv = service as TradeService.TradeServiceBinder
+                tradeService = serv.getService()
+                tradeService.setRegisterCallBack(bindService)
+            }
+
+            override fun onServiceDisconnected(name: ComponentName?) {
+            }
+
+        }
+
         val intent = Intent(this, TradeService::class.java)
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
     }

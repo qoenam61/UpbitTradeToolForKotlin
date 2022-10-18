@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
@@ -19,6 +20,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class TradeService : LifecycleService() {
 
@@ -26,9 +29,9 @@ class TradeService : LifecycleService() {
     private val binder = TradeServiceBinder()
     private lateinit var bindService: TradePagerActivity.BindServiceCallBack
 
-    private val UNIT_PERIODIC_GAP = 100L
+    private val UNIT_PERIODIC_GAP = 60L
     private val UNIT_MIN_CANDLE = 60
-    private val UNIT_MIN_CANDLE_COUNT = 24
+    private val UNIT_MIN_CANDLE_COUNT = 1
 
     companion object {
         const val TAG = "TradeService"
@@ -59,7 +62,10 @@ class TradeService : LifecycleService() {
     fun setRegisterCallBack(bindService: TradePagerActivity.BindServiceCallBack) {
         this.bindService = bindService
 
-        bindService.tradeViewModel.searchMarketsInfo.value = false
+        Log.d(TAG, "setRegisterCallBack: ")
+        observeLiveData()
+
+        bindService.tradeViewModel.searchMarketsInfo.value = true
     }
 
     inner class TradeServiceBinder : Binder() {
@@ -73,37 +79,55 @@ class TradeService : LifecycleService() {
 
     }
 
-    override fun onStart(intent: Intent?, startId: Int) {
-        super.onStart(intent, startId)
+    val mutex = Mutex()
+
+    private fun observeLiveData() {
         val viewModel = bindService.tradeViewModel
 
-        viewModel.resultMarketsInfo?.observe(this) {
+        viewModel.resultMarketsInfo.observe(this) {
             makeMarketMapInfo(it)
-
             CoroutineScope(Dispatchers.Default).launch {
                 val marketMapInfo = viewModel.repository.marketMapInfo
                 while (true) {
+                    var time = SystemClock.uptimeMillis()
                     for (marketId in marketMapInfo.keys) {
-                        viewModel.searchMinCandleInfo.value = ExtendCandleItem(
-                            TradePagerActivity.PostType.MIN_CANDLE_INFO,
-                            UNIT_MIN_CANDLE.toString(),
-                            marketId,
-                            UNIT_MIN_CANDLE_COUNT
-                        )
-                        delay(UNIT_PERIODIC_GAP)
+                        Log.d(TAG, "resultMarketsInfo - marketId: $marketId")
+                        mutex.withLock {
+                            viewModel.searchMinCandleInfo.postValue(ExtendCandleItem(
+                                TradePagerActivity.PostType.MIN_CANDLE_INFO,
+                                UNIT_MIN_CANDLE.toString(),
+                                marketId,
+                                UNIT_MIN_CANDLE_COUNT
+                            ))
+                        }
+                        mutex.lock()
+//                        delay(UNIT_PERIODIC_GAP)
                     }
+                    Log.d(TAG, "resultMarketsInfo - duration: ${(SystemClock.uptimeMillis() - time)}")
                 }
             }
         }
 
-        viewModel.resultMinCandleInfo?.observe(this) {
+        viewModel.resultMinCandleInfo.observe(this) {
             for (candle in it) {
                 Log.d(TAG, "onStart: " + candle)
+            }
+
+            CoroutineScope(Dispatchers.Default).launch {
+                if (it.isNullOrEmpty()) {
+                    Log.d(TAG, "observeLiveData - unlock: UNIT_PERIODIC_GAP")
+                    delay(UNIT_PERIODIC_GAP)
+                } else {
+                    Log.d(TAG, "observeLiveData - unlock")
+//                    delay(UNIT_PERIODIC_GAP)
+                }
+                mutex.unlock()
             }
         }
     }
 
     private fun makeMarketMapInfo(marketsInfo: List<MarketInfo>) {
+        Log.d(TAG, "makeMarketMapInfo: ")
         val marketMapInfo = bindService.tradeViewModel.repository.marketMapInfo
         marketMapInfo.clear()
         val extTaskItemList = ArrayList<TaskItem>()

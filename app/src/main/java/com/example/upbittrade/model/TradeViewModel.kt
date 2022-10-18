@@ -10,6 +10,7 @@ import com.example.upbittrade.api.TradeFetcher
 import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.PostOrderItem
+import kotlinx.coroutines.sync.Mutex
 import java.util.*
 
 class TradeViewModel(application: Application): AndroidViewModel(application) {
@@ -39,7 +40,7 @@ class TradeViewModel(application: Application): AndroidViewModel(application) {
 
 
     var resultMarketsInfo: LiveData<List<MarketInfo>> = Transformations.switchMap(searchMarketsInfo) {
-        input -> upbitFetcher?.getMarketInfo(input)
+        input -> upbitFetcher.getMarketInfo(input)
     }
 
 //    val resultMarketsInfo = searchMarketsInfo.switchMap {
@@ -50,47 +51,47 @@ class TradeViewModel(application: Application): AndroidViewModel(application) {
 
     val resultAccountsInfo: LiveData<List<Accounts>> =
         Transformations.switchMap(searchAccountsInfo) {
-                input -> upbitFetcher?.getAccounts(input)
+                input -> upbitFetcher.getAccounts(input)
         }
 
     var resultMinCandleInfo: LiveData<List<Candle>> =
         Transformations.switchMap(searchMinCandleInfo) {
-            input -> upbitFetcher?.getMinCandleInfo(input)
+            input -> upbitFetcher.getMinCandleInfo(input)
     }
 
     var resultDayCandleInfo: LiveData<List<DayCandle>>? =
         Transformations.switchMap(searchDayCandleInfo) {
-        input -> upbitFetcher?.getDayCandleInfo(input)
+        input -> upbitFetcher.getDayCandleInfo(input)
     }
 
     val resultTradeInfo: LiveData<List<TradeInfo>> =
         Transformations.switchMap(searchTradeInfo) {
-            input -> upbitFetcher?.getTradeInfo(input)
+            input -> upbitFetcher.getTradeInfo(input)
     }
 
     val resultTickerInfo: LiveData<List<Ticker>> =
         Transformations.switchMap(searchTickerInfo) {
-            input -> upbitFetcher?.getTickerInfo(input)
+            input -> upbitFetcher.getTickerInfo(input)
     }
 
     val resultPostOrderInfo: LiveData<ResponseOrder> =
         Transformations.switchMap(postOrderInfo) {
-            input -> upbitFetcher?.postOrderInfo(input)
+            input -> upbitFetcher.postOrderInfo(input)
     }
 
     val resultSearchOrderInfo: LiveData<ResponseOrder> =
         Transformations.switchMap(searchOrderInfo) {
-            input -> upbitFetcher?.searchOrderInfo(input)
+            input -> upbitFetcher.searchOrderInfo(input)
     }
 
     val resultDeleteOrderInfo: LiveData<ResponseOrder> =
         Transformations.switchMap(deleteOrderInfo) {
-            input -> upbitFetcher?.deleteOrderInfo(input)
+            input -> upbitFetcher.deleteOrderInfo(input)
     }
 
     val resultCheckOrderInfo: LiveData<List<ResponseOrder>> =
         Transformations.switchMap(checkOrderInfo) {
-            input -> upbitFetcher?.checkOrderInfo(input)
+            input -> upbitFetcher.checkOrderInfo(input)
     }
 
     private class CandleInput {
