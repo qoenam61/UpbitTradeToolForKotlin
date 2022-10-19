@@ -136,6 +136,37 @@ class TradeService : LifecycleService() {
                     "KRW-BTC",
                     30
                 ))
+
+                delay(100)
+
+                viewModel.searchTradeInfo.postValue(CandleItem(
+                    TradePagerActivity.PostType.TRADE_INFO,
+                    "KRW-ETH",
+                    30
+                ))
+
+                delay(100)
+                viewModel.searchTradeInfo.postValue(CandleItem(
+                    TradePagerActivity.PostType.TRADE_INFO,
+                    "KRW-BTC",
+                    30
+                ))
+
+                delay(100)
+
+                viewModel.searchTradeInfo.postValue(CandleItem(
+                    TradePagerActivity.PostType.TRADE_INFO,
+                    "KRW-ETH",
+                    30
+                ))
+
+                delay(100)
+
+                viewModel.searchTradeInfo.postValue(CandleItem(
+                    TradePagerActivity.PostType.TRADE_INFO,
+                    "KRW-ETC",
+                    30
+                ))
             }
         }
 
