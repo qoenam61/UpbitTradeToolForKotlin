@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = arrayOf(TradeInfoData::class), version = 1)
+@Database(entities = [TradeInfoData::class, MinCandleInfoData::class], version = 1)
 abstract class TradeDataBase: RoomDatabase() {
 
     abstract fun tradeInfoDao() : TradeInfoDAO

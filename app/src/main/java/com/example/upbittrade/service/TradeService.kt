@@ -15,6 +15,7 @@ import com.example.upbittrade.activity.TradePagerActivity
 import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.TaskItem
+import com.example.upbittrade.database.TradeInfoData
 import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.model.MarketInfo
 import kotlinx.coroutines.CoroutineScope
@@ -225,9 +226,14 @@ class TradeService : LifecycleService() {
         }
 
         viewModel.resultTradeInfo.observe(this) {
-            for (candle in it) {
-                Log.d(TAG, "resultTradeInfo: $candle")
+            CoroutineScope(Dispatchers.Default).launch {
+                for (tradeInfo in it) {
+                    Log.d(TAG, "resultTradeInfo: $tradeInfo")
+                    val trade = TradeInfoData.mapping(tradeInfo)
+                    viewModel.repository.database?.tradeInfoDao()?.insert(trade)
+                }
             }
+
         }
     }
 

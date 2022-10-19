@@ -17,7 +17,7 @@ class TradeViewModel(application: Application): AndroidViewModel(application) {
 
     private val upbitFetcher: TradeFetcher = TradeFetcher()
 
-    val repository : Repository = Repository()
+    val repository : Repository = Repository(application)
 
     init {
         upbitFetcher.makeRetrofit(
