@@ -15,6 +15,7 @@ import com.example.upbittrade.activity.TradePagerActivity
 import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.TaskItem
+import com.example.upbittrade.database.MinCandleInfoData
 import com.example.upbittrade.database.TradeInfoData
 import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.model.MarketInfo
@@ -32,6 +33,7 @@ class TradeService : LifecycleService() {
     private lateinit var bindService: TradePagerActivity.BindServiceCallBack
 
     private val UNIT_PERIODIC_GAP = 60L
+    private val UNIT_TRADE_INFO_COUNT = 200
     private val UNIT_MIN_CANDLE = 60
     private val UNIT_MIN_CANDLE_COUNT = 1
 
@@ -87,6 +89,7 @@ class TradeService : LifecycleService() {
 
         val mutexMinCandle = Mutex()
         val mutexDayCandle = Mutex()
+        val mutexTradeInfoCandle = Mutex()
 
         viewModel.resultMarketsInfo.observe(this) {
             makeMarketMapInfo(it)
@@ -132,50 +135,33 @@ class TradeService : LifecycleService() {
             }
 
             CoroutineScope(Dispatchers.Default).launch {
-                viewModel.searchTradeInfo.postValue(CandleItem(
-                    TradePagerActivity.PostType.TRADE_INFO,
-                    "KRW-BTC",
-                    30
-                ))
-
-                delay(100)
-
-                viewModel.searchTradeInfo.postValue(CandleItem(
-                    TradePagerActivity.PostType.TRADE_INFO,
-                    "KRW-ETH",
-                    30
-                ))
-
-                delay(100)
-                viewModel.searchTradeInfo.postValue(CandleItem(
-                    TradePagerActivity.PostType.TRADE_INFO,
-                    "KRW-BTC",
-                    30
-                ))
-
-                delay(100)
-
-                viewModel.searchTradeInfo.postValue(CandleItem(
-                    TradePagerActivity.PostType.TRADE_INFO,
-                    "KRW-ETH",
-                    30
-                ))
-
-                delay(100)
-
-                viewModel.searchTradeInfo.postValue(CandleItem(
-                    TradePagerActivity.PostType.TRADE_INFO,
-                    "KRW-ETC",
-                    30
-                ))
+                while (true) {
+                    var time = SystemClock.uptimeMillis()
+                    for (marketId in marketMapInfo.keys) {
+//                        Log.d(TAG, "resultMarketsInfo - marketId: $marketId")
+                        mutexTradeInfoCandle.withLock {
+                            viewModel.searchTradeInfo.postValue(CandleItem(
+                                TradePagerActivity.PostType.TRADE_INFO,
+                                marketId,
+                                UNIT_TRADE_INFO_COUNT
+                            ))
+                        }
+                        mutexTradeInfoCandle.lock()
+                    }
+//                    Log.d(TAG, "resultMarketsInfo - duration: ${(SystemClock.uptimeMillis() - time)}")
+                }
             }
         }
 
         var minCandleCount = 0
         var minCandleSendTime = 0L
         viewModel.resultMinCandleInfo.observe(this) {
-            for (candle in it) {
-                Log.d(TAG, "resultMinCandleInfo: $candle")
+            CoroutineScope(Dispatchers.Default).launch {
+                for (candle in it) {
+                    Log.d(TAG, "resultMinCandleInfo: $candle")
+                    val can = MinCandleInfoData.mapping(candle)
+                    viewModel.repository.database?.tradeInfoDao()?.insert(can)
+                }
             }
 
             if (minCandleCount == 0) {
@@ -225,6 +211,8 @@ class TradeService : LifecycleService() {
             }
         }
 
+        var tradeInfoCount = 0
+        var tradeInfoSendTime = 0L
         viewModel.resultTradeInfo.observe(this) {
             CoroutineScope(Dispatchers.Default).launch {
                 for (tradeInfo in it) {
@@ -234,6 +222,24 @@ class TradeService : LifecycleService() {
                 }
             }
 
+            if (tradeInfoCount == 0) {
+                tradeInfoSendTime = SystemClock.uptimeMillis()
+            }
+            tradeInfoCount++
+
+            var delayTime = 0L
+            if (tradeInfoCount % 10 == 0) {
+                delayTime =  1000 - (SystemClock.uptimeMillis() - tradeInfoSendTime)
+                tradeInfoCount = 0
+            }
+
+            CoroutineScope(Dispatchers.Default).launch {
+                Log.d(TAG, "observeLiveData(tradeInfo) - unlock : $delayTime")
+                if (delayTime > 0) {
+                    delay(delayTime)
+                }
+                mutexTradeInfoCandle.unlock()
+            }
         }
     }
 

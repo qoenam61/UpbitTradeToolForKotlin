@@ -11,9 +11,18 @@ interface TradeInfoDAO {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(tradeInfoData: TradeInfoData)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(minCandleInfoData: MinCandleInfoData)
+
     @Update
     fun update(tradeInfoData: TradeInfoData)
 
+    @Update
+    fun update(minCandleInfoData: MinCandleInfoData)
+
     @Delete
     fun delete(tradeInfoData: TradeInfoData)
+
+    @Delete
+    fun delete(minCandleInfoData: MinCandleInfoData)
 }

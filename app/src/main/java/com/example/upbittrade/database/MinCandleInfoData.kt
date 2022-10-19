@@ -3,6 +3,7 @@ package com.example.upbittrade.database
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.upbittrade.model.Candle
 
 @Entity
 class MinCandleInfoData(
@@ -19,22 +20,22 @@ class MinCandleInfoData(
     @ColumnInfo(name = "_candleDateTimeKst") var candleDateTimeKst: String?
     ) {
 
-    @PrimaryKey var id: String = marketId + timestamp
+    @PrimaryKey var id: String = "$marketId-$timestamp"
 
     companion object {
-        fun mapping(minCandleInfoData: MinCandleInfoData): MinCandleInfoData {
+        fun mapping(candle: Candle): MinCandleInfoData {
             return MinCandleInfoData(
-                minCandleInfoData.marketId.toString(),
-                minCandleInfoData.openingPrice,
-                minCandleInfoData.highPrice,
-                minCandleInfoData.lowPrice,
-                minCandleInfoData.tradePrice,
-                minCandleInfoData.candleAccTradePrice,
-                minCandleInfoData.candleAccTradeVolume,
-                minCandleInfoData.unit,
-                minCandleInfoData.timestamp,
-                minCandleInfoData.candleDateTimeUtc,
-                minCandleInfoData.candleDateTimeKst
+                candle.marketId.toString(),
+                candle.openingPrice?.toDouble(),
+                candle.highPrice?.toDouble(),
+                candle.lowPrice?.toDouble(),
+                candle.tradePrice?.toDouble(),
+                candle.candleAccTradePrice?.toDouble(),
+                candle.candleAccTradeVolume?.toDouble(),
+                candle.unit,
+                candle.timestamp,
+                candle.candleDateTimeUtc,
+                candle.candleDateTimeKst
             )
         }
     }
