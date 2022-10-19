@@ -32,6 +32,7 @@ class TradeService : LifecycleService() {
     private val binder = TradeServiceBinder()
     private lateinit var bindService: TradePagerActivity.BindServiceCallBack
 
+    private val UNIT_REMAINING_TIME_OFFSET = 60L
     private val UNIT_PERIODIC_GAP = 60L
     private val UNIT_TRADE_INFO_COUNT = 200
     private val UNIT_MIN_CANDLE = 60
@@ -114,7 +115,7 @@ class TradeService : LifecycleService() {
 //                    Log.d(TAG, "resultMarketsInfo - duration: ${(SystemClock.uptimeMillis() - time)}")
                 }
             }
-
+/*
             CoroutineScope(Dispatchers.Default).launch {
                 while (true) {
                     var time = SystemClock.uptimeMillis()
@@ -133,6 +134,7 @@ class TradeService : LifecycleService() {
 //                    Log.d(TAG, "resultMarketsInfo - duration: ${(SystemClock.uptimeMillis() - time)}")
                 }
             }
+*/
 
             CoroutineScope(Dispatchers.Default).launch {
                 while (true) {
@@ -178,7 +180,7 @@ class TradeService : LifecycleService() {
             CoroutineScope(Dispatchers.Default).launch {
                 Log.d(TAG, "observeLiveData(min) - unlock : $delayTime")
                 if (delayTime > 0) {
-                    delay(delayTime)
+                    delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
                 }
                 mutexMinCandle.unlock()
             }
@@ -205,7 +207,7 @@ class TradeService : LifecycleService() {
             CoroutineScope(Dispatchers.Default).launch {
                 Log.d(TAG, "observeLiveData(day) - unlock : $delayTime")
                 if (delayTime > 0) {
-                    delay(delayTime)
+                    delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
                 }
                 mutexDayCandle.unlock()
             }
@@ -236,11 +238,18 @@ class TradeService : LifecycleService() {
             CoroutineScope(Dispatchers.Default).launch {
                 Log.d(TAG, "observeLiveData(tradeInfo) - unlock : $delayTime")
                 if (delayTime > 0) {
-                    delay(delayTime)
+                    delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
                 }
                 mutexTradeInfoCandle.unlock()
             }
         }
+
+        viewModel.repository.database?.tradeInfoDao()?.getAll()?.observe(this) {
+            for (tradeInfo in it) {
+                Log.d(TAG, "observeLiveData - getAll: $tradeInfo")
+            }
+        }
+
     }
 
     private fun makeMarketMapInfo(marketsInfo: List<MarketInfo>) {

@@ -96,9 +96,6 @@ class TradeFetcher {
             ) {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as List<Candle>
-                    Log.w(TAG, "getMinCandleInfo"
-                            + " headers: " + response.headers()
-                    )
                 } else {
                     result.value = ArrayList()
                     Log.w(TAG, "getMinCandleInfo"
@@ -167,6 +164,7 @@ class TradeFetcher {
                 if (response.body() != null && response.isSuccessful) {
                     result.value = response.body() as List<TradeInfo>
                 } else {
+                    result.value = ArrayList()
                     Log.w(TAG, "getTradeInfo"
                             + " call: " + call.request()
                             + " code: " + response.code()
