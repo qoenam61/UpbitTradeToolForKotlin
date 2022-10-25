@@ -29,5 +29,18 @@ interface TradeInfoDAO {
     fun delete(minCandleInfoData: MinCandleInfoData)
 
     @Query("SELECT * FROM TradeInfoData")
-    fun getAll() : LiveData<List<TradeInfoData>>
+    fun getAllForTradeInfoData() : LiveData<List<TradeInfoData>>
+
+    @Query("SELECT * FROM MinCandleInfoData")
+    fun getAllForMinCandleInfoData() : LiveData<List<MinCandleInfoData>>
+
+    @Query("SELECT * FROM MinCandleInfoData WHERE _marketId is :marketId ORDER BY _timestamp DESC LIMIT 1")
+    fun getCurrentDataForMinCandle(marketId: String) : List<MinCandleInfoData>
+
+    @Query("SELECT * FROM MinCandleInfoData WHERE _marketId is :marketId AND _timestamp BETWEEN (:start - :duration) AND :start ORDER BY _timestamp DESC")
+    fun getMatchFilterForMinCandle(marketId: String, start: Long, duration: Long) : List<MinCandleInfoData>
+
+    @Query("SELECT * FROM TradeInfoData WHERE _marketId is :marketId AND _timestamp BETWEEN :start AND (:start - :duration) ORDER BY _timestamp DESC")
+    fun getMatchFilterForTradeInfo(marketId: String, start: Long, duration: Long) : List<TradeInfoData>
+
 }

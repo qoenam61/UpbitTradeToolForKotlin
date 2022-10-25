@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.upbittrade.model.TradeInfo
+import com.google.gson.Gson
 
 @Entity
 data class TradeInfoData(
@@ -34,4 +35,8 @@ data class TradeInfoData(
         }
     }
 
+    override fun toString(): String {
+        val gson = Gson()
+        return gson.toJson(this)
+    }
 }

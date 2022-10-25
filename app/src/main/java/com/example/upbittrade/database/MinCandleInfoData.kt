@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.upbittrade.model.Candle
+import com.google.gson.Gson
 
 @Entity
 class MinCandleInfoData(
@@ -38,5 +39,10 @@ class MinCandleInfoData(
                 candle.candleDateTimeKst
             )
         }
+    }
+
+    override fun toString(): String {
+        val gson = Gson()
+        return gson.toJson(this)
     }
 }

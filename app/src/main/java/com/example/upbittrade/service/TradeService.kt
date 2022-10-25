@@ -12,7 +12,6 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
-import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.TaskItem
 import com.example.upbittrade.database.MinCandleInfoData
@@ -136,7 +135,7 @@ class TradeService : LifecycleService() {
             }
 */
 
-            CoroutineScope(Dispatchers.Default).launch {
+/*            CoroutineScope(Dispatchers.Default).launch {
                 while (true) {
                     var time = SystemClock.uptimeMillis()
                     for (marketId in marketMapInfo.keys) {
@@ -152,64 +151,41 @@ class TradeService : LifecycleService() {
                     }
 //                    Log.d(TAG, "resultMarketsInfo - duration: ${(SystemClock.uptimeMillis() - time)}")
                 }
-            }
+            }*/
         }
 
         var minCandleCount = 0
         var minCandleSendTime = 0L
         viewModel.resultMinCandleInfo.observe(this) {
             CoroutineScope(Dispatchers.Default).launch {
-                for (candle in it) {
-                    Log.d(TAG, "resultMinCandleInfo: $candle")
-                    val can = MinCandleInfoData.mapping(candle)
-                    viewModel.repository.database?.tradeInfoDao()?.insert(can)
+                val job1 = launch {
+                    for (candle in it) {
+                        Log.d(TAG, "resultMinCandleInfo: $candle")
+                        val can = MinCandleInfoData.mapping(candle)
+                        viewModel.repository.database?.tradeInfoDao()?.insert(can)
+                    }
                 }
-            }
 
-            if (minCandleCount == 0) {
-                minCandleSendTime = SystemClock.uptimeMillis()
-            }
-            minCandleCount++
+                val job2 = launch {
+                    if (minCandleCount == 0) {
+                        minCandleSendTime = SystemClock.uptimeMillis()
+                    }
+                    minCandleCount++
 
-            var delayTime = 0L
-            if (minCandleCount % 10 == 0) {
-                delayTime =  1000 - (SystemClock.uptimeMillis() - minCandleSendTime)
-                minCandleCount = 0
-            }
-
-            CoroutineScope(Dispatchers.Default).launch {
-                Log.d(TAG, "observeLiveData(min) - unlock : $delayTime")
-                if (delayTime > 0) {
-                    delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
+                    var delayTime = 0L
+                    if (minCandleCount % 10 == 0) {
+                        delayTime =  1000 - (SystemClock.uptimeMillis() - minCandleSendTime)
+                        minCandleCount = 0
+                    }
+                    Log.d(TAG, "observeLiveData(min) - unlock : $delayTime")
+                    if (delayTime > 0) {
+                        delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
+                    }
+                    mutexMinCandle.unlock()
                 }
-                mutexMinCandle.unlock()
-            }
-        }
 
-        var dayCandleCount = 0
-        var dayCandleSendTime = 0L
-        viewModel.resultDayCandleInfo.observe(this) {
-            for (candle in it) {
-                Log.d(TAG, "resultDayCandleInfo: $candle")
-            }
-
-            if (dayCandleCount == 0) {
-                dayCandleSendTime = SystemClock.uptimeMillis()
-            }
-            dayCandleCount++
-
-            var delayTime = 0L
-            if (dayCandleCount % 10 == 0) {
-                delayTime =  1000 - (SystemClock.uptimeMillis() - dayCandleSendTime)
-                dayCandleCount = 0
-            }
-
-            CoroutineScope(Dispatchers.Default).launch {
-                Log.d(TAG, "observeLiveData(day) - unlock : $delayTime")
-                if (delayTime > 0) {
-                    delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
-                }
-                mutexDayCandle.unlock()
+                job1.join()
+                job2.join()
             }
         }
 
@@ -217,38 +193,73 @@ class TradeService : LifecycleService() {
         var tradeInfoSendTime = 0L
         viewModel.resultTradeInfo.observe(this) {
             CoroutineScope(Dispatchers.Default).launch {
-                for (tradeInfo in it) {
-                    Log.d(TAG, "resultTradeInfo: $tradeInfo")
-                    val trade = TradeInfoData.mapping(tradeInfo)
-                    viewModel.repository.database?.tradeInfoDao()?.insert(trade)
+                val job1 = launch {
+                    for (tradeInfo in it) {
+                        Log.d(TAG, "resultTradeInfo: $tradeInfo")
+                        val trade = TradeInfoData.mapping(tradeInfo)
+                        viewModel.repository.database?.tradeInfoDao()?.insert(trade)
+                    }
                 }
-            }
 
-            if (tradeInfoCount == 0) {
-                tradeInfoSendTime = SystemClock.uptimeMillis()
-            }
-            tradeInfoCount++
+                val job2 = launch {
+                    if (tradeInfoCount == 0) {
+                        tradeInfoSendTime = SystemClock.uptimeMillis()
+                    }
+                    tradeInfoCount++
 
-            var delayTime = 0L
-            if (tradeInfoCount % 10 == 0) {
-                delayTime =  1000 - (SystemClock.uptimeMillis() - tradeInfoSendTime)
-                tradeInfoCount = 0
-            }
+                    var delayTime = 0L
+                    if (tradeInfoCount % 10 == 0) {
+                        delayTime =  1000 - (SystemClock.uptimeMillis() - tradeInfoSendTime)
+                        tradeInfoCount = 0
+                    }
 
-            CoroutineScope(Dispatchers.Default).launch {
-                Log.d(TAG, "observeLiveData(tradeInfo) - unlock : $delayTime")
-                if (delayTime > 0) {
-                    delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
+                    Log.d(TAG, "observeLiveData(tradeInfo) - unlock : $delayTime")
+                    if (delayTime > 0) {
+                        delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
+                    }
+                    mutexTradeInfoCandle.unlock()
                 }
-                mutexTradeInfoCandle.unlock()
+
+                job1.join()
+                job2.join()
             }
         }
 
-        viewModel.repository.database?.tradeInfoDao()?.getAll()?.observe(this) {
+        viewModel.repository.database?.tradeInfoDao()?.getAllForTradeInfoData()?.observe(this) {
             for (tradeInfo in it) {
-                Log.d(TAG, "observeLiveData - getAll: $tradeInfo")
+                Log.d(TAG, "observeLiveData - getAllForTradeInfoData: $tradeInfo")
             }
         }
+
+        viewModel.repository.database?.tradeInfoDao()?.getAllForMinCandleInfoData()?.observe(this) {
+            CoroutineScope(Dispatchers.Default).launch {
+                for (candle in it) {
+                    Log.d(TAG, "observeLiveData - getAllForMinCandleInfoData: $candle")
+
+                    val job1 = launch {
+                        val start = System.currentTimeMillis()
+                        Log.d(TAG, "observeLiveData - getAllForMinCandleInfoData - start: $start")
+
+                        val data = viewModel.repository.database.tradeInfoDao().getMatchFilterForMinCandle(
+                            candle.marketId.toString(), start, 60000 * 10)
+
+                        for (d in data) {
+                            Log.d(TAG, "observeLiveData - getMatchFilterForMinCandle: $d")
+                        }
+                    }
+                    job1.join()
+                }
+            }
+        }
+
+//        viewModel.repository.database?.tradeInfoDao()?.getMatchFilterForMinCandle(
+//            "KRW-BTC", System.currentTimeMillis(), 60000)?.observe(this) {
+//            CoroutineScope(Dispatchers.Default).launch {
+//                for (tradeInfo in it) {
+//                    Log.d(TAG, "observeLiveData - getMatchFilterForMinCandle: $tradeInfo")
+//                }
+//            }
+//        }
 
     }
 
