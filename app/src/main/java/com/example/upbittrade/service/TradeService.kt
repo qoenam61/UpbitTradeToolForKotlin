@@ -24,6 +24,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.sql.Timestamp
 import java.util.Calendar
+import kotlin.math.exp
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 class TradeService : LifecycleService() {
 
@@ -34,8 +37,8 @@ class TradeService : LifecycleService() {
     private val UNIT_REMAINING_TIME_OFFSET = 60L
     private val UNIT_PERIODIC_GAP = 60L
     private val UNIT_TRADE_INFO_COUNT = 200
-    private val UNIT_MIN_CANDLE = 1
-    private val UNIT_MIN_CANDLE_COUNT = 10
+    private val UNIT_MIN_CANDLE = 3
+    private val UNIT_MIN_CANDLE_COUNT = 200
 
     companion object {
         const val TAG = "TradeService"
@@ -114,26 +117,6 @@ class TradeService : LifecycleService() {
 //                    Log.d(TAG, "resultMarketsInfo - duration: ${(SystemClock.uptimeMillis() - time)}")
                 }
             }
-/*
-            CoroutineScope(Dispatchers.Default).launch {
-                while (true) {
-                    var time = SystemClock.uptimeMillis()
-                    for (marketId in marketMapInfo.keys) {
-//                        Log.d(TAG, "resultMarketsInfo - marketId: $marketId")
-                        mutexDayCandle.withLock {
-                            viewModel.searchDayCandleInfo.postValue(ExtendCandleItem(
-                                TradePagerActivity.PostType.DAY_CANDLE_INFO,
-                                marketId,
-                                UNIT_MIN_CANDLE_COUNT,
-                                "KRW"
-                            ))
-                        }
-                        mutexDayCandle.lock()
-                    }
-//                    Log.d(TAG, "resultMarketsInfo - duration: ${(SystemClock.uptimeMillis() - time)}")
-                }
-            }
-*/
 
 /*            CoroutineScope(Dispatchers.Default).launch {
                 while (true) {
@@ -183,10 +166,8 @@ class TradeService : LifecycleService() {
                         val subJob = launch {
                             val data = viewModel.repository.database?.tradeInfoDao()?.getMatchFilterForMinCandle(
                                 marketId!!, start.time, end)
-                            if (data != null) {
-                                for (d in data) {
-                                    Log.d(TAG, "resultMinCandleInfo - getMatchFilterForMinCandle: $d")
-                                }
+                            if (!data.isNullOrEmpty()) {
+                                probability(data)
                             }
                         }
                         subJob.join()
@@ -294,5 +275,33 @@ class TradeService : LifecycleService() {
                 Log.i(TradeFragment.TAG, "resultMarketsInfo - marketId: $marketId")
             }
         }
+    }
+
+    private fun probability(candleData: List<MinCandleInfoData>): Float {
+
+        for (candle in candleData) {
+            Log.d(TAG, "probability: $candle")
+        }
+
+        val total = candleData.sumOf { it.highPrice!! + it.lowPrice!! + it.openingPrice!! + it.tradePrice!!}
+        val avg = total / (4 * candleData.size)
+
+        val totalPow = candleData.sumOf { (it.highPrice!!).pow(2) + (it.lowPrice!!).pow(2) + (it.openingPrice!!).pow(2) + (it.tradePrice!!).pow(2) }
+        val deviation = sqrt((totalPow / (4 * candleData.size)) - avg.pow(2))
+
+        //gaussian_pdf = (1/sqrt(2*pi*sigma^2))*exp(-0.5.*((x-mu)/sigma).^2);
+        val prob =  (1/sqrt(2 * Math.PI * deviation.pow(2)))*exp(-0.5 * ((candleData[0].tradePrice!!.toDouble() - avg)/deviation).pow(2))
+
+        val rate = (candleData[0].tradePrice!! - avg) / avg
+
+        Log.d(TAG, "probability - " +
+                "prob: ${Utils.Format.percentFormat.format(prob)} " +
+                "rate: ${Utils.Format.percentFormat.format(rate)} " +
+                "avg: ${Utils.Format.zeroFormat2.format(avg)} " +
+                "price: ${Utils.Format.zeroFormat2.format(candleData[0].tradePrice)} " +
+                "deviation: ${Utils.Format.zeroFormat.format(deviation)} " +
+                "total: ${Utils.Format.zeroFormat2.format(total)} "
+        )
+        return prob.toFloat()
     }
 }
