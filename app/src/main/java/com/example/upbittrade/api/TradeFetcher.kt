@@ -109,7 +109,8 @@ class TradeFetcher {
             }
 
             override fun onFailure(call: Call<List<Candle?>?>, t: Throwable) {
-                Log.w(TAG, "onFailure: $t")
+                Log.w(TAG, "onFailure - getMinCandleInfo: $t")
+                result.value = ArrayList()
             }
         })
         return result
@@ -143,7 +144,8 @@ class TradeFetcher {
             }
 
             override fun onFailure(call: Call<List<DayCandle?>?>, t: Throwable) {
-                Log.w(TAG, "onFailure: $t")
+                Log.w(TAG, "onFailure - getDayCandleInfo: $t")
+                result.value = ArrayList()
             }
         })
         return result
@@ -175,7 +177,8 @@ class TradeFetcher {
             }
 
             override fun onFailure(call: Call<List<TradeInfo?>?>, t: Throwable) {
-                Log.w(TAG, "onFailure: $t")
+                Log.w(TAG, "onFailure - getTradeInfo: $t")
+                result.value = ArrayList()
             }
         })
         return result

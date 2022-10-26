@@ -18,12 +18,12 @@ import com.example.upbittrade.database.MinCandleInfoData
 import com.example.upbittrade.database.TradeInfoData
 import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.model.MarketInfo
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.example.upbittrade.utils.Utils
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.sql.Timestamp
+import java.util.Calendar
 
 class TradeService : LifecycleService() {
 
@@ -34,8 +34,8 @@ class TradeService : LifecycleService() {
     private val UNIT_REMAINING_TIME_OFFSET = 60L
     private val UNIT_PERIODIC_GAP = 60L
     private val UNIT_TRADE_INFO_COUNT = 200
-    private val UNIT_MIN_CANDLE = 60
-    private val UNIT_MIN_CANDLE_COUNT = 1
+    private val UNIT_MIN_CANDLE = 1
+    private val UNIT_MIN_CANDLE_COUNT = 10
 
     companion object {
         const val TAG = "TradeService"
@@ -157,71 +157,103 @@ class TradeService : LifecycleService() {
         var minCandleCount = 0
         var minCandleSendTime = 0L
         viewModel.resultMinCandleInfo.observe(this) {
-            CoroutineScope(Dispatchers.Default).launch {
-                val job1 = launch {
-                    for (candle in it) {
-                        Log.d(TAG, "resultMinCandleInfo: $candle")
-                        val can = MinCandleInfoData.mapping(candle)
-                        viewModel.repository.database?.tradeInfoDao()?.insert(can)
+            if (it.isNotEmpty()) {
+                val marketId = it[0].marketId
+                CoroutineScope(Dispatchers.Default).launch {
+                    val job1 = launch {
+                        for (candle in it) {
+                            Log.d(TAG, "resultMinCandleInfo: $candle")
+                            val can = MinCandleInfoData.mapping(candle)
+                            viewModel.repository.database?.tradeInfoDao()?.insert(can)
+                        }
                     }
+                    job1.join()
+
+                    val job2 = launch {
+                        val start = Timestamp(System.currentTimeMillis())
+                        val cal = Calendar.getInstance()
+                        cal.time = start
+                        cal.add(Calendar.MINUTE, -10)
+                        val end = cal.time.time
+
+                        Log.d(TAG, "resultMinCandleInfo - getAllForMinCandleInfoData - marketId: $marketId" +
+                                "start: ${Utils.Format.timeFormat.format(start.time)} " +
+                                "end: ${Utils.Format.timeFormat.format(end)}")
+
+                        val subJob = launch {
+                            val data = viewModel.repository.database?.tradeInfoDao()?.getMatchFilterForMinCandle(
+                                marketId!!, start.time, end)
+                            if (data != null) {
+                                for (d in data) {
+                                    Log.d(TAG, "resultMinCandleInfo - getMatchFilterForMinCandle: $d")
+                                }
+                            }
+                        }
+                        subJob.join()
+                    }
+                    job2.join()
+
+                    val job3 = launch {
+                        if (minCandleCount == 0) {
+                            minCandleSendTime = SystemClock.uptimeMillis()
+                        }
+                        minCandleCount++
+
+                        var delayTime = 0L
+                        if (minCandleCount % 10 == 0) {
+                            delayTime =  1000 - (SystemClock.uptimeMillis() - minCandleSendTime)
+                            minCandleCount = 0
+                        }
+                        Log.d(TAG, "observeLiveData(min) - unlock : $delayTime")
+                        if (delayTime > 0) {
+                            delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
+                        }
+                        mutexMinCandle.unlock()
+                    }
+                    job3.join()
                 }
-
-                val job2 = launch {
-                    if (minCandleCount == 0) {
-                        minCandleSendTime = SystemClock.uptimeMillis()
-                    }
-                    minCandleCount++
-
-                    var delayTime = 0L
-                    if (minCandleCount % 10 == 0) {
-                        delayTime =  1000 - (SystemClock.uptimeMillis() - minCandleSendTime)
-                        minCandleCount = 0
-                    }
-                    Log.d(TAG, "observeLiveData(min) - unlock : $delayTime")
-                    if (delayTime > 0) {
-                        delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
-                    }
-                    mutexMinCandle.unlock()
-                }
-
-                job1.join()
-                job2.join()
+            } else {
+                mutexMinCandle.unlock()
             }
         }
 
         var tradeInfoCount = 0
         var tradeInfoSendTime = 0L
         viewModel.resultTradeInfo.observe(this) {
-            CoroutineScope(Dispatchers.Default).launch {
-                val job1 = launch {
-                    for (tradeInfo in it) {
-                        Log.d(TAG, "resultTradeInfo: $tradeInfo")
-                        val trade = TradeInfoData.mapping(tradeInfo)
-                        viewModel.repository.database?.tradeInfoDao()?.insert(trade)
+            if (it.isNotEmpty()) {
+                val marketId = it[0].marketId
+                CoroutineScope(Dispatchers.Default).launch {
+                    val job1 = launch {
+                        for (tradeInfo in it) {
+                            Log.d(TAG, "resultTradeInfo: $tradeInfo")
+                            val trade = TradeInfoData.mapping(tradeInfo)
+                            viewModel.repository.database?.tradeInfoDao()?.insert(trade)
+                        }
                     }
+                    job1.join()
+
+                    val job2 = launch {
+                        if (tradeInfoCount == 0) {
+                            tradeInfoSendTime = SystemClock.uptimeMillis()
+                        }
+                        tradeInfoCount++
+
+                        var delayTime = 0L
+                        if (tradeInfoCount % 10 == 0) {
+                            delayTime =  1000 - (SystemClock.uptimeMillis() - tradeInfoSendTime)
+                            tradeInfoCount = 0
+                        }
+
+                        Log.d(TAG, "observeLiveData(tradeInfo) - unlock : $delayTime")
+                        if (delayTime > 0) {
+                            delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
+                        }
+                        mutexTradeInfoCandle.unlock()
+                    }
+                    job2.join()
                 }
-
-                val job2 = launch {
-                    if (tradeInfoCount == 0) {
-                        tradeInfoSendTime = SystemClock.uptimeMillis()
-                    }
-                    tradeInfoCount++
-
-                    var delayTime = 0L
-                    if (tradeInfoCount % 10 == 0) {
-                        delayTime =  1000 - (SystemClock.uptimeMillis() - tradeInfoSendTime)
-                        tradeInfoCount = 0
-                    }
-
-                    Log.d(TAG, "observeLiveData(tradeInfo) - unlock : $delayTime")
-                    if (delayTime > 0) {
-                        delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
-                    }
-                    mutexTradeInfoCandle.unlock()
-                }
-
-                job1.join()
-                job2.join()
+            } else {
+                mutexTradeInfoCandle.unlock()
             }
         }
 
@@ -231,26 +263,9 @@ class TradeService : LifecycleService() {
             }
         }
 
-        viewModel.repository.database?.tradeInfoDao()?.getAllForMinCandleInfoData()?.observe(this) {
-            CoroutineScope(Dispatchers.Default).launch {
-                for (candle in it) {
-                    Log.d(TAG, "observeLiveData - getAllForMinCandleInfoData: $candle")
-
-                    val job1 = launch {
-                        val start = System.currentTimeMillis()
-                        Log.d(TAG, "observeLiveData - getAllForMinCandleInfoData - start: $start")
-
-                        val data = viewModel.repository.database.tradeInfoDao().getMatchFilterForMinCandle(
-                            candle.marketId.toString(), start, 60000 * 10)
-
-                        for (d in data) {
-                            Log.d(TAG, "observeLiveData - getMatchFilterForMinCandle: $d")
-                        }
-                    }
-                    job1.join()
-                }
-            }
-        }
+//        viewModel.repository.database?.tradeInfoDao()?.getAllForMinCandleInfoData()?.observe(this) {
+//
+//        }
 
 //        viewModel.repository.database?.tradeInfoDao()?.getMatchFilterForMinCandle(
 //            "KRW-BTC", System.currentTimeMillis(), 60000)?.observe(this) {

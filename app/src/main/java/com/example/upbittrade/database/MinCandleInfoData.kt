@@ -21,7 +21,7 @@ class MinCandleInfoData(
     @ColumnInfo(name = "_candleDateTimeKst") var candleDateTimeKst: String?
     ) {
 
-    @PrimaryKey var id: String = "$marketId-$timestamp"
+    @PrimaryKey var id: String = "$marketId-$candleDateTimeKst"
 
     companion object {
         fun mapping(candle: Candle): MinCandleInfoData {
