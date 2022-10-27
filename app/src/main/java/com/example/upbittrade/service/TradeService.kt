@@ -24,7 +24,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.sql.Timestamp
 import java.util.Calendar
-import kotlin.math.exp
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -39,6 +38,7 @@ class TradeService : LifecycleService() {
     private val UNIT_TRADE_INFO_COUNT = 200
     private val UNIT_MIN_CANDLE = 3
     private val UNIT_MIN_CANDLE_COUNT = 200
+    private val UNIT_MIN_CANDLE_PERIOD = UNIT_MIN_CANDLE * UNIT_MIN_CANDLE_COUNT
 
     companion object {
         const val TAG = "TradeService"
@@ -156,7 +156,7 @@ class TradeService : LifecycleService() {
                         val start = Timestamp(System.currentTimeMillis())
                         val cal = Calendar.getInstance()
                         cal.time = start
-                        cal.add(Calendar.MINUTE, -10)
+                        cal.add(Calendar.MINUTE, UNIT_MIN_CANDLE_PERIOD * -1)
                         val end = cal.time.time
 
                         Log.d(TAG, "resultMinCandleInfo - getAllForMinCandleInfoData - marketId: $marketId" +
@@ -167,7 +167,7 @@ class TradeService : LifecycleService() {
                             val data = viewModel.repository.database?.tradeInfoDao()?.getMatchFilterForMinCandle(
                                 marketId!!, start.time, end)
                             if (!data.isNullOrEmpty()) {
-                                probability(data)
+                                tradeConditionCheck(data)
                             }
                         }
                         subJob.join()
@@ -277,31 +277,41 @@ class TradeService : LifecycleService() {
         }
     }
 
-    private fun probability(candleData: List<MinCandleInfoData>): Float {
-
+    private fun tradeConditionCheck(candleData: List<MinCandleInfoData>): Float {
         for (candle in candleData) {
             Log.d(TAG, "probability: $candle")
         }
 
-        val total = candleData.sumOf { it.highPrice!! + it.lowPrice!! + it.openingPrice!! + it.tradePrice!!}
-        val avg = total / (4 * candleData.size)
+        val totalPrice = candleData.sumOf { it.highPrice!! + it.lowPrice!! + it.openingPrice!! + it.tradePrice!!}
+        val avgPrice = totalPrice / (4 * candleData.size)
+        val totalPricePow = candleData.sumOf { (it.highPrice!!).pow(2) + (it.lowPrice!!).pow(2) + (it.openingPrice!!).pow(2) + (it.tradePrice!!).pow(2) }
+        val priceDeviation = sqrt((totalPricePow / (4 * candleData.size)) - avgPrice.pow(2))
 
-        val totalPow = candleData.sumOf { (it.highPrice!!).pow(2) + (it.lowPrice!!).pow(2) + (it.openingPrice!!).pow(2) + (it.tradePrice!!).pow(2) }
-        val deviation = sqrt((totalPow / (4 * candleData.size)) - avg.pow(2))
+        val totalVolume = candleData.sumOf { it.candleAccTradeVolume!! }
+        val avgVolume = totalVolume / (candleData.size)
+        val totalVolumePow = candleData.sumOf { it.candleAccTradeVolume!!.pow(2) }
+        val volumeDeviation = sqrt((totalVolumePow / (candleData.size)) - avgVolume.pow(2))
+
 
         //gaussian_pdf = (1/sqrt(2*pi*sigma^2))*exp(-0.5.*((x-mu)/sigma).^2);
-        val prob =  (1/sqrt(2 * Math.PI * deviation.pow(2)))*exp(-0.5 * ((candleData[0].tradePrice!!.toDouble() - avg)/deviation).pow(2))
+//        val prob =  (1/sqrt(2 * Math.PI * deviation.pow(2)))*exp(-0.5 * ((candleData[0].tradePrice!!.toDouble() - avg)/deviation).pow(2))
 
-        val rate = (candleData[0].tradePrice!! - avg) / avg
+        val currentPrice = candleData[0].tradePrice!!
+        val currentVolume = candleData[0].candleAccTradeVolume!!
+        val avgRate = (currentPrice - avgPrice) / avgPrice
 
-        Log.d(TAG, "probability - " +
-                "prob: ${Utils.Format.percentFormat.format(prob)} " +
-                "rate: ${Utils.Format.percentFormat.format(rate)} " +
-                "avg: ${Utils.Format.zeroFormat2.format(avg)} " +
-                "price: ${Utils.Format.zeroFormat2.format(candleData[0].tradePrice)} " +
-                "deviation: ${Utils.Format.zeroFormat.format(deviation)} " +
-                "total: ${Utils.Format.zeroFormat2.format(total)} "
-        )
-        return prob.toFloat()
+        if (currentPrice > Utils.convertPrice(avgPrice + (3 * priceDeviation))
+            && currentVolume > avgVolume + (3 * priceDeviation)) {
+            Log.d(
+                TAG, "probability - marketId: ${candleData[0].marketId} " +
+//                        "prob: ${Utils.Format.percentFormat.format(prob)} " +
+                        "avg_rate: ${Utils.Format.percentFormat.format(avgRate)} " +
+                        "avg: ${Utils.Format.zeroFormat2.format(avgPrice)} " +
+                        "price: ${Utils.Format.zeroFormat2.format(currentPrice)} " +
+                        "deviation: ${Utils.Format.zeroFormat2.format(priceDeviation)} " +
+                        "total: ${Utils.Format.zeroFormat2.format(totalPrice)} "
+            )
+        }
+        return 0f
     }
 }

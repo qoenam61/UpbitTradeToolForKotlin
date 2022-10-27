@@ -10,7 +10,7 @@ import kotlin.math.*
 
 class Utils {
     companion object {
-        fun convertPrice(price: Double): Double? {
+        fun convertPrice(price: Double): Double {
             val mFormatUnder1 = DecimalFormat("#.####")
             val mFormatUnder10 = DecimalFormat("#.##")
             val mFormatUnder100 = DecimalFormat("##.#")
@@ -20,7 +20,7 @@ class Utils {
             val mFormatUnder1_000_000 = DecimalFormat("######")
             val mFormatUnder10_000_000 = DecimalFormat("#######")
             val mFormatUnder100_000_000 = DecimalFormat("########")
-            var result: String? = null
+            var result: String = "0"
             var priceResult = 0.0
             when {
                 price < 0.1 -> {
@@ -80,7 +80,7 @@ class Utils {
                     result = mFormatUnder100_000_000.format(priceResult)
                 }
             }
-            return result?.toDouble()
+            return result.toDouble()
         }
 
         fun getBidPriceCalculate(highPrice: Double, lowPrice: Double, openPrice:Double, closePrice:Double): BidPrice {
