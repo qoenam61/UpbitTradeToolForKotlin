@@ -11,7 +11,7 @@ import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.PostOrderItem
 import com.example.upbittrade.database.TradeInfoData
-import com.example.upbittrade.model.adapter.MonitorItem
+import com.example.upbittrade.adapter.MonitorItem
 import java.util.*
 
 class TradeViewModel(application: Application): AndroidViewModel(application) {

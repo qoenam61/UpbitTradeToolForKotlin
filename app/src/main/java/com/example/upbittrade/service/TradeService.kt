@@ -20,7 +20,7 @@ import com.example.upbittrade.database.MinCandleInfoData
 import com.example.upbittrade.database.TradeInfoData
 import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.model.MarketInfo
-import com.example.upbittrade.model.adapter.MonitorItem
+import com.example.upbittrade.adapter.MonitorItem
 import com.example.upbittrade.utils.Utils
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
@@ -218,7 +218,7 @@ class TradeService : LifecycleService() {
                 CoroutineScope(Dispatchers.Default).launch {
                     val job1 = launch {
                         for (tradeInfo in it) {
-                            Log.d(TAG, "resultTradeInfo: $tradeInfo")
+//                            Log.d(TAG, "resultTradeInfo: $tradeInfo")
                             val trade = TradeInfoData.mapping(tradeInfo)
                             viewModel.repository.database?.tradeInfoDao()?.insert(trade)
                         }
@@ -294,9 +294,9 @@ class TradeService : LifecycleService() {
     }
 
     private fun tradeConditionCheck(candleData: List<MinCandleInfoData>): Float {
-        for (candle in candleData) {
-            Log.d(TAG, "probability: $candle")
-        }
+//        for (candle in candleData) {
+//            Log.d(TAG, "probability: $candle")
+//        }
 
         val totalPrice = candleData.sumOf { it.highPrice!! + it.lowPrice!! + it.openingPrice!! + it.tradePrice!!}
         val avgPrice = totalPrice / (4 * candleData.size)

@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
-import com.example.upbittrade.model.adapter.MonitorListAdapter
+import com.example.upbittrade.adapter.MonitorListAdapter
 import com.example.upbittrade.model.ResponseOrder
 import com.example.upbittrade.model.TradeViewModel
 import kotlinx.coroutines.*

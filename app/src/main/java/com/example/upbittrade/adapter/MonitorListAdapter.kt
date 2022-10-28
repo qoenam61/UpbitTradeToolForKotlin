@@ -1,4 +1,4 @@
-package com.example.upbittrade.model.adapter
+package com.example.upbittrade.adapter
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater

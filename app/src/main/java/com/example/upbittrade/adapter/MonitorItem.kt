@@ -1,4 +1,4 @@
-package com.example.upbittrade.model.adapter
+package com.example.upbittrade.adapter
 
 import com.example.upbittrade.database.MinCandleInfoData
 
