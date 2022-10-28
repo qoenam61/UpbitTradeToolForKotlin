@@ -27,7 +27,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.sql.Timestamp
 import java.util.Calendar
-import java.util.Objects
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -317,7 +316,7 @@ class TradeService : LifecycleService() {
         if (currentPrice > Utils.convertPrice(avgPrice + (2 * priceDeviation))
             && currentVolume > avgVolume + (2 * priceDeviation)) {
             Log.d(
-                TAG, "probability - marketId: ${candleData[0].marketId} " +
+                TAG, "tradeConditionCheck(add) - marketId: ${candleData[0].marketId} " +
 //                        "prob: ${Utils.Format.percentFormat.format(prob)} " +
                         "avg_rate: ${Utils.Format.percentFormat.format(avgRate)} " +
                         "avg: ${Utils.Format.zeroFormat2.format(avgPrice)} " +
@@ -326,10 +325,25 @@ class TradeService : LifecycleService() {
                         "total: ${Utils.Format.zeroFormat2.format(totalPrice)} "
             )
             val viewModel = bindService.tradeViewModel
-            viewModel.searchMonitorItem.postValue(MonitorItem(candleData[0]))
+            viewModel.addMonitorItem.postValue(MonitorItem(candleData[0]))
 
             tradeInfoSet.add(candleData[0].marketId!!)
+        } else if (currentPrice < Utils.convertPrice(avgPrice - (1 * priceDeviation))) {
+            Log.d(
+                TAG, "tradeConditionCheck(remove) - marketId: ${candleData[0].marketId} " +
+//                        "prob: ${Utils.Format.percentFormat.format(prob)} " +
+                        "avg_rate: ${Utils.Format.percentFormat.format(avgRate)} " +
+                        "avg: ${Utils.Format.zeroFormat2.format(avgPrice)} " +
+                        "price: ${Utils.Format.zeroFormat2.format(currentPrice)} " +
+                        "deviation: ${Utils.Format.zeroFormat2.format(priceDeviation)} " +
+                        "total: ${Utils.Format.zeroFormat2.format(totalPrice)} "
+            )
+            val viewModel = bindService.tradeViewModel
+            viewModel.removeMonitorItem.postValue(candleData[0].marketId)
+
+            tradeInfoSet.remove(candleData[0].marketId!!)
         }
+
         return 0f
     }
 

@@ -58,8 +58,12 @@ class TradeFragment: Fragment() {
                 marketsInfo -> monitorListAdapter.marketsMapInfo = marketsInfo
         }
 
-        viewModel.searchMonitorItem.observe(viewCycleOwner) {
+        viewModel.addMonitorItem.observe(viewCycleOwner) {
                 minCandlesInfo -> monitorListAdapter.setItem(minCandlesInfo)
+        }
+
+        viewModel.removeMonitorItem.observe(viewCycleOwner) {
+                marketId -> monitorListAdapter.removeItem(marketId)
         }
 
         viewModel.searchTradeInfoData.observe(viewCycleOwner) {

@@ -10,8 +10,16 @@ class TradeInfoSet(private val listener: OnChangedListener): HashSet<String>() {
 
     val mutex = Mutex()
 
-    override fun add(element: String): Boolean {
-        val result = super.add(element)
+    override fun add(marketId: String): Boolean {
+        val result = super.add(marketId)
+        if (!contains(marketId)) {
+            listener.onSetChanged(this, mutex)
+        }
+        return result
+    }
+
+    override fun remove(element: String): Boolean {
+        val result = super.remove(element)
         listener.onSetChanged(this, mutex)
         return result
     }
