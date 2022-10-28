@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
 import com.example.upbittrade.adapter.MonitorListAdapter
+import com.example.upbittrade.adapter.TradeListAdapter
 import com.example.upbittrade.model.ResponseOrder
 import com.example.upbittrade.model.TradeViewModel
 import kotlinx.coroutines.*
@@ -27,6 +28,7 @@ class TradeFragment: Fragment() {
 
     lateinit var viewModel: TradeViewModel
     lateinit var monitorListAdapter: MonitorListAdapter
+    lateinit var tradeListAdapter: TradeListAdapter
 
     override fun onAttach(activity: Activity) {
         super.onAttach(activity)
@@ -47,6 +49,11 @@ class TradeFragment: Fragment() {
         monitorList.adapter = monitorListAdapter
 
 
+        tradeListAdapter = TradeListAdapter()
+        val tradeList = view.findViewById<RecyclerView>(R.id.trade_list_view)
+        tradeList!!.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        tradeList.adapter = tradeListAdapter
+
         return view
     }
 
@@ -55,11 +62,17 @@ class TradeFragment: Fragment() {
 //        Log.i(TAG, "onStart: ")
         val viewCycleOwner = viewLifecycleOwner
         viewModel.searchMarketsMapInfo.observe(viewCycleOwner) {
-                marketsInfo -> monitorListAdapter.marketsMapInfo = marketsInfo
+                marketsInfo ->
+            monitorListAdapter.marketsMapInfo = marketsInfo
+            tradeListAdapter.marketsMapInfo = marketsInfo
         }
 
         viewModel.addMonitorItem.observe(viewCycleOwner) {
                 minCandlesInfo -> monitorListAdapter.setItem(minCandlesInfo)
+        }
+
+        viewModel.addTradeInfo.observe(viewCycleOwner) {
+            tradeInfo -> tradeListAdapter.setItem(tradeInfo)
         }
 
         viewModel.removeMonitorItem.observe(viewCycleOwner) {
@@ -67,7 +80,9 @@ class TradeFragment: Fragment() {
         }
 
         viewModel.updateTradeInfoData.observe(viewCycleOwner) {
-                tradeInfoData -> monitorListAdapter.updateItem(tradeInfoData)
+                tradeInfoData ->
+            monitorListAdapter.updateItem(tradeInfoData)
+            tradeListAdapter.updateItem(tradeInfoData)
         }
 
         viewModel.resultTickerInfo.observe(viewCycleOwner) {

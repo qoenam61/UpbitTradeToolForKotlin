@@ -33,12 +33,14 @@ class MonitorListAdapter: RecyclerView.Adapter<MonitorListAdapter.MonitorViewHol
     @SuppressLint("NotifyDataSetChanged")
     fun updateItem(tradeInfoData: TradeInfoData) {
         val marketId = tradeInfoData.marketId
-        monitorMap[marketId]?.tradePrice = tradeInfoData.tradePrice
-        monitorMap[marketId]?.timestamp = tradeInfoData.timestamp
-        monitorMap[marketId]?.prevClosingPrice = tradeInfoData.prevClosingPrice
-        monitorMap[marketId]?.changePrice = tradeInfoData.changePrice
-        monitorMap[marketId]?.askBidRate = 0f
-        notifyDataSetChanged()
+        if (monitorMap.containsKey(marketId)) {
+            monitorMap[marketId]?.tradePrice = tradeInfoData.tradePrice
+            monitorMap[marketId]?.timestamp = tradeInfoData.timestamp
+            monitorMap[marketId]?.prevClosingPrice = tradeInfoData.prevClosingPrice
+            monitorMap[marketId]?.changePrice = tradeInfoData.changePrice
+            monitorMap[marketId]?.askBidRate = 0f
+            notifyDataSetChanged()
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")

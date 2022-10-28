@@ -7,7 +7,7 @@ import com.example.upbittrade.model.TradeInfo
 import com.google.gson.Gson
 
 @Entity
-data class TradeInfoData(
+open class TradeInfoData(
     @PrimaryKey var sequentialId: Long,
     @ColumnInfo(name = "_marketId") var marketId: String?,
     @ColumnInfo(name = "_tradePrice") var tradePrice: Double?,

@@ -21,6 +21,7 @@ import com.example.upbittrade.database.TradeInfoData
 import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.model.MarketInfo
 import com.example.upbittrade.adapter.MonitorItem
+import com.example.upbittrade.adapter.TradeItem
 import com.example.upbittrade.utils.Utils
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
@@ -351,7 +352,14 @@ class TradeService : LifecycleService() {
 
     private fun mergeTradeInfoData(tradeData: List<TradeInfoData>): TradeInfoData {
         val sumTradePrice = tradeData.sumOf { it.tradePrice!! }
+        val sumTradePricePow = tradeData.sumOf { it.tradePrice!!.pow(2) }
         val avgTradePrice = sumTradePrice / tradeData.size
+        val deviationPrice = sqrt((sumTradePricePow / (tradeData.size)) - avgTradePrice.pow(2))
+
+        val sumTradeVolume = tradeData.sumOf { it.tradeVolume!! }
+        val sumTradeVolumePow = tradeData.sumOf { it.tradeVolume!!.pow(2) }
+        val avgTradeVolume = sumTradeVolume / tradeData.size
+        val deviationVolume = sqrt((sumTradeVolumePow / (tradeData.size)) - avgTradeVolume.pow(2))
 
         var askCount = 0
         var bidCount = 0
@@ -370,8 +378,14 @@ class TradeService : LifecycleService() {
         tradeInfoData.askBid = (bidCount.div(askCount)).toString()
 
         val viewModel = bindService.tradeViewModel
+        val currentPrice = tradeData[0].tradePrice!!
+        val currentVolume = tradeData[0].tradeVolume!!
+        if (currentPrice > (avgTradePrice + (0 * deviationPrice))
+//            && currentVolume > (avgTradeVolume + (2 * deviationVolume))
+        ) {
+            viewModel.addTradeInfo.postValue(TradeItem(tradeInfoData))
+        }
         viewModel.updateTradeInfoData.postValue(tradeInfoData)
-
         return tradeInfoData
     }
 }
