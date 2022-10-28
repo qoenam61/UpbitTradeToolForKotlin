@@ -7,8 +7,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
+import com.example.upbittrade.adapter.MonitorListAdapter
 import com.example.upbittrade.model.MarketInfo
 import com.example.upbittrade.model.ResponseOrder
 import com.example.upbittrade.model.TradeViewModel
@@ -16,6 +19,7 @@ import kotlinx.coroutines.*
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.min
 
 class TradeFragment: Fragment() {
     companion object {
@@ -25,6 +29,7 @@ class TradeFragment: Fragment() {
     private lateinit var mainActivity: TradePagerActivity
 
     lateinit var viewModel: TradeViewModel
+    lateinit var monitorListAdapter: MonitorListAdapter
 
     override fun onAttach(activity: Activity) {
         super.onAttach(activity)
@@ -39,6 +44,12 @@ class TradeFragment: Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_trade, container, false)
 
+        monitorListAdapter = MonitorListAdapter()
+        val monitorList = view.findViewById<RecyclerView>(R.id.monitor_list_view)
+        monitorList!!.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        monitorList.adapter = monitorListAdapter
+
+
         return view
     }
 
@@ -46,12 +57,12 @@ class TradeFragment: Fragment() {
         super.onStart()
 //        Log.i(TAG, "onStart: ")
         val viewCycleOwner = viewLifecycleOwner
-        viewModel.resultMarketsInfo.observe(viewCycleOwner) {
-                marketsInfo ->
+        viewModel.searchMarketsMapInfo.observe(viewCycleOwner) {
+                marketsInfo -> monitorListAdapter.marketsMapInfo = marketsInfo
         }
 
-        viewModel.resultMinCandleInfo.observe(viewCycleOwner) {
-                minCandlesInfo ->
+        viewModel.searchMinCandleInfoData.observe(viewCycleOwner) {
+                minCandlesInfo -> monitorListAdapter.setItem(minCandlesInfo)
         }
 
         viewModel.resultTradeInfo.observe(viewCycleOwner) {

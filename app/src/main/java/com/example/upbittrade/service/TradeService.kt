@@ -275,6 +275,8 @@ class TradeService : LifecycleService() {
                 Log.i(TradeFragment.TAG, "resultMarketsInfo - marketId: $marketId")
             }
         }
+        val viewModel = bindService.tradeViewModel
+        viewModel.searchMarketsMapInfo.value = marketMapInfo
     }
 
     private fun tradeConditionCheck(candleData: List<MinCandleInfoData>): Float {
@@ -300,8 +302,8 @@ class TradeService : LifecycleService() {
         val currentVolume = candleData[0].candleAccTradeVolume!!
         val avgRate = (currentPrice - avgPrice) / avgPrice
 
-        if (currentPrice > Utils.convertPrice(avgPrice + (3 * priceDeviation))
-            && currentVolume > avgVolume + (3 * priceDeviation)) {
+        if (currentPrice > Utils.convertPrice(avgPrice + (1 * priceDeviation))
+            && currentVolume > avgVolume + (1 * priceDeviation)) {
             Log.d(
                 TAG, "probability - marketId: ${candleData[0].marketId} " +
 //                        "prob: ${Utils.Format.percentFormat.format(prob)} " +
@@ -311,6 +313,8 @@ class TradeService : LifecycleService() {
                         "deviation: ${Utils.Format.zeroFormat2.format(priceDeviation)} " +
                         "total: ${Utils.Format.zeroFormat2.format(totalPrice)} "
             )
+            val viewModel = bindService.tradeViewModel
+            viewModel.searchMinCandleInfoData.postValue(candleData[0])
         }
         return 0f
     }
