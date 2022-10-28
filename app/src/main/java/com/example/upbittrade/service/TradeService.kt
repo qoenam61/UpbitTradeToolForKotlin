@@ -371,6 +371,8 @@ class TradeService : LifecycleService() {
             }
         }
 
+        if (askCount == 0) askCount = Integer.MAX_VALUE
+
         Log.d(TAG, "mergeTradeInfoData - marektId: ${tradeData[0].marketId} askBidRate: ${(bidCount.div(askCount))}")
         val tradeInfoData = tradeData[0]
 
