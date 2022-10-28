@@ -82,13 +82,16 @@ class TradeService : LifecycleService() {
         tradeInfoSet = TradeInfoSet(object : TradeInfoSet.OnChangedListener {
             val viewModel = bindService.tradeViewModel
             var job: Job? = null
-            override fun onSetChanged(tradeInfoSet: HashSet<String>, mutex: Mutex) {
+
+            override fun onSetDataChanged(tradeInfoSet: HashSet<String>, mutex: Mutex) {
                 mutexTradeInfoCandle = mutex
                 job?.cancel()
                 job = CoroutineScope(Dispatchers.Default).launch {
                     while (true) {
                         var time = SystemClock.uptimeMillis()
-                        for (marketId in tradeInfoSet) {
+                        val iterator = tradeInfoSet.iterator()
+                        while (iterator.hasNext()) {
+                            val marketId = iterator.next()
                             mutex.withLock {
                                 viewModel.searchTradeInfo.postValue(
                                     CandleItem(
@@ -326,9 +329,9 @@ class TradeService : LifecycleService() {
             )
             val viewModel = bindService.tradeViewModel
             viewModel.addMonitorItem.postValue(MonitorItem(candleData[0]))
-
             tradeInfoSet.add(candleData[0].marketId!!)
-        } else if (currentPrice < Utils.convertPrice(avgPrice - (1 * priceDeviation))) {
+        } else if (tradeInfoSet.contains(candleData[0].marketId!!)
+            && currentPrice < Utils.convertPrice(avgPrice - (1 * priceDeviation))) {
             Log.d(
                 TAG, "tradeConditionCheck(remove) - marketId: ${candleData[0].marketId} " +
 //                        "prob: ${Utils.Format.percentFormat.format(prob)} " +
@@ -340,7 +343,6 @@ class TradeService : LifecycleService() {
             )
             val viewModel = bindService.tradeViewModel
             viewModel.removeMonitorItem.postValue(candleData[0].marketId)
-
             tradeInfoSet.remove(candleData[0].marketId!!)
         }
 
@@ -368,7 +370,8 @@ class TradeService : LifecycleService() {
         tradeInfoData.askBid = (bidCount.div(askCount)).toString()
 
         val viewModel = bindService.tradeViewModel
-        viewModel.searchTradeInfoData.postValue(tradeInfoData)
+        viewModel.updateTradeInfoData.postValue(tradeInfoData)
+
         return tradeInfoData
     }
 }

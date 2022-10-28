@@ -5,22 +5,25 @@ import kotlinx.coroutines.sync.Mutex
 class TradeInfoSet(private val listener: OnChangedListener): HashSet<String>() {
 
     interface OnChangedListener {
-        fun onSetChanged(tradeInfoSet: HashSet<String>, mutex: Mutex)
+        fun onSetDataChanged(tradeInfoSet: HashSet<String>, mutex: Mutex)
     }
 
-    val mutex = Mutex()
+    private val mutex = Mutex()
 
     override fun add(marketId: String): Boolean {
-        val result = super.add(marketId)
+        val result: Boolean
         if (!contains(marketId)) {
-            listener.onSetChanged(this, mutex)
+            result = super.add(marketId)
+            listener.onSetDataChanged(this, mutex)
+        } else {
+            result = super.add(marketId)
         }
         return result
     }
 
     override fun remove(element: String): Boolean {
         val result = super.remove(element)
-        listener.onSetChanged(this, mutex)
+        listener.onSetDataChanged(this, mutex)
         return result
     }
 }

@@ -14,7 +14,7 @@ import kotlin.math.abs
 
 class MonitorListAdapter: RecyclerView.Adapter<MonitorListAdapter.MonitorViewHolder>() {
 
-    private val monitorMap = HashMap<String, MonitorItem>()
+    private var monitorMap = HashMap<String, MonitorItem>()
     private val monitorList = ArrayList<String>()
     var marketsMapInfo = HashMap<String, MarketInfo>()
 

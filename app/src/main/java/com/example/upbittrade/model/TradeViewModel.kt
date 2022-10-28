@@ -36,7 +36,7 @@ class TradeViewModel(application: Application): AndroidViewModel(application) {
     val searchWeekCandleInfo = MutableLiveData<CandleItem>()
     val searchMonthCandleInfo = MutableLiveData<CandleItem>()
     val searchTradeInfo = MutableLiveData<CandleItem>()
-    val searchTradeInfoData = MutableLiveData<TradeInfoData>()
+    val updateTradeInfoData = MutableLiveData<TradeInfoData>()
     val searchTickerInfo = MutableLiveData<String>()
     val postOrderInfo = MutableLiveData<PostOrderItem>()
     val searchOrderInfo = MutableLiveData<UUID>()
