@@ -11,15 +11,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
-import com.example.upbittrade.adapter.MonitorListAdapter
-import com.example.upbittrade.model.MarketInfo
+import com.example.upbittrade.model.adapter.MonitorListAdapter
 import com.example.upbittrade.model.ResponseOrder
 import com.example.upbittrade.model.TradeViewModel
 import kotlinx.coroutines.*
-import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.math.min
 
 class TradeFragment: Fragment() {
     companion object {
@@ -61,12 +58,12 @@ class TradeFragment: Fragment() {
                 marketsInfo -> monitorListAdapter.marketsMapInfo = marketsInfo
         }
 
-        viewModel.searchMinCandleInfoData.observe(viewCycleOwner) {
+        viewModel.searchMonitorItem.observe(viewCycleOwner) {
                 minCandlesInfo -> monitorListAdapter.setItem(minCandlesInfo)
         }
 
-        viewModel.resultTradeInfo.observe(viewCycleOwner) {
-                tradesInfo ->
+        viewModel.searchTradeInfoData.observe(viewCycleOwner) {
+                tradeInfoData -> monitorListAdapter.updateItem(tradeInfoData)
         }
 
         viewModel.resultTickerInfo.observe(viewCycleOwner) {

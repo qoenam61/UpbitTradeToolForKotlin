@@ -10,8 +10,8 @@ import com.example.upbittrade.api.TradeFetcher
 import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.PostOrderItem
-import com.example.upbittrade.database.MinCandleInfoData
-import kotlinx.coroutines.sync.Mutex
+import com.example.upbittrade.database.TradeInfoData
+import com.example.upbittrade.model.adapter.MonitorItem
 import java.util.*
 
 class TradeViewModel(application: Application): AndroidViewModel(application) {
@@ -30,11 +30,12 @@ class TradeViewModel(application: Application): AndroidViewModel(application) {
     val searchMarketsMapInfo = MutableLiveData<HashMap<String, MarketInfo>>()
     val searchAccountsInfo = MutableLiveData<Boolean>()
     val searchMinCandleInfo = MutableLiveData<ExtendCandleItem>()
-    val searchMinCandleInfoData = MutableLiveData<MinCandleInfoData>()
+    val searchMonitorItem = MutableLiveData<MonitorItem>()
     val searchDayCandleInfo = MutableLiveData<ExtendCandleItem>()
     val searchWeekCandleInfo = MutableLiveData<CandleItem>()
     val searchMonthCandleInfo = MutableLiveData<CandleItem>()
     val searchTradeInfo = MutableLiveData<CandleItem>()
+    val searchTradeInfoData = MutableLiveData<TradeInfoData>()
     val searchTickerInfo = MutableLiveData<String>()
     val postOrderInfo = MutableLiveData<PostOrderItem>()
     val searchOrderInfo = MutableLiveData<UUID>()

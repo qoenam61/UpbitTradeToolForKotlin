@@ -12,18 +12,22 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
+import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.TaskItem
+import com.example.upbittrade.data.TradeInfoSet
 import com.example.upbittrade.database.MinCandleInfoData
 import com.example.upbittrade.database.TradeInfoData
 import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.model.MarketInfo
+import com.example.upbittrade.model.adapter.MonitorItem
 import com.example.upbittrade.utils.Utils
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.sql.Timestamp
 import java.util.Calendar
+import java.util.Objects
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -39,6 +43,11 @@ class TradeService : LifecycleService() {
     private val UNIT_MIN_CANDLE = 3
     private val UNIT_MIN_CANDLE_COUNT = 200
     private val UNIT_MIN_CANDLE_PERIOD = UNIT_MIN_CANDLE * UNIT_MIN_CANDLE_COUNT
+
+    private val UNIT_TRADE_PERIOD = UNIT_MIN_CANDLE
+
+    private lateinit var tradeInfoSet: TradeInfoSet
+    private var mutexTradeInfoCandle: Mutex? = null
 
     companion object {
         const val TAG = "TradeService"
@@ -70,8 +79,35 @@ class TradeService : LifecycleService() {
         this.bindService = bindService
 
         Log.d(TAG, "setRegisterCallBack: ")
-        observeLiveData()
 
+        tradeInfoSet = TradeInfoSet(object : TradeInfoSet.OnChangedListener {
+            val viewModel = bindService.tradeViewModel
+            var job: Job? = null
+            override fun onSetChanged(tradeInfoSet: HashSet<String>, mutex: Mutex) {
+                mutexTradeInfoCandle = mutex
+                job?.cancel()
+                job = CoroutineScope(Dispatchers.Default).launch {
+                    while (true) {
+                        var time = SystemClock.uptimeMillis()
+                        for (marketId in tradeInfoSet) {
+                            mutex.withLock {
+                                viewModel.searchTradeInfo.postValue(
+                                    CandleItem(
+                                        TradePagerActivity.PostType.TRADE_INFO,
+                                        marketId,
+                                        UNIT_TRADE_INFO_COUNT
+                                    )
+                                )
+                            }
+                            mutex.lock()
+    //                      Log.d(TAG, "resultMarketsInfo - duration: ${(SystemClock.uptimeMillis() - time)}")
+                        }
+                    }
+                }
+            }
+        })
+
+        observeLiveData()
         bindService.tradeViewModel.searchMarketsInfo.value = true
     }
 
@@ -81,18 +117,10 @@ class TradeService : LifecycleService() {
         }
     }
 
-    override fun onCreate() {
-        super.onCreate()
-
-    }
-
-
     private fun observeLiveData() {
         val viewModel = bindService.tradeViewModel
 
         val mutexMinCandle = Mutex()
-        val mutexDayCandle = Mutex()
-        val mutexTradeInfoCandle = Mutex()
 
         viewModel.resultMarketsInfo.observe(this) {
             makeMarketMapInfo(it)
@@ -117,24 +145,6 @@ class TradeService : LifecycleService() {
 //                    Log.d(TAG, "resultMarketsInfo - duration: ${(SystemClock.uptimeMillis() - time)}")
                 }
             }
-
-/*            CoroutineScope(Dispatchers.Default).launch {
-                while (true) {
-                    var time = SystemClock.uptimeMillis()
-                    for (marketId in marketMapInfo.keys) {
-//                        Log.d(TAG, "resultMarketsInfo - marketId: $marketId")
-                        mutexTradeInfoCandle.withLock {
-                            viewModel.searchTradeInfo.postValue(CandleItem(
-                                TradePagerActivity.PostType.TRADE_INFO,
-                                marketId,
-                                UNIT_TRADE_INFO_COUNT
-                            ))
-                        }
-                        mutexTradeInfoCandle.lock()
-                    }
-//                    Log.d(TAG, "resultMarketsInfo - duration: ${(SystemClock.uptimeMillis() - time)}")
-                }
-            }*/
         }
 
         var minCandleCount = 0
@@ -159,7 +169,7 @@ class TradeService : LifecycleService() {
                         cal.add(Calendar.MINUTE, UNIT_MIN_CANDLE_PERIOD * -1)
                         val end = cal.time.time
 
-                        Log.d(TAG, "resultMinCandleInfo - getAllForMinCandleInfoData - marketId: $marketId" +
+                        Log.d(TAG, "resultMinCandleInfo - getMatchFilterForMinCandle - marketId: $marketId" +
                                 "start: ${Utils.Format.timeFormat.format(start.time)} " +
                                 "end: ${Utils.Format.timeFormat.format(end)}")
 
@@ -214,6 +224,28 @@ class TradeService : LifecycleService() {
                     job1.join()
 
                     val job2 = launch {
+                        val start = Timestamp(System.currentTimeMillis())
+                        val cal = Calendar.getInstance()
+                        cal.time = start
+                        cal.add(Calendar.MINUTE, UNIT_TRADE_PERIOD * -1)
+                        val end = cal.time.time
+
+                        Log.d(TAG, "resultTradeInfo - getMatchFilterForTradeInfo - marketId: $marketId" +
+                                "start: ${Utils.Format.timeFormat.format(start.time)} " +
+                                "end: ${Utils.Format.timeFormat.format(end)}")
+
+                        val subJob = launch {
+                            val data = viewModel.repository.database?.tradeInfoDao()?.getMatchFilterForTradeInfo(
+                                marketId!!, start.time, end)
+                            if (!data.isNullOrEmpty()) {
+                                mergeTradeInfoData(data)
+                            }
+                        }
+                        subJob.join()
+                    }
+                    job2.join()
+
+                    val job3 = launch {
                         if (tradeInfoCount == 0) {
                             tradeInfoSendTime = SystemClock.uptimeMillis()
                         }
@@ -229,34 +261,14 @@ class TradeService : LifecycleService() {
                         if (delayTime > 0) {
                             delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
                         }
-                        mutexTradeInfoCandle.unlock()
+                        mutexTradeInfoCandle?.unlock()
                     }
-                    job2.join()
+                    job3.join()
                 }
             } else {
-                mutexTradeInfoCandle.unlock()
+                mutexTradeInfoCandle?.unlock()
             }
         }
-
-        viewModel.repository.database?.tradeInfoDao()?.getAllForTradeInfoData()?.observe(this) {
-            for (tradeInfo in it) {
-                Log.d(TAG, "observeLiveData - getAllForTradeInfoData: $tradeInfo")
-            }
-        }
-
-//        viewModel.repository.database?.tradeInfoDao()?.getAllForMinCandleInfoData()?.observe(this) {
-//
-//        }
-
-//        viewModel.repository.database?.tradeInfoDao()?.getMatchFilterForMinCandle(
-//            "KRW-BTC", System.currentTimeMillis(), 60000)?.observe(this) {
-//            CoroutineScope(Dispatchers.Default).launch {
-//                for (tradeInfo in it) {
-//                    Log.d(TAG, "observeLiveData - getMatchFilterForMinCandle: $tradeInfo")
-//                }
-//            }
-//        }
-
     }
 
     private fun makeMarketMapInfo(marketsInfo: List<MarketInfo>) {
@@ -302,8 +314,8 @@ class TradeService : LifecycleService() {
         val currentVolume = candleData[0].candleAccTradeVolume!!
         val avgRate = (currentPrice - avgPrice) / avgPrice
 
-        if (currentPrice > Utils.convertPrice(avgPrice + (1 * priceDeviation))
-            && currentVolume > avgVolume + (1 * priceDeviation)) {
+        if (currentPrice > Utils.convertPrice(avgPrice + (2 * priceDeviation))
+            && currentVolume > avgVolume + (2 * priceDeviation)) {
             Log.d(
                 TAG, "probability - marketId: ${candleData[0].marketId} " +
 //                        "prob: ${Utils.Format.percentFormat.format(prob)} " +
@@ -314,8 +326,35 @@ class TradeService : LifecycleService() {
                         "total: ${Utils.Format.zeroFormat2.format(totalPrice)} "
             )
             val viewModel = bindService.tradeViewModel
-            viewModel.searchMinCandleInfoData.postValue(candleData[0])
+            viewModel.searchMonitorItem.postValue(MonitorItem(candleData[0]))
+
+            tradeInfoSet.add(candleData[0].marketId!!)
         }
         return 0f
+    }
+
+    private fun mergeTradeInfoData(tradeData: List<TradeInfoData>): TradeInfoData {
+        val sumTradePrice = tradeData.sumOf { it.tradePrice!! }
+        val avgTradePrice = sumTradePrice / tradeData.size
+
+        var askCount = 0
+        var bidCount = 0
+        val askBidRate = tradeData.forEach {
+            if ("ask".equals(it.askBid, ignoreCase = true)) {
+                askCount++
+            } else {
+                bidCount++
+            }
+        }
+
+        Log.d(TAG, "mergeTradeInfoData - marektId: ${tradeData[0].marketId} askBidRate: ${(bidCount.div(askCount))}")
+        val tradeInfoData = tradeData[0]
+
+        tradeInfoData.tradeVolume = avgTradePrice
+        tradeInfoData.askBid = (bidCount.div(askCount)).toString()
+
+        val viewModel = bindService.tradeViewModel
+        viewModel.searchTradeInfoData.postValue(tradeInfoData)
+        return tradeInfoData
     }
 }

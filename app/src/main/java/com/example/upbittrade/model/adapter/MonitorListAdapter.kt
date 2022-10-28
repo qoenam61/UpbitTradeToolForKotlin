@@ -1,4 +1,4 @@
-package com.example.upbittrade.adapter
+package com.example.upbittrade.model.adapter
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
@@ -7,22 +7,33 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
-import com.example.upbittrade.database.MinCandleInfoData
+import com.example.upbittrade.database.TradeInfoData
 import com.example.upbittrade.model.MarketInfo
 import com.example.upbittrade.utils.Utils
 import kotlin.math.abs
 
 class MonitorListAdapter: RecyclerView.Adapter<MonitorListAdapter.MonitorViewHolder>() {
 
-    private val monitorMap = HashMap<String, MinCandleInfoData>()
+    private val monitorMap = HashMap<String, MonitorItem>()
     private val monitorList = ArrayList<String>()
     var marketsMapInfo = HashMap<String, MarketInfo>()
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setItem(candleInfoData: MinCandleInfoData) {
-        val marketId = candleInfoData.marketId
-        monitorMap[marketId!!] = candleInfoData
+    fun setItem(monitorItem: MonitorItem) {
+        val marketId = monitorItem.marketId
+        monitorMap[marketId!!] = monitorItem
         monitorList.add(marketId)
+        notifyDataSetChanged()
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateItem(tradeInfoData: TradeInfoData) {
+        val marketId = tradeInfoData.marketId
+        monitorMap[marketId]?.tradePrice = tradeInfoData.tradePrice
+        monitorMap[marketId]?.timestamp = tradeInfoData.timestamp
+        monitorMap[marketId]?.prevClosingPrice = tradeInfoData.prevClosingPrice
+        monitorMap[marketId]?.changePrice = tradeInfoData.changePrice
+        monitorMap[marketId]?.askBidRate = 0f
         notifyDataSetChanged()
     }
 
@@ -51,12 +62,18 @@ class MonitorListAdapter: RecyclerView.Adapter<MonitorListAdapter.MonitorViewHol
 
         fun bind(position: Int) {
             val key = monitorList[position]
-            val candleInfoData = monitorMap[key]
+            val monitorItem = monitorMap[key]
 
             marketId.text = marketsMapInfo[key]?.koreanName
-            with(candleInfoData) {
+            with(monitorItem) {
                 tradePrice.text = getZeroFormatString(this?.tradePrice)
-                tradePriceRate.text = Utils.Format.timeFormat.format(this?.timestamp)
+                if (this?.prevClosingPrice != null) {
+                    tradePriceRate.text = Utils.Format.percentFormat.format((this.tradePrice!! - this.prevClosingPrice!!).div( this.tradePrice!!))
+                }
+                minPriceRate.text = Utils.Format.timeFormat.format(this?.timestamp)
+                if (this?.askBidRate != null) {
+                    tradeCount.text = Utils.Format.percentFormat.format(this.askBidRate)
+                }
             }
 
         }

@@ -14,7 +14,7 @@ data class TradeInfoData(
     @ColumnInfo(name = "_tradeVolume") var tradeVolume: Double?,
     @ColumnInfo(name = "_prevClosingPrice") var prevClosingPrice: Double?,
     @ColumnInfo(name = "_changePrice") var changePrice: Double?,
-    @ColumnInfo(name = "_askBid") var askBid: String?,
+    @ColumnInfo(name = "_askBid") open var askBid: String?,
     @ColumnInfo(name = "_timestamp") var timestamp: Long?,
     @ColumnInfo(name = "_tradeTimeUtc") var tradeTimeUtc: String?
     ) {

@@ -40,7 +40,7 @@ interface TradeInfoDAO {
     @Query("SELECT * FROM MinCandleInfoData WHERE _marketId is :marketId AND _timestamp BETWEEN :end AND :start ORDER BY _timestamp DESC")
     fun getMatchFilterForMinCandle(marketId: String, start: Long, end: Long) : List<MinCandleInfoData>
 
-    @Query("SELECT * FROM TradeInfoData WHERE _marketId is :marketId AND _timestamp BETWEEN :start AND (:start - :duration) ORDER BY _timestamp DESC")
-    fun getMatchFilterForTradeInfo(marketId: String, start: Long, duration: Long) : List<TradeInfoData>
+    @Query("SELECT * FROM TradeInfoData WHERE _marketId is :marketId AND _timestamp BETWEEN :end AND :start ORDER BY _timestamp DESC")
+    fun getMatchFilterForTradeInfo(marketId: String, start: Long, end: Long) : List<TradeInfoData>
 
 }

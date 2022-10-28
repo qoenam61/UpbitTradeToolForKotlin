@@ -7,16 +7,16 @@ import com.example.upbittrade.model.Candle
 import com.google.gson.Gson
 
 @Entity
-class MinCandleInfoData(
+open class MinCandleInfoData(
     @ColumnInfo(name = "_marketId") var marketId: String?,
     @ColumnInfo(name = "_openingPrice") var openingPrice: Double?,
     @ColumnInfo(name = "_highPrice") var highPrice: Double?,
     @ColumnInfo(name = "_lowPrice") var lowPrice: Double?,
-    @ColumnInfo(name = "_tradePrice") var tradePrice: Double?,
+    @ColumnInfo(name = "_tradePrice") open var tradePrice: Double?,
     @ColumnInfo(name = "_candleAccTradePrice") var candleAccTradePrice: Double?,
     @ColumnInfo(name = "_candleAccTradeVolume") var candleAccTradeVolume: Double?,
     @ColumnInfo(name = "_unit") var unit: Int?,
-    @ColumnInfo(name = "_timestamp") var timestamp: Long?,
+    @ColumnInfo(name = "_timestamp") open var timestamp: Long?,
     @ColumnInfo(name = "_candleDateTimeUtc") var candleDateTimeUtc: String?,
     @ColumnInfo(name = "_candleDateTimeKst") var candleDateTimeKst: String?
     ) {
