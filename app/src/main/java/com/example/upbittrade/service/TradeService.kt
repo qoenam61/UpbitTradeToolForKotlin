@@ -44,12 +44,12 @@ class TradeService : LifecycleService() {
     private val UNIT_MIN_CANDLE_COUNT = 200
     private val UNIT_MIN_CANDLE_PERIOD = UNIT_MIN_CANDLE * UNIT_MIN_CANDLE_COUNT
 
-    private val UNIT_TRADE_PERIOD = UNIT_MIN_CANDLE
+    private val UNIT_TRADE_PERIOD = UNIT_MIN_CANDLE * 5
 
-    private val UNIT_MONITORING_BUY_DEVIATION = 1
+    private val UNIT_MONITORING_BUY_DEVIATION = 3
     private val UNIT_MONITORING_SELL_DEVIATION = 1
-    private val UNIT_TRADE_BUY_DEVIATION = 0
-    private val UNIT_TRADE_CANCEL_DEVIATION = 0
+    private val UNIT_TRADE_BUY_DEVIATION = 3
+    private val UNIT_TRADE_CANCEL_DEVIATION = 1
 
 
 
