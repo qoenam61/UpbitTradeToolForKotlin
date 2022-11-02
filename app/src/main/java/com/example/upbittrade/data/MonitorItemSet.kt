@@ -2,7 +2,7 @@ package com.example.upbittrade.data
 
 import kotlinx.coroutines.sync.Mutex
 
-class TradeInfoSet(private val listener: OnChangedListener): HashSet<String>() {
+class MonitorItemSet(private val listener: OnChangedListener): HashSet<String>() {
 
     interface OnChangedListener {
         fun onSetDataChanged(tradeInfoSet: HashSet<String>, mutex: Mutex)

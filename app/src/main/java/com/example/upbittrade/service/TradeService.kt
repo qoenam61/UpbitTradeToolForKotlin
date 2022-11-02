@@ -15,7 +15,7 @@ import com.example.upbittrade.activity.TradePagerActivity
 import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
 import com.example.upbittrade.data.TaskItem
-import com.example.upbittrade.data.TradeInfoSet
+import com.example.upbittrade.data.MonitorItemSet
 import com.example.upbittrade.database.MinCandleInfoData
 import com.example.upbittrade.database.TradeInfoData
 import com.example.upbittrade.fragment.TradeFragment
@@ -53,7 +53,8 @@ class TradeService : LifecycleService() {
 
 
 
-    private lateinit var tradeInfoSet: TradeInfoSet
+    private lateinit var monitorItemSet: MonitorItemSet
+    private val tradeItemSet = HashSet<String>()
     private var mutexTradeInfoCandle: Mutex? = null
 
     companion object {
@@ -87,7 +88,7 @@ class TradeService : LifecycleService() {
 
         Log.d(TAG, "setRegisterCallBack: ")
 
-        tradeInfoSet = TradeInfoSet(object : TradeInfoSet.OnChangedListener {
+        monitorItemSet = MonitorItemSet(object : MonitorItemSet.OnChangedListener {
             val viewModel = bindService.tradeViewModel
             var job: Job? = null
 
@@ -338,8 +339,8 @@ class TradeService : LifecycleService() {
             )
             val viewModel = bindService.tradeViewModel
             viewModel.addMonitorItem.postValue(MonitorItem(candleData[0]))
-            tradeInfoSet.add(candleData[0].marketId!!)
-        } else if (tradeInfoSet.contains(candleData[0].marketId!!)
+            monitorItemSet.add(candleData[0].marketId!!)
+        } else if (monitorItemSet.contains(candleData[0].marketId!!)
             && currentPrice < Utils.convertPrice(avgPrice - (UNIT_MONITORING_SELL_DEVIATION * priceDeviation))) {
             Log.d(
                 TAG, "analysisMinCandleInfoData(remove) - marketId: ${candleData[0].marketId} " +
@@ -353,7 +354,7 @@ class TradeService : LifecycleService() {
             )
             val viewModel = bindService.tradeViewModel
             viewModel.removeMonitorItem.postValue(candleData[0].marketId)
-            tradeInfoSet.remove(candleData[0].marketId!!)
+            monitorItemSet.remove(candleData[0].marketId!!)
         }
 
         return 0f
@@ -395,7 +396,7 @@ class TradeService : LifecycleService() {
         tradeItem.buyPrice = currentPrice
         tradeItem.remainingVolume = 0.0
 
-        if (currentPrice > Utils.convertPrice(avgTradePrice + (UNIT_TRADE_BUY_DEVIATION* deviationPrice))
+        if (currentPrice > Utils.convertPrice(avgTradePrice + (UNIT_TRADE_BUY_DEVIATION * deviationPrice))
             && currentVolume > (avgTradeVolume + (UNIT_TRADE_BUY_DEVIATION * deviationVolume))
         ) {
             Log.d(TAG, "analysisTradeInfoData(add) - " +
@@ -405,7 +406,9 @@ class TradeService : LifecycleService() {
 
             tradeItem.status = "BUY"
             viewModel.addTradeInfo.postValue(tradeItem)
-        } else if (currentPrice < Utils.convertPrice(avgTradePrice - (UNIT_TRADE_CANCEL_DEVIATION * deviationPrice))) {
+            tradeItemSet.add(tradeData[0].marketId!!)
+        } else if (tradeItemSet.contains(tradeData[0].marketId) &&
+            currentPrice < Utils.convertPrice(avgTradePrice - (UNIT_TRADE_CANCEL_DEVIATION * deviationPrice))) {
             Log.d(TAG, "analysisTradeInfoData(remove) - " +
                     "marektId: ${tradeData[0].marketId} " +
                     "askBidRate: ${(bidCount.div(askCount))} " +
@@ -413,6 +416,7 @@ class TradeService : LifecycleService() {
 
             tradeItem.status = "CANCEL"
             viewModel.removeTradeInfo.postValue(tradeData[0].marketId)
+            tradeItemSet.remove(tradeData[0].marketId!!)
         }
         viewModel.updateTradeInfoData.postValue(tradeInfoData)
         return tradeInfoData
