@@ -10,14 +10,15 @@ import com.example.upbittrade.R
 import com.example.upbittrade.database.MinCandleInfoData
 import com.example.upbittrade.database.TradeInfoData
 import com.example.upbittrade.model.MarketInfo
+import com.example.upbittrade.model.TradeViewModel
 import com.example.upbittrade.utils.Utils
 import kotlin.math.abs
 
-class MonitorListAdapter: RecyclerView.Adapter<MonitorListAdapter.MonitorViewHolder>() {
+class MonitorListAdapter(val viewModel: TradeViewModel) : RecyclerView.Adapter<MonitorListAdapter.MonitorViewHolder>() {
 
-    private var monitorMap = HashMap<String, MonitorItem>()
-    private val monitorList = ArrayList<String>()
-    var marketsMapInfo = HashMap<String, MarketInfo>()
+    private var monitorMap = viewModel.monitorMap
+    private val monitorList = viewModel.monitorList
+    var marketsMapInfo = viewModel.marketsMapInfo
 
     @SuppressLint("NotifyDataSetChanged")
     fun setItem(monitorItem: MonitorItem) {

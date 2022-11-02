@@ -46,6 +46,11 @@ class LoginActivity : AppCompatActivity() {
         loginButton?.setOnClickListener {
             onLoginButton()
         }
+
+        val success = preferenceUtil.getBoolean(PreferenceUtil.SUCCESS_LOGIN, false)
+        if (success) {
+            onLoginButton()
+        }
     }
 
     override fun onStart() {
@@ -58,6 +63,7 @@ class LoginActivity : AppCompatActivity() {
             val secretKey = findViewById<EditText>(R.id.edit_secret_key)
             pref.setString(PreferenceUtil.ACCESS_KEY, accessKey.text.toString())
             pref.setString(PreferenceUtil.SECRET_KEY, secretKey.text.toString())
+            pref.setBoolean(PreferenceUtil.SUCCESS_LOGIN, true)
 
             val intent = Intent(this, TradePagerActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
@@ -69,6 +75,9 @@ class LoginActivity : AppCompatActivity() {
 
     private fun onLoginButton() {
         Log.d(TAG, "onLoginButton: ")
+        val pref = PreferenceUtil(this)
+        pref.setBoolean(PreferenceUtil.SUCCESS_LOGIN, false)
+
         val accessKey = findViewById<EditText>(R.id.edit_access_key)
         val secretKey = findViewById<EditText>(R.id.edit_secret_key)
 

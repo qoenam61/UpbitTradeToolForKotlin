@@ -8,6 +8,7 @@ class PreferenceUtil(context: Context) {
     companion object {
         const val ACCESS_KEY: String = "access_key"
         const val SECRET_KEY: String = "secret_key"
+        const val SUCCESS_LOGIN: String = "success_login"
     }
 
     private val prefs: SharedPreferences =
@@ -19,5 +20,13 @@ class PreferenceUtil(context: Context) {
 
     fun setString(key: String, data: String) {
         prefs.edit().putString(key, data).apply()
+    }
+
+    fun setBoolean(key: String, data: Boolean) {
+        prefs.edit().putBoolean(key, data).apply()
+    }
+
+    fun getBoolean(key: String, data: Boolean): Boolean {
+        return prefs.getBoolean(key, false)
     }
 }

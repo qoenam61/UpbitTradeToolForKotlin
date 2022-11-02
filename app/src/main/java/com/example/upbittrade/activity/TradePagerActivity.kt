@@ -61,12 +61,12 @@ class TradePagerActivity : FragmentActivity() {
         ACCESS_KEY = preferenceUtil.getString(PreferenceUtil.ACCESS_KEY, "")
         SECRET_KEY = preferenceUtil.getString(PreferenceUtil.SECRET_KEY, "")
 
+        viewModel = ViewModelProvider(this)[TradeViewModel::class.java]
+        bindService = BindServiceCallBack(viewModel)
+
         val viewPager = findViewById<ViewPager2>(R.id.pager)
         viewPager.adapter = ScreenSlidePagerAdapter(this, TradeFragment())
         viewPager.setPageTransformer(ZoomOutPageTransformer())
-
-        viewModel = ViewModelProvider(this)[TradeViewModel::class.java]
-        bindService = BindServiceCallBack(viewModel)
 
         startService()
         startBindService()
@@ -90,6 +90,10 @@ class TradePagerActivity : FragmentActivity() {
                 val serv = service as TradeService.TradeServiceBinder
                 tradeService = serv.getService()
                 tradeService.setRegisterCallBack(bindService)
+                viewModel.monitorMap.putAll(serv.monitorMap)
+                viewModel.monitorList = ArrayList(viewModel.monitorMap.keys)
+                viewModel.tradeMap.putAll(serv.tradeMap)
+                viewModel.tradeList = ArrayList(viewModel.tradeMap.keys)
             }
 
             override fun onServiceDisconnected(name: ComponentName?) {

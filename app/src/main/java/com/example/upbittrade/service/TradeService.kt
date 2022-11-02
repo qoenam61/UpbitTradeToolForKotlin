@@ -22,12 +22,15 @@ import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.model.MarketInfo
 import com.example.upbittrade.adapter.MonitorItem
 import com.example.upbittrade.adapter.TradeItem
+import com.example.upbittrade.utils.PreferenceUtil
 import com.example.upbittrade.utils.Utils
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.sql.Timestamp
+import java.util.ArrayList
 import java.util.Calendar
+import java.util.HashMap
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -120,6 +123,12 @@ class TradeService : LifecycleService() {
     }
 
     inner class TradeServiceBinder : Binder() {
+        val tradeMap = HashMap<String, TradeItem>()
+        val tradeList = ArrayList<String>()
+        val monitorMap = HashMap<String, MonitorItem>()
+        val monitorList = ArrayList<String>()
+        val marketsMapInfo = HashMap<String, MarketInfo>()
+
         fun getService() : TradeService {
             return this@TradeService
         }
@@ -416,5 +425,12 @@ class TradeService : LifecycleService() {
         }
         viewModel.updateTradeInfoData.postValue(tradeInfoData)
         return tradeInfoData
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        val pref = PreferenceUtil(this)
+        pref.setBoolean(PreferenceUtil.SUCCESS_LOGIN, false)
     }
 }

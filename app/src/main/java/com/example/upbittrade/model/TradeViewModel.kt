@@ -18,6 +18,12 @@ import java.util.*
 
 class TradeViewModel(application: Application): AndroidViewModel(application) {
 
+    var tradeMap = HashMap<String, TradeItem>()
+    var tradeList = ArrayList<String>()
+    var monitorMap = HashMap<String, MonitorItem>()
+    var monitorList = ArrayList<String>()
+    var marketsMapInfo = HashMap<String, MarketInfo>()
+
     private val upbitFetcher: TradeFetcher = TradeFetcher()
 
     val repository : Repository = Repository(application)

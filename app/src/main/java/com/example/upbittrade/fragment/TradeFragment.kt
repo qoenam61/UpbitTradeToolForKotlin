@@ -44,13 +44,13 @@ class TradeFragment: Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_trade, container, false)
 
-        monitorListAdapter = MonitorListAdapter()
+        monitorListAdapter = MonitorListAdapter(mainActivity.viewModel)
         val monitorList = view.findViewById<RecyclerView>(R.id.monitor_list_view)
         monitorList!!.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         monitorList.adapter = monitorListAdapter
 
 
-        tradeListAdapter = TradeListAdapter()
+        tradeListAdapter = TradeListAdapter(mainActivity.viewModel)
         val tradeList = view.findViewById<RecyclerView>(R.id.trade_list_view)
         tradeList!!.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         tradeList.adapter = tradeListAdapter
