@@ -320,15 +320,17 @@ class TradeService : LifecycleService() {
 
         //gaussian_pdf = (1/sqrt(2*pi*sigma^2))*exp(-0.5.*((x-mu)/sigma).^2);
 //        val prob =  (1/sqrt(2 * Math.PI * deviation.pow(2)))*exp(-0.5 * ((candleData[0].tradePrice!!.toDouble() - avg)/deviation).pow(2))
-
-        val currentPrice = candleData[0].tradePrice!!
-        val currentVolume = candleData[0].candleAccTradeVolume!!
+        val candleInfoData = candleData[0]
+        val currentPrice = candleInfoData.tradePrice!!
+        val currentVolume = candleInfoData.candleAccTradeVolume!!
         val avgRate = (currentPrice - avgPrice) / avgPrice
+        val viewModel = bindService.tradeViewModel
 
-        if (currentPrice > Utils.convertPrice(avgPrice + (UNIT_MONITORING_BUY_DEVIATION * priceDeviation))
+        if (!monitorItemSet.contains(candleInfoData.marketId!!) &&
+            currentPrice > Utils.convertPrice(avgPrice + (UNIT_MONITORING_BUY_DEVIATION * priceDeviation))
             && currentVolume > avgVolume + (UNIT_MONITORING_BUY_DEVIATION * priceDeviation)) {
             Log.d(
-                TAG, "analysisMinCandleInfoData(add) - marketId: ${candleData[0].marketId} " +
+                TAG, "analysisMinCandleInfoData(add) - marketId: ${candleInfoData.marketId} " +
 //                        "prob: ${Utils.Format.percentFormat.format(prob)} " +
                         "avg_rate: ${Utils.Format.percentFormat.format(avgRate)} " +
                         "avg: ${Utils.Format.zeroFormat2.format(avgPrice)} " +
@@ -337,13 +339,12 @@ class TradeService : LifecycleService() {
                         "total: ${Utils.Format.zeroFormat2.format(totalPrice)} " +
                         "count: ${candleData.size} "
             )
-            val viewModel = bindService.tradeViewModel
-            viewModel.addMonitorItem.postValue(MonitorItem(candleData[0]))
-            monitorItemSet.add(candleData[0].marketId!!)
-        } else if (monitorItemSet.contains(candleData[0].marketId!!)
+            viewModel.addMonitorItem.postValue(MonitorItem(candleInfoData))
+            monitorItemSet.add(candleInfoData.marketId!!)
+        } else if (monitorItemSet.contains(candleInfoData.marketId!!)
             && currentPrice < Utils.convertPrice(avgPrice - (UNIT_MONITORING_SELL_DEVIATION * priceDeviation))) {
             Log.d(
-                TAG, "analysisMinCandleInfoData(remove) - marketId: ${candleData[0].marketId} " +
+                TAG, "analysisMinCandleInfoData(remove) - marketId: ${candleInfoData.marketId} " +
 //                        "prob: ${Utils.Format.percentFormat.format(prob)} " +
                         "avg_rate: ${Utils.Format.percentFormat.format(avgRate)} " +
                         "avg: ${Utils.Format.zeroFormat2.format(avgPrice)} " +
@@ -352,11 +353,10 @@ class TradeService : LifecycleService() {
                         "total: ${Utils.Format.zeroFormat2.format(totalPrice)} " +
                         "count: ${candleData.size} "
             )
-            val viewModel = bindService.tradeViewModel
-            viewModel.removeMonitorItem.postValue(candleData[0].marketId)
-            monitorItemSet.remove(candleData[0].marketId!!)
+            viewModel.removeMonitorItem.postValue(candleInfoData.marketId)
+            monitorItemSet.remove(candleInfoData.marketId!!)
         }
-
+        viewModel.updateMonitorItem.postValue(candleInfoData)
         return 0f
     }
 
@@ -389,17 +389,17 @@ class TradeService : LifecycleService() {
         tradeInfoData.askBid = Utils.Format.percentFormat.format(bidCount.div(askCount))
 
         val viewModel = bindService.tradeViewModel
-        val currentPrice = tradeData[0].tradePrice!!
-        val currentVolume = tradeData[0].tradeVolume!!
+        val currentPrice = tradeInfoData.tradePrice!!
+        val currentVolume = tradeInfoData.tradeVolume!!
 
         val tradeItem = TradeItem(tradeInfoData)
 
-        if (!tradeItemSet.contains(tradeData[0].marketId) &&
+        if (!tradeItemSet.contains(tradeInfoData.marketId) &&
             currentPrice > Utils.convertPrice(avgTradePrice + (UNIT_TRADE_BUY_DEVIATION * deviationPrice))
             && currentVolume > (avgTradeVolume + (UNIT_TRADE_BUY_DEVIATION * deviationVolume))
         ) {
             Log.d(TAG, "analysisTradeInfoData(add) - " +
-                    "marektId: ${tradeData[0].marketId} " +
+                    "marektId: ${tradeInfoData.marketId} " +
                     "askBidRate: ${Utils.Format.percentFormat.format(bidCount.div(askCount))} " +
                     "count: ${tradeData.size}")
 
@@ -407,17 +407,17 @@ class TradeService : LifecycleService() {
             tradeItem.buyPrice = currentPrice
             tradeItem.remainingVolume = 0.0
             viewModel.addTradeInfo.postValue(tradeItem)
-            tradeItemSet.add(tradeData[0].marketId!!)
-        } else if (tradeItemSet.contains(tradeData[0].marketId) &&
+            tradeItemSet.add(tradeInfoData.marketId!!)
+        } else if (tradeItemSet.contains(tradeInfoData.marketId) &&
             currentPrice < Utils.convertPrice(avgTradePrice - (UNIT_TRADE_CANCEL_DEVIATION * deviationPrice))) {
             Log.d(TAG, "analysisTradeInfoData(remove) - " +
-                    "marektId: ${tradeData[0].marketId} " +
+                    "marektId: ${tradeInfoData.marketId} " +
                     "askBidRate: ${Utils.Format.percentFormat.format(bidCount.div(askCount))} " +
                     "count: ${tradeData.size}")
 
             tradeItem.status = "CANCEL"
-            viewModel.removeTradeInfo.postValue(tradeData[0].marketId)
-            tradeItemSet.remove(tradeData[0].marketId!!)
+            viewModel.removeTradeInfo.postValue(tradeInfoData.marketId)
+            tradeItemSet.remove(tradeInfoData.marketId!!)
         }
         viewModel.updateTradeInfoData.postValue(tradeInfoData)
         return tradeInfoData

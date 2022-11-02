@@ -13,6 +13,7 @@ import com.example.upbittrade.data.PostOrderItem
 import com.example.upbittrade.database.TradeInfoData
 import com.example.upbittrade.adapter.MonitorItem
 import com.example.upbittrade.adapter.TradeItem
+import com.example.upbittrade.database.MinCandleInfoData
 import java.util.*
 
 class TradeViewModel(application: Application): AndroidViewModel(application) {
@@ -33,6 +34,7 @@ class TradeViewModel(application: Application): AndroidViewModel(application) {
     val searchMinCandleInfo = MutableLiveData<ExtendCandleItem>()
     val addMonitorItem = MutableLiveData<MonitorItem>()
     val removeMonitorItem = MutableLiveData<String>()
+    val updateMonitorItem = MutableLiveData<MinCandleInfoData>()
 
     val searchTradeInfo = MutableLiveData<CandleItem>()
     val addTradeInfo = MutableLiveData<TradeItem>()

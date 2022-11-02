@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
+import com.example.upbittrade.database.MinCandleInfoData
 import com.example.upbittrade.database.TradeInfoData
 import com.example.upbittrade.model.MarketInfo
 import com.example.upbittrade.utils.Utils
@@ -39,6 +40,16 @@ class MonitorListAdapter: RecyclerView.Adapter<MonitorListAdapter.MonitorViewHol
             monitorMap[marketId]?.prevClosingPrice = tradeInfoData.prevClosingPrice
             monitorMap[marketId]?.changePrice = tradeInfoData.changePrice
             monitorMap[marketId]?.askBidRate = 0f
+            notifyDataSetChanged()
+        }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateItem(minCandleInfoData: MinCandleInfoData) {
+        val marketId = minCandleInfoData.marketId
+        if (monitorMap.containsKey(marketId)) {
+            monitorMap[marketId]?.tradePrice = minCandleInfoData.tradePrice
+            monitorMap[marketId]?.timestamp = minCandleInfoData.timestamp
             notifyDataSetChanged()
         }
     }
