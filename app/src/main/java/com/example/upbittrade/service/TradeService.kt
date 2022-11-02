@@ -371,17 +371,17 @@ class TradeService : LifecycleService() {
         val avgTradeVolume = sumTradeVolume / tradeData.size
         val deviationVolume = sqrt((sumTradeVolumePow / (tradeData.size)) - avgTradeVolume.pow(2))
 
-        var askCount = 0
-        var bidCount = 0
+        var askCount = 0f
+        var bidCount = 0f
         tradeData.forEach {
             if ("ask".equals(it.askBid, ignoreCase = true)) {
-                askCount++
+                askCount += 1f
             } else {
-                bidCount++
+                bidCount += 1f
             }
         }
 
-        if (askCount == 0) askCount = Integer.MAX_VALUE
+        if (askCount == 0f) askCount = Float.MAX_VALUE
 
         val tradeInfoData = tradeData[0]
 
@@ -393,25 +393,26 @@ class TradeService : LifecycleService() {
         val currentVolume = tradeData[0].tradeVolume!!
 
         val tradeItem = TradeItem(tradeInfoData)
-        tradeItem.buyPrice = currentPrice
-        tradeItem.remainingVolume = 0.0
 
-        if (currentPrice > Utils.convertPrice(avgTradePrice + (UNIT_TRADE_BUY_DEVIATION * deviationPrice))
+        if (!tradeItemSet.contains(tradeData[0].marketId) &&
+            currentPrice > Utils.convertPrice(avgTradePrice + (UNIT_TRADE_BUY_DEVIATION * deviationPrice))
             && currentVolume > (avgTradeVolume + (UNIT_TRADE_BUY_DEVIATION * deviationVolume))
         ) {
             Log.d(TAG, "analysisTradeInfoData(add) - " +
                     "marektId: ${tradeData[0].marketId} " +
-                    "askBidRate: ${(bidCount.div(askCount))} " +
+                    "askBidRate: ${Utils.Format.percentFormat.format(bidCount.div(askCount))} " +
                     "count: ${tradeData.size}")
 
             tradeItem.status = "BUY"
+            tradeItem.buyPrice = currentPrice
+            tradeItem.remainingVolume = 0.0
             viewModel.addTradeInfo.postValue(tradeItem)
             tradeItemSet.add(tradeData[0].marketId!!)
         } else if (tradeItemSet.contains(tradeData[0].marketId) &&
             currentPrice < Utils.convertPrice(avgTradePrice - (UNIT_TRADE_CANCEL_DEVIATION * deviationPrice))) {
             Log.d(TAG, "analysisTradeInfoData(remove) - " +
                     "marektId: ${tradeData[0].marketId} " +
-                    "askBidRate: ${(bidCount.div(askCount))} " +
+                    "askBidRate: ${Utils.Format.percentFormat.format(bidCount.div(askCount))} " +
                     "count: ${tradeData.size}")
 
             tradeItem.status = "CANCEL"
