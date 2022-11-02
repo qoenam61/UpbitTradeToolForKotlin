@@ -38,16 +38,15 @@ class TradeService : LifecycleService() {
     private lateinit var bindService: TradePagerActivity.BindServiceCallBack
 
     private val UNIT_REMAINING_TIME_OFFSET = 60L
-    private val UNIT_PERIODIC_GAP = 60L
-    private val UNIT_TRADE_INFO_COUNT = 200
+
     private val UNIT_MIN_CANDLE = 3
     private val UNIT_MIN_CANDLE_COUNT = 200
     private val UNIT_MIN_CANDLE_PERIOD = UNIT_MIN_CANDLE * UNIT_MIN_CANDLE_COUNT
-
-    private val UNIT_TRADE_PERIOD = UNIT_MIN_CANDLE * 5
-
     private val UNIT_MONITORING_BUY_DEVIATION = 3
     private val UNIT_MONITORING_SELL_DEVIATION = 1
+
+    private val UNIT_TRADE_INFO_COUNT = 200
+    private val UNIT_TRADE_PERIOD = UNIT_MIN_CANDLE * 5
     private val UNIT_TRADE_BUY_DEVIATION = 3
     private val UNIT_TRADE_CANCEL_DEVIATION = 1
 
@@ -59,8 +58,6 @@ class TradeService : LifecycleService() {
 
     companion object {
         const val TAG = "TradeService"
-        var ACCESS_KEY : String? = null
-        var SECRET_KEY : String? = null
     }
 
     override fun onBind(intent: Intent?): IBinder {
@@ -286,8 +283,6 @@ class TradeService : LifecycleService() {
         Log.d(TAG, "makeMarketMapInfo: ")
         val marketMapInfo = bindService.tradeViewModel.repository.marketMapInfo
         marketMapInfo.clear()
-        val extTaskItemList = ArrayList<TaskItem>()
-        val taskItemList = ArrayList<TaskItem>()
         val iterator = marketsInfo.iterator()
         while (iterator.hasNext()) {
             val marketInfo: MarketInfo = iterator.next()
