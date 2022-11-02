@@ -29,16 +29,20 @@ class TradeViewModel(application: Application): AndroidViewModel(application) {
 
     val searchMarketsInfo = MutableLiveData<Boolean>()
     val searchMarketsMapInfo = MutableLiveData<HashMap<String, MarketInfo>>()
-    val searchAccountsInfo = MutableLiveData<Boolean>()
+
     val searchMinCandleInfo = MutableLiveData<ExtendCandleItem>()
     val addMonitorItem = MutableLiveData<MonitorItem>()
     val removeMonitorItem = MutableLiveData<String>()
+
+    val searchTradeInfo = MutableLiveData<CandleItem>()
+    val addTradeInfo = MutableLiveData<TradeItem>()
+    val removeTradeInfo = MutableLiveData<String>()
+    val updateTradeInfoData = MutableLiveData<TradeInfoData>()
+
+    val searchAccountsInfo = MutableLiveData<Boolean>()
     val searchDayCandleInfo = MutableLiveData<ExtendCandleItem>()
     val searchWeekCandleInfo = MutableLiveData<CandleItem>()
     val searchMonthCandleInfo = MutableLiveData<CandleItem>()
-    val searchTradeInfo = MutableLiveData<CandleItem>()
-    val addTradeInfo = MutableLiveData<TradeItem>()
-    val updateTradeInfoData = MutableLiveData<TradeInfoData>()
     val searchTickerInfo = MutableLiveData<String>()
     val postOrderInfo = MutableLiveData<PostOrderItem>()
     val searchOrderInfo = MutableLiveData<UUID>()

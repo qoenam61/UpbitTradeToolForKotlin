@@ -4,6 +4,11 @@ import com.example.upbittrade.database.TradeInfoData
 
 class TradeItem: TradeInfoData {
 
+    var status = "READY"
+    var buyPrice: Double? = null
+    var sellPrice: Double? = null
+    var remainingVolume: Double? = null
+
     constructor(
         tradeInfoData: TradeInfoData
     ) : super(

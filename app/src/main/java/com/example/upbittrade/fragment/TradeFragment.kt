@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
 import com.example.upbittrade.adapter.MonitorListAdapter
+import com.example.upbittrade.adapter.TradeItem
 import com.example.upbittrade.adapter.TradeListAdapter
 import com.example.upbittrade.model.ResponseOrder
 import com.example.upbittrade.model.TradeViewModel
@@ -71,12 +72,20 @@ class TradeFragment: Fragment() {
                 minCandlesInfo -> monitorListAdapter.setItem(minCandlesInfo)
         }
 
-        viewModel.addTradeInfo.observe(viewCycleOwner) {
-            tradeInfo -> tradeListAdapter.setItem(tradeInfo)
-        }
-
         viewModel.removeMonitorItem.observe(viewCycleOwner) {
                 marketId -> monitorListAdapter.removeItem(marketId)
+        }
+
+        viewModel.addTradeInfo.observe(viewCycleOwner) {
+            tradeInfo ->
+            tradeListAdapter.setItem(tradeInfo)
+            buyOrder(tradeInfo)
+        }
+
+        viewModel.removeTradeInfo.observe(viewCycleOwner) {
+                marketId ->
+//            tradeListAdapter.removeItem(marketId)
+            cancelOrder(marketId)
         }
 
         viewModel.updateTradeInfoData.observe(viewCycleOwner) {
@@ -104,6 +113,15 @@ class TradeFragment: Fragment() {
                 responseOrder ->
             checkOrderInfo(responseOrder)
         }
+    }
+
+    private fun buyOrder(tradeInfo: TradeItem?) {
+//        TODO("Not yet implemented")
+    }
+
+    private fun cancelOrder(marketId: String?) {
+//        TODO("Not yet implemented")
+
     }
 
     @SuppressLint("SimpleDateFormat")

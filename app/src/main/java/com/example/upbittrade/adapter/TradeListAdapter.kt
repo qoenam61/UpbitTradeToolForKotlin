@@ -43,6 +43,12 @@ class TradeListAdapter: RecyclerView.Adapter<TradeListAdapter.TradeListViewHolde
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    fun removeItem(marketId: String) {
+        tradeList.remove(marketId)
+        tradeMap.remove(marketId)
+        notifyDataSetChanged()
+    }
 
     inner class TradeListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var marketId: TextView
@@ -73,10 +79,10 @@ class TradeListAdapter: RecyclerView.Adapter<TradeListAdapter.TradeListViewHolde
             marketId.text = marketsMapInfo[key]?.koreanName
 
             with(tradeItem) {
+                tradeStatus.text = this?.status
                 tradePrice.text = getZeroFormatString(this?.tradePrice)
-                if (this?.prevClosingPrice != null) {
-                    tradeProfitRate.text = Utils.Format.percentFormat.format((this.tradePrice!! - this.prevClosingPrice!!).div( this.tradePrice!!))
-                }
+                tradeProfitRate.text = Utils.Format.percentFormat.format((this?.tradePrice!! - this.buyPrice!!).div( this.buyPrice!!))
+                tradeBidPrice.text = getZeroFormatString(this.buyPrice!!)
             }
         }
     }
