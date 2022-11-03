@@ -289,6 +289,15 @@ class TradeService : LifecycleService() {
             }
         }
 
+        viewModel.addMonitorItem.observe(this) {
+            monitorItem ->
+        }
+
+        viewModel.removeMonitorItem.observe(this) {
+            marketId ->
+
+        }
+
         viewModel.addTradeInfo.observe(this) {
                 tradeInfo ->
             buyOrder(tradeInfo)
