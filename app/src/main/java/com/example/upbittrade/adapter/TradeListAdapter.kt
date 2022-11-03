@@ -93,7 +93,7 @@ class TradeListAdapter(val viewModel: TradeViewModel) : RecyclerView.Adapter<Tra
             marketId.text = marketsMapInfo[key]?.koreanName
 
             with(tradeItem) {
-                tradeStatus.text = this?.status
+                tradeStatus.text = this?.state?.name
                 tradePrice.text = getZeroFormatString(this?.tradePrice)
                 tradeProfitRate.text = Utils.Format.percentFormat.format((this?.tradePrice!! - this.buyPrice!!).div( this.buyPrice!!))
                 tradeBidPrice.text = getZeroFormatString(this.buyPrice!!)

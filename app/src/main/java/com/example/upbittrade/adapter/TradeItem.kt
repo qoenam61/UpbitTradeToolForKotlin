@@ -1,10 +1,11 @@
 package com.example.upbittrade.adapter
 
 import com.example.upbittrade.database.TradeInfoData
+import com.example.upbittrade.service.TradeService
 
 class TradeItem: TradeInfoData {
 
-    var status = "READY"
+    var state: TradeService.State = TradeService.State.READY
     var buyPrice: Double? = null
     var sellPrice: Double? = null
     var remainingVolume: Double? = null

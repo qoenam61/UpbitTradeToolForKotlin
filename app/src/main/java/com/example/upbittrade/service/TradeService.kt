@@ -14,7 +14,6 @@ import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
 import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
-import com.example.upbittrade.data.TaskItem
 import com.example.upbittrade.data.MonitorItemSet
 import com.example.upbittrade.database.MinCandleInfoData
 import com.example.upbittrade.database.TradeInfoData
@@ -60,6 +59,13 @@ class TradeService : LifecycleService() {
 
     private lateinit var monitorItemSet: MonitorItemSet
     private var mutexTradeInfoCandle: Mutex? = null
+
+    enum class State {
+        READY,
+        BUY,
+        SELL,
+        CANCEL
+    }
 
     companion object {
         const val TAG = "TradeService"
@@ -418,20 +424,20 @@ class TradeService : LifecycleService() {
                     "askBidRate: ${Utils.Format.percentFormat.format(bidCount.div(askCount))} " +
                     "count: ${tradeData.size}")
 
-            tradeItem.status = "BUY"
+            tradeItem.state = State.READY
             tradeItem.buyPrice = avgTradePrice
             tradeItem.remainingVolume = 0.0
             tradeListInfo.add(tradeInfoData.marketId!!)
             tradeMapInfo[tradeInfoData.marketId!!] = tradeItem
             viewModel.addTradeInfo.postValue(tradeItem)
-        } else if (tradeMapInfo.contains(tradeInfoData.marketId) &&
+        } else if (tradeItem.state == State.READY && tradeMapInfo.contains(tradeInfoData.marketId) &&
             currentPrice < Utils.convertPrice(avgTradePrice - (UNIT_TRADE_CANCEL_DEVIATION * deviationPrice))) {
             Log.d(TAG, "analysisTradeInfoData(remove) - " +
                     "marektId: ${tradeInfoData.marketId} " +
                     "askBidRate: ${Utils.Format.percentFormat.format(bidCount.div(askCount))} " +
                     "count: ${tradeData.size}")
 
-            tradeItem.status = "CANCEL"
+            tradeItem.state = State.CANCEL
             tradeListInfo.remove(tradeInfoData.marketId!!)
             tradeMapInfo.remove(tradeInfoData.marketId!!)
             viewModel.removeTradeInfo.postValue(tradeInfoData.marketId)
