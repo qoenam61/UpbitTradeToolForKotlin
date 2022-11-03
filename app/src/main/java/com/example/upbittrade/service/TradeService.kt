@@ -302,6 +302,7 @@ class TradeService : LifecycleService() {
 
         viewModel.removeMonitorItem.observe(this) {
             marketId ->
+            Log.d(TAG, "removeMonitorItem: $marketId")
 
             when (tradeMapInfo[marketId]?.state) {
                 State.READY -> {
@@ -342,6 +343,7 @@ class TradeService : LifecycleService() {
 
         viewModel.removeTradeInfo.observe(this) {
                 marketId ->
+            Log.d(TAG, "removeTradeInfo: $marketId")
 
             when (tradeMapInfo[marketId]?.state) {
                 State.READY -> {
@@ -377,6 +379,8 @@ class TradeService : LifecycleService() {
 
         viewModel.resultPostOrderInfo.observe(this) {
             responseOrder ->
+            Log.d(TAG, "resultPostOrderInfo: $responseOrder")
+
             val marketId = responseOrder.marketId
             val uuid = responseOrder.uuid
             val side = responseOrder.side
@@ -389,6 +393,7 @@ class TradeService : LifecycleService() {
                     when (state) {
                         "wait" -> {
                             tradeMapInfo[marketId]?.state = State.BUYING
+                            viewModel.searchOrderInfo.value = UUID.fromString(uuid)
                         }
                         "done" -> {
                             tradeMapInfo[marketId]?.state = State.BUY
@@ -406,10 +411,13 @@ class TradeService : LifecycleService() {
                     }
                 }
             }
+            viewModel.updateTradeInfoData.value = tradeMapInfo[marketId]
         }
 
         viewModel.resultDeleteOrderInfo.observe(this) {
             responseOrder ->
+            Log.d(TAG, "resultDeleteOrderInfo: $responseOrder")
+
             val marketId = responseOrder.marketId
             val uuid = responseOrder.uuid
             val side = responseOrder.side
@@ -418,6 +426,7 @@ class TradeService : LifecycleService() {
             when (state) {
                 "wait" -> {
                     tradeMapInfo[marketId]?.state = State.CANCELLING
+                    viewModel.searchOrderInfo.value = UUID.fromString(uuid)
                 }
                 "done" -> {
                     tradeMapInfo[marketId]?.state = State.CANCEL
@@ -430,11 +439,54 @@ class TradeService : LifecycleService() {
                     tradeMapInfo.remove(marketId)
                 }
             }
+        }
 
+        viewModel.resultSearchOrderInfo.observe(this) {
+            responseOrder ->
+            Log.d(TAG, "resultSearchOrderInfo: $responseOrder")
+            val marketId = responseOrder.marketId
+            val uuid = responseOrder.uuid
+            val side = responseOrder.side
+            val state = responseOrder.state
+
+            when (side) {
+                "bid" -> {
+                    when (state) {
+                        "wait" -> {
+                            viewModel.searchOrderInfo.value = UUID.fromString(uuid)
+                        }
+                        "done" -> {
+                            tradeMapInfo[marketId]?.state = State.BUY
+                        }
+                    }
+                }
+                "ask" -> {
+                    when (state) {
+                        "wait" -> {
+                            viewModel.searchOrderInfo.value = UUID.fromString(uuid)
+                        }
+                        "done" -> {
+                            tradeMapInfo[marketId]?.state = State.SELL
+                        }
+                    }
+                }
+                "cancel" -> {
+                    when (state) {
+                        "wait" -> {
+                            viewModel.searchOrderInfo.value = UUID.fromString(uuid)
+                        }
+                        "done" -> {
+                            tradeMapInfo[marketId]?.state = State.CANCEL
+                        }
+                    }
+                }
+            }
+            viewModel.updateTradeInfoData.value = tradeMapInfo[marketId]
         }
 
         viewModel.errorResponse.observe(this) {
                 jObjError ->
+            Log.d(TAG, "observeLiveData: $jObjError")
 
             val marketId = jObjError.get("marketId")
             val errorCode = jObjError.get("errorCode")
@@ -571,7 +623,7 @@ class TradeService : LifecycleService() {
 
         val tradeInfoData = tradeData[0]
 
-        tradeInfoData.tradeVolume = avgTradePrice
+        tradeInfoData.tradeVolume = avgTradeVolume
         tradeInfoData.askBid = Utils.Format.percentFormat.format(bidCount.div(askCount))
 
         val viewModel = bindService.tradeViewModel
@@ -590,10 +642,10 @@ class TradeService : LifecycleService() {
                     "count: ${tradeData.size}")
 
 
-            val volume = (priceToBuy / avgTradePrice)
+            val volume = (priceToBuy / Utils.convertPrice(avgTradePrice))
 
             tradeItem.state = State.READY
-            tradeItem.buyPrice = avgTradePrice
+            tradeItem.buyPrice = Utils.convertPrice(avgTradePrice)
             tradeItem.volume = volume
             tradeListInfo.add(tradeItem.marketId!!)
             tradeMapInfo[tradeItem.marketId!!] = tradeItem
