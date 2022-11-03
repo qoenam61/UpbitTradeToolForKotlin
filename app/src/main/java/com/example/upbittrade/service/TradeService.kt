@@ -455,10 +455,11 @@ class TradeService : LifecycleService() {
 
     private fun buyOrder(tradeInfo: TradeItem?) {
 //        TODO("Not yet implemented")
+        Log.d(TAG, "buyOrder - marketId: ${tradeInfo?.marketId}")
     }
 
     private fun cancelOrder(marketId: String?) {
 //        TODO("Not yet implemented")
-
+        Log.d(TAG, "cancelOrder - marketId: $marketId")
     }
 }

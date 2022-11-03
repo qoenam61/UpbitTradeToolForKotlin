@@ -1,7 +1,9 @@
 package com.example.upbittrade.utils
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Color
+import android.widget.Toast
 import com.example.upbittrade.fragment.TradeFragment
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -208,6 +210,10 @@ class Utils {
                     Format.nonZeroFormat.format(value)
                 }
             }
+        }
+
+        fun showToast(context: Context, message: String) {
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
 

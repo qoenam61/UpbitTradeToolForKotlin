@@ -1,14 +1,16 @@
 package com.example.upbittrade.api
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.upbittrade.model.APIKey
+import com.example.upbittrade.utils.Utils
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class UpbitFetcher() {
+class UpbitFetcher(val context: Context) {
     companion object {
         const val TAG = "UpbitFetcher"
     }
@@ -38,11 +40,14 @@ class UpbitFetcher() {
 
                 if (response.isSuccessful) {
                     result.value = response.body() as List<APIKey>
+                } else {
+                    Utils.showToast(context, "Fail to login")
                 }
             }
 
             override fun onFailure(p0: Call<List<APIKey?>?>, p1: Throwable) {
                 Log.e(TAG, "onFailure: ", p1)
+                Utils.showToast(context, "onFailure to login")
             }
         })
         return result

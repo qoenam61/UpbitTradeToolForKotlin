@@ -27,7 +27,7 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        viewModel = ViewModelProvider(this).get(DefaultViewModel::class.java)
+        viewModel = ViewModelProvider(this)[DefaultViewModel::class.java]
 
         val preferenceUtil = PreferenceUtil(this)
         ACCESS_KEY = preferenceUtil.getString(PreferenceUtil.ACCESS_KEY, "")
