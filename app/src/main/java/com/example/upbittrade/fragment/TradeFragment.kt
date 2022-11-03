@@ -3,6 +3,7 @@ package com.example.upbittrade.fragment
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -44,6 +45,7 @@ class TradeFragment: Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_trade, container, false)
 
+        Log.d(TAG, "onCreateView: ")
         monitorListAdapter = MonitorListAdapter(mainActivity.viewModel)
         val monitorList = view.findViewById<RecyclerView>(R.id.monitor_list_view)
         monitorList!!.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
@@ -58,6 +60,7 @@ class TradeFragment: Fragment() {
         return view
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onStart() {
         super.onStart()
 //        Log.i(TAG, "onStart: ")
@@ -66,6 +69,20 @@ class TradeFragment: Fragment() {
                 marketsInfo ->
             monitorListAdapter.marketsMapInfo = marketsInfo
             tradeListAdapter.marketsMapInfo = marketsInfo
+
+            mainActivity.viewModel.monitorMap?.let { monitorListAdapter.monitorMap.putAll(it) }
+            mainActivity.viewModel.monitorList?.let {
+                monitorListAdapter.monitorList.clear()
+                monitorListAdapter.monitorList.addAll(it)
+            }
+            monitorListAdapter.notifyDataSetChanged()
+
+            mainActivity.viewModel.tradeMap?.let { tradeListAdapter.tradeMap.putAll(it) }
+            mainActivity.viewModel.tradeList?.let {
+                tradeListAdapter.tradeList.clear()
+                tradeListAdapter.tradeList.addAll(it)
+            }
+            tradeListAdapter.notifyDataSetChanged()
         }
 
         viewModel.addMonitorItem.observe(viewCycleOwner) {
@@ -85,13 +102,11 @@ class TradeFragment: Fragment() {
         viewModel.addTradeInfo.observe(viewCycleOwner) {
             tradeInfo ->
             tradeListAdapter.setItem(tradeInfo)
-            buyOrder(tradeInfo)
         }
 
         viewModel.removeTradeInfo.observe(viewCycleOwner) {
                 marketId ->
 //            tradeListAdapter.removeItem(marketId)
-            cancelOrder(marketId)
         }
 
         viewModel.updateTradeInfoData.observe(viewCycleOwner) {
@@ -119,15 +134,6 @@ class TradeFragment: Fragment() {
                 responseOrder ->
             checkOrderInfo(responseOrder)
         }
-    }
-
-    private fun buyOrder(tradeInfo: TradeItem?) {
-//        TODO("Not yet implemented")
-    }
-
-    private fun cancelOrder(marketId: String?) {
-//        TODO("Not yet implemented")
-
     }
 
     @SuppressLint("SimpleDateFormat")

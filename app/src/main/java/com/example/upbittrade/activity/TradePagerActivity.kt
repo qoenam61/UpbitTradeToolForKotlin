@@ -90,10 +90,12 @@ class TradePagerActivity : FragmentActivity() {
                 val serv = service as TradeService.TradeServiceBinder
                 tradeService = serv.getService()
                 tradeService.setRegisterCallBack(bindService)
-                viewModel.monitorMap.putAll(serv.monitorMap)
-                viewModel.monitorList = ArrayList(viewModel.monitorMap.keys)
-                viewModel.tradeMap.putAll(serv.tradeMap)
-                viewModel.tradeList = ArrayList(viewModel.tradeMap.keys)
+
+                viewModel.monitorMap = tradeService.monitorMapInfo
+                viewModel.monitorList = tradeService.monitorListInfo
+
+                viewModel.tradeMap = tradeService.tradeMapInfo
+                viewModel.tradeList = tradeService.tradeListInfo
             }
 
             override fun onServiceDisconnected(name: ComponentName?) {

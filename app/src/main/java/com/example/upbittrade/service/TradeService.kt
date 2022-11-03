@@ -45,18 +45,20 @@ class TradeService : LifecycleService() {
     private val UNIT_MIN_CANDLE = 3
     private val UNIT_MIN_CANDLE_COUNT = 200
     private val UNIT_MIN_CANDLE_PERIOD = UNIT_MIN_CANDLE * UNIT_MIN_CANDLE_COUNT
-    private val UNIT_MONITORING_BUY_DEVIATION = 3
+    private val UNIT_MONITORING_BUY_DEVIATION = 2
     private val UNIT_MONITORING_SELL_DEVIATION = 1
 
     private val UNIT_TRADE_INFO_COUNT = 200
     private val UNIT_TRADE_PERIOD = UNIT_MIN_CANDLE * 5
-    private val UNIT_TRADE_BUY_DEVIATION = 3
+    private val UNIT_TRADE_BUY_DEVIATION = 2
     private val UNIT_TRADE_CANCEL_DEVIATION = 1
 
-
+    val tradeMapInfo = HashMap<String, TradeItem>()
+    val tradeListInfo = ArrayList<String>()
+    val monitorMapInfo = HashMap<String, MonitorItem>()
+    val monitorListInfo = ArrayList<String>()
 
     private lateinit var monitorItemSet: MonitorItemSet
-    private val tradeItemSet = HashSet<String>()
     private var mutexTradeInfoCandle: Mutex? = null
 
     companion object {
@@ -123,12 +125,6 @@ class TradeService : LifecycleService() {
     }
 
     inner class TradeServiceBinder : Binder() {
-        val tradeMap = HashMap<String, TradeItem>()
-        val tradeList = ArrayList<String>()
-        val monitorMap = HashMap<String, MonitorItem>()
-        val monitorList = ArrayList<String>()
-        val marketsMapInfo = HashMap<String, MarketInfo>()
-
         fun getService() : TradeService {
             return this@TradeService
         }
@@ -286,6 +282,16 @@ class TradeService : LifecycleService() {
                 mutexTradeInfoCandle?.unlock()
             }
         }
+
+        viewModel.addTradeInfo.observe(this) {
+                tradeInfo ->
+            buyOrder(tradeInfo)
+        }
+
+        viewModel.removeTradeInfo.observe(this) {
+                marketId ->
+            cancelOrder(marketId)
+        }
     }
 
     private fun makeMarketMapInfo(marketsInfo: List<MarketInfo>) {
@@ -343,8 +349,11 @@ class TradeService : LifecycleService() {
                         "total: ${Utils.Format.zeroFormat2.format(totalPrice)} " +
                         "count: ${candleData.size} "
             )
-            viewModel.addMonitorItem.postValue(MonitorItem(candleInfoData))
+            val monitorItem = MonitorItem(candleInfoData)
             monitorItemSet.add(candleInfoData.marketId!!)
+            monitorListInfo.add(candleInfoData.marketId!!)
+            monitorMapInfo[candleInfoData.marketId!!] = monitorItem
+            viewModel.addMonitorItem.postValue(monitorItem)
         } else if (monitorItemSet.contains(candleInfoData.marketId!!)
             && currentPrice < Utils.convertPrice(avgPrice - (UNIT_MONITORING_SELL_DEVIATION * priceDeviation))) {
             Log.d(
@@ -357,8 +366,10 @@ class TradeService : LifecycleService() {
                         "total: ${Utils.Format.zeroFormat2.format(totalPrice)} " +
                         "count: ${candleData.size} "
             )
-            viewModel.removeMonitorItem.postValue(candleInfoData.marketId)
             monitorItemSet.remove(candleInfoData.marketId!!)
+            monitorListInfo.remove(candleInfoData.marketId!!)
+            monitorMapInfo.remove(candleInfoData.marketId!!)
+            viewModel.removeMonitorItem.postValue(candleInfoData.marketId)
         }
         viewModel.updateMonitorItem.postValue(candleInfoData)
         return 0f
@@ -398,7 +409,7 @@ class TradeService : LifecycleService() {
 
         val tradeItem = TradeItem(tradeInfoData)
 
-        if (!tradeItemSet.contains(tradeInfoData.marketId) &&
+        if (!tradeMapInfo.contains(tradeInfoData.marketId) &&
             currentPrice > Utils.convertPrice(avgTradePrice + (UNIT_TRADE_BUY_DEVIATION * deviationPrice))
             && currentVolume > (avgTradeVolume + (UNIT_TRADE_BUY_DEVIATION * deviationVolume))
         ) {
@@ -408,11 +419,12 @@ class TradeService : LifecycleService() {
                     "count: ${tradeData.size}")
 
             tradeItem.status = "BUY"
-            tradeItem.buyPrice = currentPrice
+            tradeItem.buyPrice = avgTradePrice
             tradeItem.remainingVolume = 0.0
+            tradeListInfo.add(tradeInfoData.marketId!!)
+            tradeMapInfo[tradeInfoData.marketId!!] = tradeItem
             viewModel.addTradeInfo.postValue(tradeItem)
-            tradeItemSet.add(tradeInfoData.marketId!!)
-        } else if (tradeItemSet.contains(tradeInfoData.marketId) &&
+        } else if (tradeMapInfo.contains(tradeInfoData.marketId) &&
             currentPrice < Utils.convertPrice(avgTradePrice - (UNIT_TRADE_CANCEL_DEVIATION * deviationPrice))) {
             Log.d(TAG, "analysisTradeInfoData(remove) - " +
                     "marektId: ${tradeInfoData.marketId} " +
@@ -420,8 +432,9 @@ class TradeService : LifecycleService() {
                     "count: ${tradeData.size}")
 
             tradeItem.status = "CANCEL"
+            tradeListInfo.remove(tradeInfoData.marketId!!)
+            tradeMapInfo.remove(tradeInfoData.marketId!!)
             viewModel.removeTradeInfo.postValue(tradeInfoData.marketId)
-            tradeItemSet.remove(tradeInfoData.marketId!!)
         }
         viewModel.updateTradeInfoData.postValue(tradeInfoData)
         return tradeInfoData
@@ -432,5 +445,14 @@ class TradeService : LifecycleService() {
 
         val pref = PreferenceUtil(this)
         pref.setBoolean(PreferenceUtil.SUCCESS_LOGIN, false)
+    }
+
+    private fun buyOrder(tradeInfo: TradeItem?) {
+//        TODO("Not yet implemented")
+    }
+
+    private fun cancelOrder(marketId: String?) {
+//        TODO("Not yet implemented")
+
     }
 }

@@ -12,13 +12,15 @@ import com.example.upbittrade.database.TradeInfoData
 import com.example.upbittrade.model.MarketInfo
 import com.example.upbittrade.model.TradeViewModel
 import com.example.upbittrade.utils.Utils
+import java.util.ArrayList
+import java.util.HashMap
 import kotlin.math.abs
 
 class TradeListAdapter(val viewModel: TradeViewModel) : RecyclerView.Adapter<TradeListAdapter.TradeListViewHolder>() {
 
-    private var tradeMap = viewModel.tradeMap
-    private val tradeList = viewModel.tradeList
-    var marketsMapInfo = viewModel.marketsMapInfo
+    var tradeMap = HashMap<String, TradeItem>()
+    var tradeList = ArrayList<String>()
+    var marketsMapInfo = HashMap<String, MarketInfo>()
 
 
     @SuppressLint("NotifyDataSetChanged")
