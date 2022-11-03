@@ -14,6 +14,7 @@ import com.example.upbittrade.database.TradeInfoData
 import com.example.upbittrade.adapter.MonitorItem
 import com.example.upbittrade.adapter.TradeItem
 import com.example.upbittrade.database.MinCandleInfoData
+import org.json.JSONObject
 import java.util.*
 
 class TradeViewModel(application: Application): AndroidViewModel(application) {
@@ -23,7 +24,7 @@ class TradeViewModel(application: Application): AndroidViewModel(application) {
     var monitorMap: HashMap<String, MonitorItem>? = null
     var monitorList: ArrayList<String>? = null
 
-    private val upbitFetcher: TradeFetcher = TradeFetcher()
+    private val upbitFetcher: TradeFetcher = TradeFetcher(this)
 
     val repository : Repository = Repository(application)
 
@@ -33,6 +34,7 @@ class TradeViewModel(application: Application): AndroidViewModel(application) {
             TradePagerActivity.SECRET_KEY.toString())
     }
 
+    val errorResponse = MutableLiveData<JSONObject>()
     val searchMarketsInfo = MutableLiveData<Boolean>()
     val searchMarketsMapInfo = MutableLiveData<HashMap<String, MarketInfo>>()
 

@@ -15,7 +15,7 @@ import retrofit2.Response
 import java.util.*
 import kotlin.collections.ArrayList
 
-class TradeFetcher {
+class TradeFetcher(val viewModel: TradeViewModel) {
     companion object {
         const val TAG = "TradeFetcher"
     }
@@ -259,6 +259,11 @@ class TradeFetcher {
                     val jObjError = JSONObject(
                         response.errorBody()!!.string()
                     )
+                    jObjError.put("marketId", marketId)
+                    jObjError.put("errorCode", response.code())
+                    jObjError.put("uuid", identifier)
+                    viewModel.errorResponse.value = jObjError
+
                     Log.w(TAG,"postOrderInfo"
                                 + " call: " + call.request()
                                 + " code: " + response.code()

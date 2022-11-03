@@ -21,15 +21,16 @@ import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.model.MarketInfo
 import com.example.upbittrade.adapter.MonitorItem
 import com.example.upbittrade.adapter.TradeItem
+import com.example.upbittrade.data.PostOrderItem
 import com.example.upbittrade.utils.PreferenceUtil
 import com.example.upbittrade.utils.Utils
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.json.JSONObject
 import java.sql.Timestamp
-import java.util.ArrayList
-import java.util.Calendar
-import java.util.HashMap
+import java.util.*
+import kotlin.collections.HashSet
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -52,6 +53,8 @@ class TradeService : LifecycleService() {
     private val UNIT_TRADE_BUY_DEVIATION = 2
     private val UNIT_TRADE_CANCEL_DEVIATION = 1
 
+    private val priceToBuy = 10000
+
     val tradeMapInfo = HashMap<String, TradeItem>()
     val tradeListInfo = ArrayList<String>()
     val monitorMapInfo = HashMap<String, MonitorItem>()
@@ -62,9 +65,13 @@ class TradeService : LifecycleService() {
 
     enum class State {
         READY,
+        BUYING,
         BUY,
+        SELLING,
         SELL,
-        CANCEL
+        CANCELLING,
+        CANCEL,
+        STOP
     }
 
     companion object {
@@ -296,16 +303,167 @@ class TradeService : LifecycleService() {
         viewModel.removeMonitorItem.observe(this) {
             marketId ->
 
+            when (tradeMapInfo[marketId]?.state) {
+                State.READY -> {
+                    //TODO()
+                }
+                State.BUYING -> {
+                    //TODO()
+                    cancelOrder(marketId)
+                }
+                State.BUY -> {
+                    //TODO()
+                    sellOrder(marketId)
+                }
+                State.SELLING -> {
+                    //TODO()
+                    cancelOrder(marketId)
+                }
+                State.SELL -> {
+                    //TODO()
+                }
+                State.CANCEL -> {
+                    //TODO()
+                }
+                State.CANCELLING -> {
+                    //TODO()
+                }
+
+                else -> {
+                    //TODO()
+                }
+            }
         }
 
         viewModel.addTradeInfo.observe(this) {
-                tradeInfo ->
-            buyOrder(tradeInfo)
+                tradeItem ->
+            buyOrder(tradeItem?.marketId!!)
         }
 
         viewModel.removeTradeInfo.observe(this) {
                 marketId ->
-            cancelOrder(marketId)
+
+            when (tradeMapInfo[marketId]?.state) {
+                State.READY -> {
+                    //TODO()
+                }
+                State.BUYING -> {
+                    //TODO()
+                    cancelOrder(marketId)
+                }
+                State.BUY -> {
+                    //TODO()
+                    sellOrder(marketId)
+                }
+                State.SELLING -> {
+                    //TODO()
+                    cancelOrder(marketId)
+                }
+                State.SELL -> {
+                    //TODO()
+                }
+                State.CANCEL -> {
+                    //TODO()
+                }
+                State.CANCELLING -> {
+                    //TODO()
+                }
+
+                else -> {
+                    //TODO()
+                }
+            }
+        }
+
+        viewModel.resultPostOrderInfo.observe(this) {
+            responseOrder ->
+            val marketId = responseOrder.marketId
+            val uuid = responseOrder.uuid
+            val side = responseOrder.side
+            val state = responseOrder.state
+
+            tradeMapInfo[marketId]?.uuid = UUID.fromString(uuid)
+
+            when (side) {
+                "bid" -> {
+                    when (state) {
+                        "wait" -> {
+                            tradeMapInfo[marketId]?.state = State.BUYING
+                        }
+                        "done" -> {
+                            tradeMapInfo[marketId]?.state = State.BUY
+                        }
+                    }
+                }
+                "ask" -> {
+                    when (state) {
+                        "wait" -> {
+                            tradeMapInfo[marketId]?.state = State.SELLING
+                        }
+                        "done" -> {
+                            tradeMapInfo[marketId]?.state = State.SELL
+                        }
+                    }
+                }
+            }
+        }
+
+        viewModel.resultDeleteOrderInfo.observe(this) {
+            responseOrder ->
+            val marketId = responseOrder.marketId
+            val uuid = responseOrder.uuid
+            val side = responseOrder.side
+            val state = responseOrder.state
+
+            when (state) {
+                "wait" -> {
+                    tradeMapInfo[marketId]?.state = State.CANCELLING
+                }
+                "done" -> {
+                    tradeMapInfo[marketId]?.state = State.CANCEL
+
+                    monitorItemSet.remove(marketId)
+                    monitorListInfo.remove(marketId)
+                    monitorMapInfo.remove(marketId)
+
+                    tradeListInfo.remove(marketId)
+                    tradeMapInfo.remove(marketId)
+                }
+            }
+
+        }
+
+        viewModel.errorResponse.observe(this) {
+                jObjError ->
+
+            val marketId = jObjError.get("marketId")
+            val errorCode = jObjError.get("errorCode")
+            val uuid = jObjError.get("uuid")
+
+            val errorObj = jObjError["error"] as JSONObject
+
+            when {
+                errorCode == 400
+                        && errorObj["name"] == "insufficient_funds_bid" -> {
+                    Log.w(TAG, "errorResponse: insufficient_funds_bid")
+                    tradeMapInfo[marketId]?.state = State.STOP
+                    viewModel.updateTradeInfoData.postValue(tradeMapInfo[marketId])
+                }
+                errorCode == 400
+                        && errorObj["name"] == "insufficient_funds_ask" -> {
+                    Log.w(TAG, "errorResponse: insufficient_funds_ask")
+                    tradeMapInfo[marketId]?.state = State.STOP
+                    viewModel.updateTradeInfoData.postValue(tradeMapInfo[marketId])
+                }
+                errorCode == 500
+                        && errorObj["name"] == "server_error" -> {
+
+                }
+                errorCode == 400
+                        && errorObj["name"] == "invalid_price_bid" -> {
+
+                }
+            }
         }
     }
 
@@ -368,6 +526,7 @@ class TradeService : LifecycleService() {
             monitorItemSet.add(candleInfoData.marketId!!)
             monitorListInfo.add(candleInfoData.marketId!!)
             monitorMapInfo[candleInfoData.marketId!!] = monitorItem
+
             viewModel.addMonitorItem.postValue(monitorItem)
         } else if (monitorItemSet.contains(candleInfoData.marketId!!)
             && currentPrice < Utils.convertPrice(avgPrice - (UNIT_MONITORING_SELL_DEVIATION * priceDeviation))) {
@@ -381,9 +540,6 @@ class TradeService : LifecycleService() {
                         "total: ${Utils.Format.zeroFormat2.format(totalPrice)} " +
                         "count: ${candleData.size} "
             )
-            monitorItemSet.remove(candleInfoData.marketId!!)
-            monitorListInfo.remove(candleInfoData.marketId!!)
-            monitorMapInfo.remove(candleInfoData.marketId!!)
             viewModel.removeMonitorItem.postValue(candleInfoData.marketId)
         }
         viewModel.updateMonitorItem.postValue(candleInfoData)
@@ -433,22 +589,25 @@ class TradeService : LifecycleService() {
                     "askBidRate: ${Utils.Format.percentFormat.format(bidCount.div(askCount))} " +
                     "count: ${tradeData.size}")
 
+
+            val volume = (priceToBuy / avgTradePrice)
+
             tradeItem.state = State.READY
             tradeItem.buyPrice = avgTradePrice
-            tradeItem.remainingVolume = 0.0
-            tradeListInfo.add(tradeInfoData.marketId!!)
-            tradeMapInfo[tradeInfoData.marketId!!] = tradeItem
+            tradeItem.volume = volume
+            tradeListInfo.add(tradeItem.marketId!!)
+            tradeMapInfo[tradeItem.marketId!!] = tradeItem
+
             viewModel.addTradeInfo.postValue(tradeItem)
-        } else if (tradeItem.state == State.READY && tradeMapInfo.contains(tradeInfoData.marketId) &&
+        } else if (tradeItem.state == State.BUYING && tradeMapInfo.contains(tradeInfoData.marketId) &&
             currentPrice < Utils.convertPrice(avgTradePrice - (UNIT_TRADE_CANCEL_DEVIATION * deviationPrice))) {
             Log.d(TAG, "analysisTradeInfoData(remove) - " +
                     "marektId: ${tradeInfoData.marketId} " +
                     "askBidRate: ${Utils.Format.percentFormat.format(bidCount.div(askCount))} " +
                     "count: ${tradeData.size}")
+            tradeItem.state = State.CANCELLING
+            tradeMapInfo[tradeItem.marketId!!] = tradeItem
 
-            tradeItem.state = State.CANCEL
-            tradeListInfo.remove(tradeInfoData.marketId!!)
-            tradeMapInfo.remove(tradeInfoData.marketId!!)
             viewModel.removeTradeInfo.postValue(tradeInfoData.marketId)
         }
         viewModel.updateTradeInfoData.postValue(tradeInfoData)
@@ -462,13 +621,51 @@ class TradeService : LifecycleService() {
         pref.setBoolean(PreferenceUtil.SUCCESS_LOGIN, false)
     }
 
-    private fun buyOrder(tradeInfo: TradeItem?) {
+    private fun buyOrder(marketId: String) {
 //        TODO("Not yet implemented")
-        Log.d(TAG, "buyOrder - marketId: ${tradeInfo?.marketId}")
+        Log.d(TAG, "buyOrder - marketId: $marketId")
+
+        val tradeItem = tradeMapInfo[marketId]
+        val uuid = UUID.randomUUID()
+
+        val postOrderItem = PostOrderItem(
+            TradePagerActivity.PostType.POST_ORDER_INFO,
+            tradeItem?.marketId,
+            "bid",
+            tradeItem?.volume,
+            tradeItem?.buyPrice,
+            "limit",
+            uuid
+        )
+        val viewModel = bindService.tradeViewModel
+        viewModel.postOrderInfo.value = postOrderItem
+    }
+
+    private fun sellOrder(marketId: String) {
+//        TODO("Not yet implemented")
+        Log.d(TAG, "sellOrder - marketId: $marketId")
+
+        val tradeItem = tradeMapInfo[marketId]
+        val uuid = UUID.randomUUID()
+
+        val postOrderItem = PostOrderItem(
+            TradePagerActivity.PostType.POST_ORDER_INFO,
+            tradeItem?.marketId,
+            "ask",
+            tradeItem?.volume,
+            tradeItem?.sellPrice,
+            "market",
+            uuid
+        )
+        val viewModel = bindService.tradeViewModel
+        viewModel.postOrderInfo.value = postOrderItem
     }
 
     private fun cancelOrder(marketId: String?) {
 //        TODO("Not yet implemented")
         Log.d(TAG, "cancelOrder - marketId: $marketId")
+
+        val viewModel = bindService.tradeViewModel
+        viewModel.deleteOrderInfo.value = tradeMapInfo[marketId!!]?.uuid
     }
 }

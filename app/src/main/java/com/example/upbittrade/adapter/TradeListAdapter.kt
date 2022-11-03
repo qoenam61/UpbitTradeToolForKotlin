@@ -39,6 +39,9 @@ class TradeListAdapter(val viewModel: TradeViewModel) : RecyclerView.Adapter<Tra
     fun updateItem(tradeInfoData: TradeInfoData) {
         val marketId = tradeInfoData.marketId
         if (tradeMap.containsKey(marketId)) {
+            if (tradeInfoData is TradeItem) {
+                tradeMap[marketId]?.state = tradeInfoData.state
+            }
             tradeMap[marketId]?.tradePrice = tradeInfoData.tradePrice
             tradeMap[marketId]?.timestamp = tradeInfoData.timestamp
             tradeMap[marketId]?.prevClosingPrice = tradeInfoData.prevClosingPrice
