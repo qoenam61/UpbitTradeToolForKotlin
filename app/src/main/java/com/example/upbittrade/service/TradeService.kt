@@ -45,13 +45,13 @@ class TradeService : LifecycleService() {
     private val UNIT_MIN_CANDLE = 3
     private val UNIT_MIN_CANDLE_COUNT = 200
     private val UNIT_MIN_CANDLE_PERIOD = UNIT_MIN_CANDLE * UNIT_MIN_CANDLE_COUNT
-    private val UNIT_MONITORING_BUY_DEVIATION = 2
-    private val UNIT_MONITORING_SELL_DEVIATION = 1
+    private val UNIT_MONITORING_ADD_DEVIATION = 2
+    private val UNIT_MONITORING_REMOVE_DEVIATION = 0
 
     private val UNIT_TRADE_INFO_COUNT = 200
     private val UNIT_TRADE_PERIOD = UNIT_MIN_CANDLE * 5
-    private val UNIT_TRADE_BUY_DEVIATION = 2
-    private val UNIT_TRADE_CANCEL_DEVIATION = 1
+    private val UNIT_TRADE_ADD_DEVIATION = 1
+    private val UNIT_TRADE_REMOVE_DEVIATION = 0
 
     private val priceToBuy = 10000
 
@@ -329,7 +329,12 @@ class TradeService : LifecycleService() {
                 State.CANCELLING -> {
                     //TODO()
                 }
-
+                null -> {
+                    monitorItemSet.remove(marketId)
+                    monitorListInfo.remove(marketId)
+                    monitorMapInfo.remove(marketId)
+                    viewModel.updateMonitorItem.postValue(monitorMapInfo[marketId])
+                }
                 else -> {
                     //TODO()
                 }
@@ -370,7 +375,6 @@ class TradeService : LifecycleService() {
                 State.CANCELLING -> {
                     //TODO()
                 }
-
                 else -> {
                     //TODO()
                 }
@@ -562,8 +566,8 @@ class TradeService : LifecycleService() {
         val viewModel = bindService.tradeViewModel
 
         if (!monitorItemSet.contains(candleInfoData.marketId!!) &&
-            currentPrice > Utils.convertPrice(avgPrice + (UNIT_MONITORING_BUY_DEVIATION * priceDeviation))
-            && currentVolume > avgVolume + (UNIT_MONITORING_BUY_DEVIATION * priceDeviation)) {
+            currentPrice > Utils.convertPrice(avgPrice + (UNIT_MONITORING_ADD_DEVIATION * priceDeviation))
+            && currentVolume > avgVolume + (UNIT_MONITORING_ADD_DEVIATION * priceDeviation)) {
             Log.d(
                 TAG, "analysisMinCandleInfoData(add) - marketId: ${candleInfoData.marketId} " +
 //                        "prob: ${Utils.Format.percentFormat.format(prob)} " +
@@ -581,7 +585,7 @@ class TradeService : LifecycleService() {
 
             viewModel.addMonitorItem.postValue(monitorItem)
         } else if (monitorItemSet.contains(candleInfoData.marketId!!)
-            && currentPrice < Utils.convertPrice(avgPrice - (UNIT_MONITORING_SELL_DEVIATION * priceDeviation))) {
+            && currentPrice < Utils.convertPrice(avgPrice - (UNIT_MONITORING_REMOVE_DEVIATION * priceDeviation))) {
             Log.d(
                 TAG, "analysisMinCandleInfoData(remove) - marketId: ${candleInfoData.marketId} " +
 //                        "prob: ${Utils.Format.percentFormat.format(prob)} " +
@@ -633,8 +637,8 @@ class TradeService : LifecycleService() {
         val tradeItem = TradeItem(tradeInfoData)
 
         if (!tradeMapInfo.contains(tradeInfoData.marketId) &&
-            currentPrice > Utils.convertPrice(avgTradePrice + (UNIT_TRADE_BUY_DEVIATION * deviationPrice))
-            && currentVolume > (avgTradeVolume + (UNIT_TRADE_BUY_DEVIATION * deviationVolume))
+            currentPrice > Utils.convertPrice(avgTradePrice + (UNIT_TRADE_ADD_DEVIATION * deviationPrice))
+            && currentVolume > (avgTradeVolume + (UNIT_TRADE_ADD_DEVIATION * deviationVolume))
         ) {
             Log.d(TAG, "analysisTradeInfoData(add) - " +
                     "marektId: ${tradeInfoData.marketId} " +
@@ -652,7 +656,7 @@ class TradeService : LifecycleService() {
 
             viewModel.addTradeInfo.postValue(tradeItem)
         } else if (tradeItem.state == State.BUYING && tradeMapInfo.contains(tradeInfoData.marketId) &&
-            currentPrice < Utils.convertPrice(avgTradePrice - (UNIT_TRADE_CANCEL_DEVIATION * deviationPrice))) {
+            currentPrice < Utils.convertPrice(avgTradePrice - (UNIT_TRADE_REMOVE_DEVIATION * deviationPrice))) {
             Log.d(TAG, "analysisTradeInfoData(remove) - " +
                     "marektId: ${tradeInfoData.marketId} " +
                     "askBidRate: ${Utils.Format.percentFormat.format(bidCount.div(askCount))} " +
