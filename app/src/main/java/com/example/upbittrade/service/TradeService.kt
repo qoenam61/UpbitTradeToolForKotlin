@@ -14,7 +14,7 @@ import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
 import com.example.upbittrade.data.CandleItem
 import com.example.upbittrade.data.ExtendCandleItem
-import com.example.upbittrade.data.MonitorItemSet
+import com.example.upbittrade.data.HashItemSet
 import com.example.upbittrade.database.MinCandleInfoData
 import com.example.upbittrade.database.TradeInfoData
 import com.example.upbittrade.fragment.TradeFragment
@@ -30,6 +30,7 @@ import kotlinx.coroutines.sync.withLock
 import org.json.JSONObject
 import java.sql.Timestamp
 import java.util.*
+import kotlin.collections.HashMap
 import kotlin.collections.HashSet
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -60,8 +61,10 @@ class TradeService : LifecycleService() {
     val monitorMapInfo = HashMap<String, MonitorItem>()
     val monitorListInfo = ArrayList<String>()
 
-    private lateinit var monitorItemSet: MonitorItemSet
+    private lateinit var monitorItemSet: HashItemSet
+    private lateinit var searchOrderSetInfo: HashItemSet
     private var mutexTradeInfoCandle: Mutex? = null
+    private var mutexSearchOrder: Mutex? = null
 
     enum class State {
         READY,
@@ -103,17 +106,17 @@ class TradeService : LifecycleService() {
 
         Log.d(TAG, "setRegisterCallBack: ")
 
-        monitorItemSet = MonitorItemSet(object : MonitorItemSet.OnChangedListener {
+        monitorItemSet = HashItemSet(object : HashItemSet.OnChangedListener {
             val viewModel = bindService.tradeViewModel
             var job: Job? = null
 
-            override fun onSetDataChanged(tradeInfoSet: HashSet<String>, mutex: Mutex) {
+            override fun onSetDataChanged(itemSet: HashSet<String>, mutex: Mutex) {
                 mutexTradeInfoCandle = mutex
                 job?.cancel()
                 job = CoroutineScope(Dispatchers.Default).launch {
                     while (true) {
                         var time = SystemClock.uptimeMillis()
-                        val iterator = tradeInfoSet.iterator()
+                        val iterator = itemSet.iterator()
                         while (iterator.hasNext()) {
                             val marketId = iterator.next()
                             mutex.withLock {
@@ -127,6 +130,28 @@ class TradeService : LifecycleService() {
                             }
                             mutex.lock()
     //                      Log.d(TAG, "resultMarketsInfo - duration: ${(SystemClock.uptimeMillis() - time)}")
+                        }
+                    }
+                }
+            }
+        })
+
+        searchOrderSetInfo = HashItemSet(object  : HashItemSet.OnChangedListener {
+            val viewModel = bindService.tradeViewModel
+            var job: Job? = null
+
+            override fun onSetDataChanged(itemSet: HashSet<String>, mutex: Mutex) {
+                mutexSearchOrder = mutex
+                job?.cancel()
+                job = CoroutineScope(Dispatchers.Default).launch {
+                    while(true) {
+                        val iterator = itemSet.iterator()
+                        while (iterator.hasNext()) {
+                            val uuid = iterator.next()
+                            mutex.withLock {
+                                viewModel.searchOrderInfo.postValue(UUID.fromString(uuid))
+                            }
+                            mutex.lock()
                         }
                     }
                 }
@@ -225,16 +250,21 @@ class TradeService : LifecycleService() {
                         if (delayTime > 0) {
                             delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
                         }
-
-                        if (mutexMinCandle.isLocked) {
-                            mutexMinCandle.unlock()
+                        mutexMinCandle?.let {
+                                mutex ->
+                            if (mutex.isLocked) {
+                                mutex.unlock()
+                            }
                         }
                     }
                     job3.join()
                 }
             } else {
-                if (mutexMinCandle.isLocked) {
-                    mutexMinCandle.unlock()
+                mutexMinCandle?.let {
+                        mutex ->
+                    if (mutex.isLocked) {
+                        mutex.unlock()
+                    }
                 }
             }
         }
@@ -292,15 +322,21 @@ class TradeService : LifecycleService() {
                         if (delayTime > 0) {
                             delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
                         }
-                        if (mutexTradeInfoCandle != null && mutexTradeInfoCandle!!.isLocked) {
-                            mutexTradeInfoCandle?.unlock()
+                        mutexTradeInfoCandle?.let {
+                            mutex ->
+                            if (mutex.isLocked) {
+                                mutex.unlock()
+                            }
                         }
                     }
                     job3.join()
                 }
             } else {
-                if (mutexTradeInfoCandle != null && mutexTradeInfoCandle!!.isLocked) {
-                    mutexTradeInfoCandle?.unlock()
+                mutexTradeInfoCandle?.let {
+                        mutex ->
+                    if (mutex.isLocked) {
+                        mutex.unlock()
+                    }
                 }
             }
         }
@@ -389,8 +425,6 @@ class TradeService : LifecycleService() {
             }
         }
 
-        var searchOrderCount = 0
-        var searchOrderSendTime = 0L
         viewModel.resultPostOrderInfo.observe(this) {
             responseOrder ->
             Log.d(TAG, "resultPostOrderInfo: $responseOrder")
@@ -408,16 +442,11 @@ class TradeService : LifecycleService() {
                     when (state) {
                         "wait" -> {
                             tradeMapInfo[marketId]?.state = State.BUYING
-
-                            if (searchOrderCount == 0) {
-                                searchOrderSendTime = SystemClock.uptimeMillis()
-                            }
-                            searchOrderCount++
-
-                            viewModel.searchOrderInfo.value = UUID.fromString(uuid)
+                            searchOrderSetInfo.add(uuid!!)
                         }
                         "done" -> {
                             tradeMapInfo[marketId]?.state = State.BUY
+                            searchOrderSetInfo.remove(uuid!!)
                         }
                     }
                 }
@@ -426,33 +455,23 @@ class TradeService : LifecycleService() {
                     when (state) {
                         "wait" -> {
                             tradeMapInfo[marketId]?.state = State.SELLING
-
-                            if (searchOrderCount == 0) {
-                                searchOrderSendTime = SystemClock.uptimeMillis()
-                            }
-                            searchOrderCount++
-
-                            viewModel.searchOrderInfo.value = UUID.fromString(uuid)
+                            searchOrderSetInfo.add(uuid!!)
                         }
                         "done" -> {
                             tradeMapInfo[marketId]?.state = State.SELL
+                            searchOrderSetInfo.remove(uuid!!)
                         }
                     }
                 }
                 "cancel" -> {
                     when (state) {
                         "wait" -> {
-                            viewModel.searchOrderInfo.value = UUID.fromString(uuid)
-
-                            if (searchOrderCount == 0) {
-                                searchOrderSendTime = SystemClock.uptimeMillis()
-                            }
-                            searchOrderCount++
-
-                            viewModel.searchOrderInfo.value = UUID.fromString(uuid)
+                            tradeMapInfo[marketId]?.state = State.CANCELLING
+                            searchOrderSetInfo.add(uuid!!)
                         }
                         "done" -> {
                             tradeMapInfo[marketId]?.state = State.CANCEL
+                            searchOrderSetInfo.remove(uuid!!)
                         }
                     }
                 }
@@ -460,6 +479,8 @@ class TradeService : LifecycleService() {
             viewModel.updateTradeInfoData.value = tradeMapInfo[marketId]
         }
 
+        var searchOrderCount = 0
+        var searchOrderSendTime = 0L
         viewModel.resultSearchOrderInfo.observe(this) {
                 responseOrder ->
             Log.d(TAG, "resultSearchOrderInfo: $responseOrder")
@@ -468,7 +489,47 @@ class TradeService : LifecycleService() {
             val side = responseOrder.side
             val state = responseOrder.state
 
+            searchOrderSetInfo.add(uuid!!)
+
             CoroutineScope(Dispatchers.Default).launch {
+                when (side) {
+                    "bid" -> {
+                        when (state) {
+                            "wait" -> {
+                                tradeMapInfo[marketId]?.state = State.BUYING
+                            }
+                            "done" -> {
+                                tradeMapInfo[marketId]?.buyTime = System.currentTimeMillis()
+                                tradeMapInfo[marketId]?.state = State.BUY
+                                searchOrderSetInfo.remove(uuid)
+                            }
+                        }
+                    }
+                    "ask" -> {
+                        when (state) {
+                            "wait" -> {
+                                tradeMapInfo[marketId]?.state = State.SELLING
+                            }
+                            "done" -> {
+                                tradeMapInfo[marketId]?.sellTime = System.currentTimeMillis()
+                                tradeMapInfo[marketId]?.state = State.SELL
+                                searchOrderSetInfo.remove(uuid)
+                            }
+                        }
+                    }
+                    "cancel" -> {
+                        when (state) {
+                            "wait" -> {
+                                viewModel.searchOrderInfo.value = UUID.fromString(uuid)
+                            }
+                            "done" -> {
+                                tradeMapInfo[marketId]?.state = State.CANCEL
+                                searchOrderSetInfo.remove(uuid)
+                            }
+                        }
+                    }
+                }
+
                 val job = launch {
                     if (searchOrderCount == 0) {
                         searchOrderSendTime = SystemClock.uptimeMillis()
@@ -480,69 +541,17 @@ class TradeService : LifecycleService() {
                         delayTime =  1000 - (SystemClock.uptimeMillis() - searchOrderSendTime)
                         searchOrderCount = 0
                     }
-                        Log.d(TAG, "resultSearchOrderInfo(searchOrder) - unlock : $delayTime")
+                    Log.d(TAG, "resultSearchOrderInfo(searchOrder) - unlock : $delayTime")
                     if (delayTime > 0) {
                         delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
                     }
+                    mutexSearchOrder?.let {
+                        if (it.isLocked) {
+                            it.unlock()
+                        }
+                    }
                 }
                 job.join()
-
-                Log.d(TAG, "resultSearchOrderInfo - postValue: ${UUID.fromString(uuid)}")
-                when (side) {
-                    "bid" -> {
-                        when (state) {
-                            "wait" -> {
-                                tradeMapInfo[marketId]?.state = State.BUYING
-
-                                if (searchOrderCount == 0) {
-                                    searchOrderSendTime = SystemClock.uptimeMillis()
-                                }
-                                searchOrderCount++
-
-                                viewModel.searchOrderInfo.postValue(UUID.fromString(uuid))
-                            }
-                            "done" -> {
-                                tradeMapInfo[marketId]?.buyTime = System.currentTimeMillis()
-                                tradeMapInfo[marketId]?.state = State.BUY
-                            }
-                        }
-                    }
-                    "ask" -> {
-                        when (state) {
-                            "wait" -> {
-                                tradeMapInfo[marketId]?.state = State.SELLING
-
-                                if (searchOrderCount == 0) {
-                                    searchOrderSendTime = SystemClock.uptimeMillis()
-                                }
-                                searchOrderCount++
-
-                                viewModel.searchOrderInfo.postValue(UUID.fromString(uuid))
-                            }
-                            "done" -> {
-                                tradeMapInfo[marketId]?.sellTime = System.currentTimeMillis()
-                                tradeMapInfo[marketId]?.state = State.SELL
-                            }
-                        }
-                    }
-                    "cancel" -> {
-                        when (state) {
-                            "wait" -> {
-                                viewModel.searchOrderInfo.value = UUID.fromString(uuid)
-
-                                if (searchOrderCount == 0) {
-                                    searchOrderSendTime = SystemClock.uptimeMillis()
-                                }
-                                searchOrderCount++
-
-                                viewModel.searchOrderInfo.postValue(UUID.fromString(uuid))
-                            }
-                            "done" -> {
-                                tradeMapInfo[marketId]?.state = State.CANCEL
-                            }
-                        }
-                    }
-                }
 
                 viewModel.updateTradeInfoData.postValue(tradeMapInfo[marketId])
             }
@@ -656,7 +665,7 @@ class TradeService : LifecycleService() {
 
         if (!monitorItemSet.contains(candleInfoData.marketId!!) &&
             currentPrice > Utils.convertPrice(avgPrice + (UNIT_MONITORING_ADD_DEVIATION * priceDeviation))
-//            && currentVolume > avgVolume + (UNIT_MONITORING_ADD_DEVIATION * volumeDeviation)
+            && currentVolume > avgVolume + (UNIT_MONITORING_ADD_DEVIATION * volumeDeviation)
         ) {
             Log.d(
                 TAG, "analysisMinCandleInfoData(add) - marketId: ${candleInfoData.marketId} " +
@@ -733,7 +742,7 @@ class TradeService : LifecycleService() {
 
         if (!tradeMapInfo.contains(tradeInfoData.marketId) &&
             currentPrice > Utils.convertPrice(avgTradePrice + (UNIT_TRADE_ADD_DEVIATION * deviationPrice))
-//            && currentVolume > (avgTradeVolume + (UNIT_TRADE_ADD_DEVIATION * deviationVolume))
+            && currentVolume > (avgTradeVolume + (UNIT_TRADE_ADD_DEVIATION * deviationVolume))
         ) {
             Log.d(TAG, "analysisTradeInfoData(add) - " +
                     "marketId: ${tradeInfoData.marketId} " +
@@ -759,7 +768,7 @@ class TradeService : LifecycleService() {
             tradeMapInfo[tradeItem.marketId!!] = tradeItem
 
             viewModel.addTradeInfo.postValue(tradeItem)
-        } else if (tradeItem.state == State.BUYING && tradeMapInfo.contains(tradeInfoData.marketId) &&
+        } else if (tradeMapInfo.contains(tradeInfoData.marketId) &&
             currentPrice < Utils.convertPrice(avgTradePrice - (UNIT_TRADE_REMOVE_DEVIATION * deviationPrice))) {
             Log.d(TAG, "analysisTradeInfoData(remove) - " +
                     "marketId: ${tradeInfoData.marketId} " +
