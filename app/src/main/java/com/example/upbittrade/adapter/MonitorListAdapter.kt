@@ -69,9 +69,9 @@ class MonitorListAdapter(val viewModel: TradeViewModel) : RecyclerView.Adapter<M
         private val tradePrice: TextView
 
         private val tradePriceRate: TextView
-        private val minPriceRate: TextView
-        private val tradeCount: TextView
-        private val minPricePerAvgPrice: TextView
+        private val timeStamp: TextView
+        private val avgPrice: TextView
+        private val devPrice: TextView
         private val bidAskRate: TextView
         private val bidAskPriceRate: TextView
 
@@ -79,9 +79,9 @@ class MonitorListAdapter(val viewModel: TradeViewModel) : RecyclerView.Adapter<M
             marketId = itemView.findViewById(R.id.market_id)
             tradePrice = itemView.findViewById(R.id.trade_price)
             tradePriceRate = itemView.findViewById(R.id.trade_price_rate)
-            minPriceRate = itemView.findViewById(R.id.min_price_rate)
-            tradeCount = itemView.findViewById(R.id.trade_count)
-            minPricePerAvgPrice = itemView.findViewById(R.id.min_price_per_avg_price)
+            timeStamp = itemView.findViewById(R.id.timestamp)
+            avgPrice = itemView.findViewById(R.id.avgPrice)
+            devPrice = itemView.findViewById(R.id.devPrice)
             bidAskRate = itemView.findViewById(R.id.bid_ask_rate)
             bidAskPriceRate = itemView.findViewById(R.id.bid_ask_rate_price_volume)
         }
@@ -94,12 +94,15 @@ class MonitorListAdapter(val viewModel: TradeViewModel) : RecyclerView.Adapter<M
             marketId.text = marketsMapInfo[key]?.koreanName
             with(monitorItem) {
                 tradePrice.text = getZeroFormatString(this?.tradePrice)
-                if (this?.prevClosingPrice != null) {
-                    tradePriceRate.text = Utils.Format.percentFormat.format((this.tradePrice!! - this.prevClosingPrice!!).div( this.tradePrice!!))
+                this?.prevClosingPrice?.let {
+                    tradePriceRate.text = Utils.Format.percentFormat.format((this.tradePrice!! - it).div( this.tradePrice!!))
                 }
-                minPriceRate.text = Utils.Format.timeFormat.format(this?.timestamp)
-                if (this?.askBidRate != null) {
-                    tradeCount.text = Utils.Format.percentFormat.format(this.askBidRate)
+                timeStamp.text = Utils.Format.timeFormat.format(this?.timestamp)
+                avgPrice.text = getZeroFormatString(this?.avgPrice)
+                devPrice.text = Utils.Format.zeroFormat.format(this?.devPrice)
+
+                this?.askBidRate?.let {
+                    bidAskRate.text = Utils.Format.percentFormat.format(it)
                 }
             }
 

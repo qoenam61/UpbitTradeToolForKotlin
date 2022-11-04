@@ -8,9 +8,16 @@ class TradeItem: TradeInfoData {
 
     var state: TradeService.State = TradeService.State.READY
     var buyPrice: Double? = null
+    var buyTime: Long? = null
     var sellPrice: Double? = null
+    var sellTime: Long? = null
     var volume: Double? = null
     var uuid: UUID? = null
+
+    var devVolume: Double? = null
+    var devPrice: Double? = null
+    var avgVolume: Double? = null
+    var avgPrice: Double? = null
 
     constructor(
         tradeInfoData: TradeInfoData

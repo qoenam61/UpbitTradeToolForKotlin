@@ -8,6 +8,11 @@ class MonitorItem: MinCandleInfoData {
     var changePrice: Double? = null
     var askBidRate: Float? = null
 
+    var avgPrice: Double? = null
+    var avgVolme: Double? = null
+    var devPrice: Double? = null
+    var devVolme: Double? = null
+
     constructor(
         candleInfoData: MinCandleInfoData
     ) : super(

@@ -200,7 +200,7 @@
                         android:background="@drawable/borderline_bold"
                         android:text="분/평균액(%)"/>
                     <TextView
-                        android:id="@+id/min_price_per_avg_price"
+                        android:id="@+id/devPrice"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"

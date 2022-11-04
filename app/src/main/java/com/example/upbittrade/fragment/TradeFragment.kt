@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.dinuscxj.progressbar.CircleProgressBar
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
 import com.example.upbittrade.adapter.MonitorListAdapter
@@ -31,6 +32,7 @@ class TradeFragment: Fragment() {
     lateinit var viewModel: TradeViewModel
     lateinit var monitorListAdapter: MonitorListAdapter
     lateinit var tradeListAdapter: TradeListAdapter
+    lateinit var circleBar: CircleProgressBar
 
     override fun onAttach(activity: Activity) {
         super.onAttach(activity)
@@ -56,6 +58,10 @@ class TradeFragment: Fragment() {
         val tradeList = view.findViewById<RecyclerView>(R.id.trade_list_view)
         tradeList!!.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         tradeList.adapter = tradeListAdapter
+
+        circleBar = view.findViewById(R.id.circle_bar)
+        circleBar.max = monitorListAdapter.monitorList.size
+        circleBar.progress = 0
 
         return view
     }
@@ -86,17 +92,26 @@ class TradeFragment: Fragment() {
         }
 
         viewModel.addMonitorItem.observe(viewCycleOwner) {
-                minCandlesInfo -> monitorListAdapter.setItem(minCandlesInfo)
+                monitorItem -> monitorListAdapter.setItem(monitorItem)
         }
 
         viewModel.removeMonitorItem.observe(viewCycleOwner) {
                 marketId -> monitorListAdapter.removeItem(marketId)
         }
 
+        var circleProgress = 0
         viewModel.updateMonitorItem.observe(viewCycleOwner) {
                 minCandlesInfo ->
             monitorListAdapter.updateItem(minCandlesInfo)
             tradeListAdapter.updateItem(minCandlesInfo)
+
+            circleBar.max = monitorListAdapter.monitorList.size
+            if (circleBar.max != 0) {
+                circleBar.progress = (circleProgress++) % circleBar.max
+                if (circleProgress == circleBar.max) {
+                    circleProgress = 0
+                }
+            }
         }
 
         viewModel.addTradeInfo.observe(viewCycleOwner) {

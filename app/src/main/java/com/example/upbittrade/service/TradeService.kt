@@ -49,7 +49,7 @@ class TradeService : LifecycleService() {
     private val UNIT_MONITORING_REMOVE_DEVIATION = 0
 
     private val UNIT_TRADE_INFO_COUNT = 200
-    private val UNIT_TRADE_PERIOD = UNIT_MIN_CANDLE * 5
+    private val UNIT_TRADE_PERIOD = UNIT_MIN_CANDLE * 1
     private val UNIT_TRADE_ADD_DEVIATION = 1
     private val UNIT_TRADE_REMOVE_DEVIATION = 0
 
@@ -225,12 +225,17 @@ class TradeService : LifecycleService() {
                         if (delayTime > 0) {
                             delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
                         }
-                        mutexMinCandle.unlock()
+
+                        if (mutexMinCandle.isLocked) {
+                            mutexMinCandle.unlock()
+                        }
                     }
                     job3.join()
                 }
             } else {
-                mutexMinCandle.unlock()
+                if (mutexMinCandle.isLocked) {
+                    mutexMinCandle.unlock()
+                }
             }
         }
 
@@ -287,12 +292,16 @@ class TradeService : LifecycleService() {
                         if (delayTime > 0) {
                             delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
                         }
-                        mutexTradeInfoCandle?.unlock()
+                        if (mutexTradeInfoCandle != null && mutexTradeInfoCandle!!.isLocked) {
+                            mutexTradeInfoCandle?.unlock()
+                        }
                     }
                     job3.join()
                 }
             } else {
-                mutexTradeInfoCandle?.unlock()
+                if (mutexTradeInfoCandle != null && mutexTradeInfoCandle!!.isLocked) {
+                    mutexTradeInfoCandle?.unlock()
+                }
             }
         }
 
@@ -395,6 +404,7 @@ class TradeService : LifecycleService() {
 
             when (side) {
                 "bid" -> {
+                    tradeMapInfo[marketId]?.buyTime = System.currentTimeMillis()
                     when (state) {
                         "wait" -> {
                             tradeMapInfo[marketId]?.state = State.BUYING
@@ -412,6 +422,7 @@ class TradeService : LifecycleService() {
                     }
                 }
                 "ask" -> {
+                    tradeMapInfo[marketId]?.sellTime = System.currentTimeMillis()
                     when (state) {
                         "wait" -> {
                             tradeMapInfo[marketId]?.state = State.SELLING
@@ -491,6 +502,7 @@ class TradeService : LifecycleService() {
                                 viewModel.searchOrderInfo.postValue(UUID.fromString(uuid))
                             }
                             "done" -> {
+                                tradeMapInfo[marketId]?.buyTime = System.currentTimeMillis()
                                 tradeMapInfo[marketId]?.state = State.BUY
                             }
                         }
@@ -508,6 +520,7 @@ class TradeService : LifecycleService() {
                                 viewModel.searchOrderInfo.postValue(UUID.fromString(uuid))
                             }
                             "done" -> {
+                                tradeMapInfo[marketId]?.sellTime = System.currentTimeMillis()
                                 tradeMapInfo[marketId]?.state = State.SELL
                             }
                         }
@@ -643,7 +656,8 @@ class TradeService : LifecycleService() {
 
         if (!monitorItemSet.contains(candleInfoData.marketId!!) &&
             currentPrice > Utils.convertPrice(avgPrice + (UNIT_MONITORING_ADD_DEVIATION * priceDeviation))
-            && currentVolume > avgVolume + (UNIT_MONITORING_ADD_DEVIATION * priceDeviation)) {
+//            && currentVolume > avgVolume + (UNIT_MONITORING_ADD_DEVIATION * volumeDeviation)
+        ) {
             Log.d(
                 TAG, "analysisMinCandleInfoData(add) - marketId: ${candleInfoData.marketId} " +
 //                        "prob: ${Utils.Format.percentFormat.format(prob)} " +
@@ -655,6 +669,11 @@ class TradeService : LifecycleService() {
                         "count: ${candleData.size} "
             )
             val monitorItem = MonitorItem(candleInfoData)
+            monitorItem.avgPrice = convAvgPrice
+            monitorItem.avgVolme = avgVolume
+            monitorItem.devPrice = priceDeviation
+            monitorItem.devVolme = volumeDeviation
+
             monitorItemSet.add(candleInfoData.marketId!!)
             monitorListInfo.add(candleInfoData.marketId!!)
             monitorMapInfo[candleInfoData.marketId!!] = monitorItem
@@ -714,7 +733,7 @@ class TradeService : LifecycleService() {
 
         if (!tradeMapInfo.contains(tradeInfoData.marketId) &&
             currentPrice > Utils.convertPrice(avgTradePrice + (UNIT_TRADE_ADD_DEVIATION * deviationPrice))
-            && currentVolume > (avgTradeVolume + (UNIT_TRADE_ADD_DEVIATION * deviationVolume))
+//            && currentVolume > (avgTradeVolume + (UNIT_TRADE_ADD_DEVIATION * deviationVolume))
         ) {
             Log.d(TAG, "analysisTradeInfoData(add) - " +
                     "marketId: ${tradeInfoData.marketId} " +
@@ -729,7 +748,13 @@ class TradeService : LifecycleService() {
 
             tradeItem.state = State.READY
             tradeItem.buyPrice = Utils.convertPrice(avgTradePrice)
+            tradeItem.buyTime = System.currentTimeMillis()
             tradeItem.volume = volume
+            tradeItem.avgPrice = avgTradePrice
+            tradeItem.avgVolume = avgTradeVolume
+            tradeItem.devPrice = deviationPrice
+            tradeItem.devVolume = deviationVolume
+
             tradeListInfo.add(tradeItem.marketId!!)
             tradeMapInfo[tradeItem.marketId!!] = tradeItem
 

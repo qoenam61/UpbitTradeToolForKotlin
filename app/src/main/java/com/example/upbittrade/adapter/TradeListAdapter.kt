@@ -69,24 +69,24 @@ class TradeListAdapter(val viewModel: TradeViewModel) : RecyclerView.Adapter<Tra
 
     inner class TradeListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var marketId: TextView
-        var tradePrice: TextView
+        var tradePriceView: TextView
 
         var tradeStatus: TextView
         var tradeProfit: TextView
         var tradeProfitRate: TextView
         var tradeBidPrice: TextView
         var tradeBidTime: TextView
-        var tradeBuyDuration: TextView
+        var tradeAskTime: TextView
 
         init {
             marketId = itemView.findViewById(R.id.market_id)
             tradeStatus = itemView.findViewById(R.id.trade_status)
             tradeProfit = itemView.findViewById(R.id.trade_profit)
             tradeProfitRate = itemView.findViewById(R.id.trade_profit_rate)
-            tradePrice = itemView.findViewById(R.id.trade_price)
+            tradePriceView = itemView.findViewById(R.id.trade_price)
             tradeBidPrice = itemView.findViewById(R.id.trade_bid_price)
             tradeBidTime = itemView.findViewById(R.id.trade_bid_time)
-            tradeBuyDuration = itemView.findViewById(R.id.trade_buy_duration)
+            tradeAskTime = itemView.findViewById(R.id.trade_ask_time)
         }
 
         fun onBind(position: Int) {
@@ -97,9 +97,11 @@ class TradeListAdapter(val viewModel: TradeViewModel) : RecyclerView.Adapter<Tra
 
             with(tradeItem) {
                 tradeStatus.text = this?.state?.name
-                tradePrice.text = getZeroFormatString(this?.tradePrice)
                 tradeProfitRate.text = Utils.Format.percentFormat.format((this?.tradePrice!! - this.buyPrice!!).div( this.buyPrice!!))
+                tradePriceView.text = getZeroFormatString(this.tradePrice)
                 tradeBidPrice.text = getZeroFormatString(this.buyPrice!!)
+                buyTime?.let { tradeBidTime.text = Utils.Format.timeFormat.format(it)}
+                sellTime?.let { tradeAskTime.text = Utils.Format.timeFormat.format(it)}
             }
         }
     }
