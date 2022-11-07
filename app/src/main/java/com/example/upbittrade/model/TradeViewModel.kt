@@ -23,6 +23,7 @@ class TradeViewModel(application: Application): AndroidViewModel(application) {
     var tradeList: ArrayList<String>? = null
     var monitorMap: HashMap<String, MonitorItem>? = null
     var monitorList: ArrayList<String>? = null
+    var reportList: ArrayList<TradeItem>? = null
 
     private val upbitFetcher: TradeFetcher = TradeFetcher(this)
 
@@ -47,6 +48,9 @@ class TradeViewModel(application: Application): AndroidViewModel(application) {
     val addTradeInfo = MutableLiveData<TradeItem>()
     val removeTradeInfo = MutableLiveData<String>()
     val updateTradeInfoData = MutableLiveData<TradeInfoData>()
+
+    val addReportItem = MutableLiveData<TradeItem>()
+    val removeReportItem = MutableLiveData<String>()
 
     val searchAccountsInfo = MutableLiveData<Boolean>()
     val searchDayCandleInfo = MutableLiveData<ExtendCandleItem>()

@@ -12,16 +12,13 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
-import com.example.upbittrade.data.CandleItem
-import com.example.upbittrade.data.ExtendCandleItem
-import com.example.upbittrade.data.HashItemSet
 import com.example.upbittrade.database.MinCandleInfoData
 import com.example.upbittrade.database.TradeInfoData
 import com.example.upbittrade.fragment.TradeFragment
 import com.example.upbittrade.model.MarketInfo
 import com.example.upbittrade.adapter.MonitorItem
 import com.example.upbittrade.adapter.TradeItem
-import com.example.upbittrade.data.PostOrderItem
+import com.example.upbittrade.data.*
 import com.example.upbittrade.utils.PreferenceUtil
 import com.example.upbittrade.utils.Utils
 import kotlinx.coroutines.*
@@ -31,6 +28,7 @@ import org.json.JSONObject
 import java.sql.Timestamp
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
 import kotlin.math.pow
@@ -47,12 +45,12 @@ class TradeService : LifecycleService() {
     private val UNIT_MIN_CANDLE = 3
     private val UNIT_MIN_CANDLE_COUNT = 200
     private val UNIT_MIN_CANDLE_PERIOD = UNIT_MIN_CANDLE * UNIT_MIN_CANDLE_COUNT
-    private val UNIT_MONITORING_ADD_DEVIATION = 2
+    private val UNIT_MONITORING_ADD_DEVIATION = 1
     private val UNIT_MONITORING_REMOVE_DEVIATION = 0
 
     private val UNIT_TRADE_INFO_COUNT = 200
     private val UNIT_TRADE_PERIOD = UNIT_MIN_CANDLE * 1
-    private val UNIT_TRADE_ADD_DEVIATION = 1
+    private val UNIT_TRADE_ADD_DEVIATION = 0
     private val UNIT_TRADE_REMOVE_DEVIATION = 0
 
     private val priceToBuy = 10000
@@ -61,10 +59,11 @@ class TradeService : LifecycleService() {
     val tradeListInfo = ArrayList<String>()
     val monitorMapInfo = HashMap<String, MonitorItem>()
     val monitorListInfo = ArrayList<String>()
-    val stopTrade = AtomicBoolean(false)
+    private val stopTrade = AtomicBoolean(false)
 
     private lateinit var monitorItemSet: HashItemSet
     private lateinit var searchOrderSetInfo: HashItemSet
+    lateinit var reportList: ReportArrayList
     private var mutexTradeInfoCandle: Mutex? = null
     private var mutexSearchOrder: Mutex? = null
 
@@ -156,6 +155,21 @@ class TradeService : LifecycleService() {
                             mutex.lock()
                         }
                     }
+                }
+            }
+        })
+
+        reportList = ReportArrayList(object : ReportArrayList.OnReportListener {
+            val viewModel = bindService.tradeViewModel
+
+            override fun onChangedItem(item: TradeItem, state: ReportArrayList.State) {
+                when(state) {
+                    ReportArrayList.State.Add -> {
+                        viewModel.addReportItem.postValue(item)
+                        tradeListInfo.remove(item.marketId)
+                        tradeMapInfo.remove(item.marketId)
+                    }
+                    ReportArrayList.State.Remove -> viewModel.removeReportItem.value = item.marketId
                 }
             }
         })
@@ -252,7 +266,7 @@ class TradeService : LifecycleService() {
                         if (delayTime > 0) {
                             delay(delayTime + UNIT_REMAINING_TIME_OFFSET)
                         }
-                        mutexMinCandle?.let {
+                        mutexMinCandle.let {
                                 mutex ->
                             if (mutex.isLocked) {
                                 mutex.unlock()
@@ -262,7 +276,7 @@ class TradeService : LifecycleService() {
                     job3.join()
                 }
             } else {
-                mutexMinCandle?.let {
+                mutexMinCandle.let {
                         mutex ->
                     if (mutex.isLocked) {
                         mutex.unlock()
@@ -352,7 +366,7 @@ class TradeService : LifecycleService() {
             Log.d(TAG, "removeMonitorItem: $marketId")
 
             when (tradeMapInfo[marketId]?.state) {
-                State.BUYING -> {
+                State.READY, State.BUYING -> {
                     //TODO()
                     cancelOrder(marketId)
                 }
@@ -386,7 +400,7 @@ class TradeService : LifecycleService() {
             Log.d(TAG, "removeTradeInfo: $marketId")
 
             when (tradeMapInfo[marketId]?.state) {
-                State.BUYING -> {
+                State.READY, State.BUYING -> {
                     cancelOrder(marketId)
                 }
                 State.BUY -> {
@@ -442,6 +456,8 @@ class TradeService : LifecycleService() {
                             tradeMapInfo[marketId]?.state = State.SELL
                             searchOrderSetInfo.remove(uuid!!)
                             stopTrade.set(false)
+
+                            reportList.add(tradeMapInfo[marketId]!!)
                         }
                     }
                 }
@@ -498,6 +514,8 @@ class TradeService : LifecycleService() {
                                 tradeMapInfo[marketId]?.state = State.SELL
                                 searchOrderSetInfo.remove(uuid)
                                 stopTrade.set(false)
+
+                                reportList.add(tradeMapInfo[marketId]!!)
                             }
                         }
                     }
@@ -769,9 +787,8 @@ class TradeService : LifecycleService() {
                     "currentPrice: ${Utils.Format.zeroFormat2.format(currentPrice)} " +
                     "deviation: ${Utils.Format.zeroFormat2.format(deviationPrice)} " +
                     "count: ${tradeData.size}")
-            tradeItem.state = State.CANCELLING
-            tradeMapInfo[tradeItem.marketId!!] = tradeItem
 
+            tradeMapInfo[tradeItem.marketId!!] = tradeItem
             viewModel.removeTradeInfo.postValue(tradeInfoData.marketId)
         }
         viewModel.updateTradeInfoData.postValue(tradeInfoData)

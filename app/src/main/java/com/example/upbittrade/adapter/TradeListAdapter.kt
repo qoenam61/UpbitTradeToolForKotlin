@@ -16,7 +16,7 @@ import java.util.ArrayList
 import java.util.HashMap
 import kotlin.math.abs
 
-class TradeListAdapter(val viewModel: TradeViewModel) : RecyclerView.Adapter<TradeListAdapter.TradeListViewHolder>() {
+class TradeListAdapter() : RecyclerView.Adapter<TradeListAdapter.TradeListViewHolder>() {
 
     var tradeMap = HashMap<String, TradeItem>()
     var tradeList = ArrayList<String>()
@@ -97,7 +97,8 @@ class TradeListAdapter(val viewModel: TradeViewModel) : RecyclerView.Adapter<Tra
 
             with(tradeItem) {
                 tradeStatus.text = this?.state?.name
-                tradeProfitRate.text = Utils.Format.percentFormat.format((this?.tradePrice!! - this.buyPrice!!).div( this.buyPrice!!))
+                tradeProfit.text = Utils.getZeroFormatString((this?.tradePrice!! - buyPrice!!))
+                tradeProfitRate.text = Utils.Format.percentFormat.format((this.tradePrice!! - this.buyPrice!!).div( this.buyPrice!!))
                 tradePriceView.text = getZeroFormatString(this.tradePrice)
                 tradeBidPrice.text = getZeroFormatString(this.buyPrice!!)
                 buyTime?.let { tradeBidTime.text = Utils.Format.timeFormat.format(it)}

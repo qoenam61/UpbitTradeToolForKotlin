@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -14,10 +15,11 @@ import com.dinuscxj.progressbar.CircleProgressBar
 import com.example.upbittrade.R
 import com.example.upbittrade.activity.TradePagerActivity
 import com.example.upbittrade.adapter.MonitorListAdapter
-import com.example.upbittrade.adapter.TradeItem
 import com.example.upbittrade.adapter.TradeListAdapter
+import com.example.upbittrade.adapter.TradeReportListAdapter
 import com.example.upbittrade.model.ResponseOrder
 import com.example.upbittrade.model.TradeViewModel
+import com.example.upbittrade.utils.ReportDialog
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -32,6 +34,7 @@ class TradeFragment: Fragment() {
     lateinit var viewModel: TradeViewModel
     lateinit var monitorListAdapter: MonitorListAdapter
     lateinit var tradeListAdapter: TradeListAdapter
+    lateinit var reportPopup: ReportDialog
     lateinit var circleBar: CircleProgressBar
 
     override fun onAttach(activity: Activity) {
@@ -48,16 +51,21 @@ class TradeFragment: Fragment() {
         val view = inflater.inflate(R.layout.fragment_trade, container, false)
 
         Log.d(TAG, "onCreateView: ")
-        monitorListAdapter = MonitorListAdapter(mainActivity.viewModel)
+        monitorListAdapter = MonitorListAdapter()
         val monitorList = view.findViewById<RecyclerView>(R.id.monitor_list_view)
         monitorList!!.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         monitorList.adapter = monitorListAdapter
 
-
-        tradeListAdapter = TradeListAdapter(mainActivity.viewModel)
+        tradeListAdapter = TradeListAdapter()
         val tradeList = view.findViewById<RecyclerView>(R.id.trade_list_view)
         tradeList!!.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         tradeList.adapter = tradeListAdapter
+
+        reportPopup = ReportDialog(requireContext())
+        val totalResultButton = view.findViewById<Button>(R.id.total_result)
+        totalResultButton.setOnClickListener {
+            reportPopup.show()
+        }
 
         circleBar = view.findViewById(R.id.circle_bar)
         circleBar.max = monitorListAdapter.monitorList.size
@@ -75,6 +83,7 @@ class TradeFragment: Fragment() {
                 marketsInfo ->
             monitorListAdapter.marketsMapInfo = marketsInfo
             tradeListAdapter.marketsMapInfo = marketsInfo
+            reportPopup.setMarketMap(marketsInfo)
 
             mainActivity.viewModel.monitorMap?.let { monitorListAdapter.monitorMap.putAll(it) }
             mainActivity.viewModel.monitorList?.let {
@@ -89,6 +98,8 @@ class TradeFragment: Fragment() {
                 tradeListAdapter.tradeList.addAll(it)
             }
             tradeListAdapter.notifyDataSetChanged()
+
+            mainActivity.viewModel.reportList?.let { reportPopup.setAllItem(it)}
         }
 
         viewModel.addMonitorItem.observe(viewCycleOwner) {
@@ -105,12 +116,15 @@ class TradeFragment: Fragment() {
             monitorListAdapter.updateItem(minCandlesInfo)
             tradeListAdapter.updateItem(minCandlesInfo)
 
-            circleBar.max = monitorListAdapter.monitorList.size
-            if (circleBar.max != 0) {
-                circleBar.progress = (circleProgress++) % circleBar.max
-                if (circleProgress == circleBar.max) {
-                    circleProgress = 0
-                }
+            val monitorSize = monitorListAdapter.monitorList.size
+            if (monitorSize == 0) {
+                circleBar.max = monitorListAdapter.marketsMapInfo.size
+            } else {
+                circleBar.max = monitorSize
+            }
+            circleBar.progress = (circleProgress++) % circleBar.max
+            if (circleProgress == circleBar.max) {
+                circleProgress = 0
             }
         }
 
@@ -128,6 +142,10 @@ class TradeFragment: Fragment() {
                 tradeInfoData ->
             monitorListAdapter.updateItem(tradeInfoData)
             tradeListAdapter.updateItem(tradeInfoData)
+        }
+
+        viewModel.addReportItem.observe(viewCycleOwner) {
+            reportPopup.setItem(it)
         }
 
         viewModel.resultTickerInfo.observe(viewCycleOwner) {

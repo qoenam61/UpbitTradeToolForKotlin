@@ -96,6 +96,8 @@ class TradePagerActivity : FragmentActivity() {
 
                 viewModel.tradeMap = tradeService.tradeMapInfo
                 viewModel.tradeList = tradeService.tradeListInfo
+
+                viewModel.reportList = tradeService.reportList
             }
 
             override fun onServiceDisconnected(name: ComponentName?) {
