@@ -45,13 +45,14 @@ class TradeService : LifecycleService() {
     private val UNIT_MIN_CANDLE = 3
     private val UNIT_MIN_CANDLE_COUNT = 200
     private val UNIT_MIN_CANDLE_PERIOD = UNIT_MIN_CANDLE * UNIT_MIN_CANDLE_COUNT
-    private val UNIT_MONITORING_ADD_DEVIATION = 1
+    private val UNIT_MONITORING_ADD_DEVIATION = 2
     private val UNIT_MONITORING_REMOVE_DEVIATION = 0
 
     private val UNIT_TRADE_INFO_COUNT = 200
     private val UNIT_TRADE_PERIOD = UNIT_MIN_CANDLE * 1
-    private val UNIT_TRADE_ADD_DEVIATION = 0
-    private val UNIT_TRADE_REMOVE_DEVIATION = 0
+    private val UNIT_TRADE_ADD_COUNT = 30
+    private val UNIT_TRADE_ADD_DEVIATION = 2
+    private val UNIT_TRADE_REMOVE_DEVIATION = 1
 
     private val priceToBuy = 10000
 
@@ -750,8 +751,9 @@ class TradeService : LifecycleService() {
 
         val tradeItem = TradeItem(tradeInfoData)
 
-        if (!stopTrade.get() && !tradeMapInfo.contains(tradeInfoData.marketId) &&
-            currentPrice > Utils.convertPrice(avgTradePrice + (UNIT_TRADE_ADD_DEVIATION * deviationPrice))
+        if (!stopTrade.get() && !tradeMapInfo.contains(tradeInfoData.marketId)
+            && tradeData.size >= UNIT_TRADE_ADD_COUNT
+            && currentPrice > Utils.convertPrice(avgTradePrice + (UNIT_TRADE_ADD_DEVIATION * deviationPrice))
             && currentVolume > (avgTradeVolume + (UNIT_TRADE_ADD_DEVIATION * deviationVolume))
         ) {
             Log.d(TAG, "analysisTradeInfoData(add) - " +
