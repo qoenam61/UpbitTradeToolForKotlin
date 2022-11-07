@@ -122,9 +122,11 @@ class TradeFragment: Fragment() {
             } else {
                 circleBar.max = monitorSize
             }
-            circleBar.progress = (circleProgress++) % circleBar.max
-            if (circleProgress == circleBar.max) {
-                circleProgress = 0
+            if (circleBar.max != 0) {
+                circleBar.progress = (circleProgress++) % circleBar.max
+                if (circleProgress == circleBar.max) {
+                    circleProgress = 0
+                }
             }
         }
 
