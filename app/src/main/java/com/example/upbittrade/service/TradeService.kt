@@ -30,6 +30,7 @@ import kotlinx.coroutines.sync.withLock
 import org.json.JSONObject
 import java.sql.Timestamp
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
 import kotlin.math.pow
@@ -60,6 +61,7 @@ class TradeService : LifecycleService() {
     val tradeListInfo = ArrayList<String>()
     val monitorMapInfo = HashMap<String, MonitorItem>()
     val monitorListInfo = ArrayList<String>()
+    val stopTrade = AtomicBoolean(false)
 
     private lateinit var monitorItemSet: HashItemSet
     private lateinit var searchOrderSetInfo: HashItemSet
@@ -350,9 +352,6 @@ class TradeService : LifecycleService() {
             Log.d(TAG, "removeMonitorItem: $marketId")
 
             when (tradeMapInfo[marketId]?.state) {
-                State.READY -> {
-                    //TODO()
-                }
                 State.BUYING -> {
                     //TODO()
                     cancelOrder(marketId)
@@ -364,15 +363,6 @@ class TradeService : LifecycleService() {
                 State.SELLING -> {
                     //TODO()
                     cancelOrder(marketId)
-                }
-                State.SELL -> {
-                    //TODO()
-                }
-                State.CANCEL -> {
-                    //TODO()
-                }
-                State.CANCELLING -> {
-                    //TODO()
                 }
                 null -> {
                     monitorItemSet.remove(marketId)
@@ -396,9 +386,6 @@ class TradeService : LifecycleService() {
             Log.d(TAG, "removeTradeInfo: $marketId")
 
             when (tradeMapInfo[marketId]?.state) {
-                State.READY -> {
-                    //TODO()
-                }
                 State.BUYING -> {
                     cancelOrder(marketId)
                 }
@@ -410,14 +397,8 @@ class TradeService : LifecycleService() {
                     //TODO()
                     cancelOrder(marketId)
                 }
-                State.SELL -> {
-                    //TODO()
-                }
-                State.CANCEL -> {
-                    //TODO()
-                }
-                State.CANCELLING -> {
-                    cancelOrder(marketId)
+                null -> {
+
                 }
                 else -> {
                     //TODO()
@@ -460,6 +441,7 @@ class TradeService : LifecycleService() {
                         "done" -> {
                             tradeMapInfo[marketId]?.state = State.SELL
                             searchOrderSetInfo.remove(uuid!!)
+                            stopTrade.set(false)
                         }
                     }
                 }
@@ -472,6 +454,7 @@ class TradeService : LifecycleService() {
                         "done" -> {
                             tradeMapInfo[marketId]?.state = State.CANCEL
                             searchOrderSetInfo.remove(uuid!!)
+                            stopTrade.set(false)
                         }
                     }
                 }
@@ -514,17 +497,20 @@ class TradeService : LifecycleService() {
                                 tradeMapInfo[marketId]?.sellTime = System.currentTimeMillis()
                                 tradeMapInfo[marketId]?.state = State.SELL
                                 searchOrderSetInfo.remove(uuid)
+                                stopTrade.set(false)
                             }
                         }
                     }
                     "cancel" -> {
                         when (state) {
                             "wait" -> {
+                                tradeMapInfo[marketId]?.state = State.CANCELLING
                                 viewModel.searchOrderInfo.value = UUID.fromString(uuid)
                             }
                             "done" -> {
                                 tradeMapInfo[marketId]?.state = State.CANCEL
                                 searchOrderSetInfo.remove(uuid)
+                                stopTrade.set(false)
                             }
                         }
                     }
@@ -579,6 +565,7 @@ class TradeService : LifecycleService() {
                     monitorListInfo.remove(marketId)
                     monitorMapInfo.remove(marketId)
 
+                    searchOrderSetInfo.remove(marketId)
                     tradeListInfo.remove(marketId)
                     tradeMapInfo.remove(marketId)
                 }
@@ -600,12 +587,17 @@ class TradeService : LifecycleService() {
                         && errorObj["name"] == "insufficient_funds_bid" -> {
                     Log.w(TAG, "errorResponse: insufficient_funds_bid")
                     tradeMapInfo[marketId]?.state = State.STOP
+                    stopTrade.set(true)
                     viewModel.updateTradeInfoData.postValue(tradeMapInfo[marketId])
                 }
                 errorCode == 400
                         && errorObj["name"] == "insufficient_funds_ask" -> {
                     Log.w(TAG, "errorResponse: insufficient_funds_ask")
                     tradeMapInfo[marketId]?.state = State.STOP
+
+                    searchOrderSetInfo.remove(marketId)
+                    tradeListInfo.remove(marketId)
+                    tradeMapInfo.remove(marketId)
                     viewModel.updateTradeInfoData.postValue(tradeMapInfo[marketId])
                 }
                 errorCode == 500
@@ -740,7 +732,7 @@ class TradeService : LifecycleService() {
 
         val tradeItem = TradeItem(tradeInfoData)
 
-        if (!tradeMapInfo.contains(tradeInfoData.marketId) &&
+        if (!stopTrade.get() && !tradeMapInfo.contains(tradeInfoData.marketId) &&
             currentPrice > Utils.convertPrice(avgTradePrice + (UNIT_TRADE_ADD_DEVIATION * deviationPrice))
             && currentVolume > (avgTradeVolume + (UNIT_TRADE_ADD_DEVIATION * deviationVolume))
         ) {
